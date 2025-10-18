@@ -60,6 +60,34 @@ def build_team_lookup(teams):
     teams_by_id = {t["id"]: t for t in teams}
     return teams_by_id
 
+def validate_data_quality(context):
+    """Validate data quality and return warnings."""
+    warnings = []
+    
+    # Check authentication status
+    my_team = context["team_state"]["my_team"]
+    if "_error" in my_team:
+        warnings.append("CRITICAL: Team data unavailable - authentication required for accurate analysis")
+    
+    # Check for missing squad data
+    if not context.get("analysis", {}).get("current_squad"):
+        warnings.append("CRITICAL: Current squad analysis failed - cannot provide transfer recommendations")
+    
+    # Check for fixture data
+    if not context.get("fixtures", {}).get("this_gw"):
+        warnings.append("WARNING: Current gameweek fixtures missing")
+    
+    # Check for live/event data
+    if context.get("event", {}).get("finished") is None:
+        warnings.append("INFO: Event status unknown - deadline may have passed")
+    
+    # Check for player data completeness
+    players = context.get("market", {}).get("players", [])
+    if len(players) < 500:  # Should be ~700+ players
+        warnings.append("WARNING: Player catalog appears incomplete")
+    
+    return warnings
+
 def get_current_squad_analysis(context):
     """Analyze current squad from my_team.picks with proper joins."""
     try:
@@ -274,37 +302,106 @@ def suggest_transfers(context, max_suggestions=5):
         print(f"Warning: Could not generate transfer suggestions: {e}")
         return []
 
-def extract_prompt_variables(context):
-    """Extract template variables for prompt population."""
+def create_summary_section(context):
+    """Create a high-level summary section for easy AI consumption."""
     try:
         gw = context["meta"]["gameweek"]
         
-        # Get data from history (always available)
-        history = context["team_state"]["history"]["current"][-1]  # Latest GW
-        bank = history["bank"] / 10.0  # Convert to millions
+        # Get basic info
+        history = context["team_state"]["history"]["current"][-1]
+        bank = history["bank"] / 10.0
         
-        # Try to get authenticated transfer data first
+        # Transfer info
         my_team = context["team_state"]["my_team"]
         if "_error" not in my_team and "transfers" in my_team:
-            # Use authenticated data - this shows actual transfers available for upcoming GW
             transfers_data = my_team["transfers"]
             free_transfers = transfers_data["limit"] - transfers_data["made"]
+            auth_status = "authenticated"
         else:
-            # Fallback for unauthenticated: assume standard 1 FT
-            # Note: history["event_transfers"] shows transfers made in that completed GW,
-            # but tells us nothing about transfers available for upcoming GW
             free_transfers = 1
-            print(f"Warning: Using default 1 FT assumption (authentication required for accurate transfer data)")
+            auth_status = "unauthenticated - using default assumptions"
         
-        # Try to get chip data from my_team
-        chips_str = "Data unavailable (requires authentication)"
+        # Chips info
+        chips_available = []
         if "_error" not in my_team and "chips" in my_team:
-            chips = my_team["chips"]
-            available_chips = [
-                chip["name"] for chip in chips 
+            chips_available = [
+                chip["name"] for chip in my_team["chips"]
                 if chip["status_for_entry"] == "available"
             ]
-            chips_str = ", ".join(available_chips) if available_chips else "None"
+        
+        # Squad analysis
+        squad_analysis = get_current_squad_analysis(context)
+        squad_summary = None
+        if squad_analysis:
+            starting_xi = squad_analysis["starting_xi"]
+            bench = squad_analysis["bench"]
+            captain = next((p for p in starting_xi if p["is_captain"]), None)
+            vice = next((p for p in starting_xi if p["is_vice_captain"]), None)
+            
+            squad_summary = {
+                "total_players": len(squad_analysis["squad"]),
+                "starting_xi_count": len(starting_xi),
+                "bench_count": len(bench),
+                "captain": f"{captain['name']} ({captain['team']})" if captain else "None set",
+                "vice_captain": f"{vice['name']} ({vice['team']})" if vice else "None set",
+                "total_value": squad_analysis["total_squad_value"],
+                "club_distribution": squad_analysis["club_counts"]
+            }
+        
+        return {
+            "gameweek": gw,
+            "authentication_status": auth_status,
+            "bank_available": bank,
+            "free_transfers": free_transfers,
+            "chips_available": chips_available,
+            "squad_summary": squad_summary,
+            "data_quality_warnings": []
+        }
+    except Exception as e:
+        print(f"Warning: Could not create summary section: {e}")
+        return {"error": str(e)}
+
+def extract_prompt_variables(context):
+    """Extract template variables for prompt population."""
+    try:
+        # Handle both old and new context structure
+        if "IMPORTANT_READ_FIRST" in context:
+            # New structure
+            summary = context["IMPORTANT_READ_FIRST"]["summary"]
+            gw = summary["gameweek"]
+            bank = summary["bank_available"]
+            free_transfers = summary["free_transfers"]
+            chips_available = summary["chips_available"]
+        else:
+            # Old structure (fallback)
+            gw = context["meta"]["gameweek"]
+            
+            # Get data from history (always available)
+            history = context["team_state"]["history"]["current"][-1]  # Latest GW
+            bank = history["bank"] / 10.0  # Convert to millions
+            
+            # Try to get authenticated transfer data first
+            my_team = context["team_state"]["my_team"]
+            if "_error" not in my_team and "transfers" in my_team:
+                # Use authenticated data - this shows actual transfers available for upcoming GW
+                transfers_data = my_team["transfers"]
+                free_transfers = transfers_data["limit"] - transfers_data["made"]
+            else:
+                # Fallback for unauthenticated: assume standard 1 FT
+                free_transfers = 1
+                print(f"Warning: Using default 1 FT assumption (authentication required for accurate transfer data)")
+            
+            # Try to get chip data from my_team
+            chips_available = []
+            if "_error" not in my_team and "chips" in my_team:
+                chips = my_team["chips"]
+                chips_available = [
+                    chip["name"] for chip in chips 
+                    if chip["status_for_entry"] == "available"
+                ]
+        
+        # Format chips for display
+        chips_str = ", ".join(chips_available) if chips_available else "None available"
         
         return {
             "GW": str(gw),
@@ -367,7 +464,7 @@ def main():
     next6_ids = [e for e in range(args.gw, min(args.gw+6, max(ev["id"] for ev in events)+1))]
     next6_fixtures = [fx for fx in fixtures_upcoming if isinstance(fx, dict) and fx.get("event") in next6_ids] if isinstance(fixtures_upcoming, list) else []
 
-    # Enhanced context with analysis
+    # Enhanced context with analysis - restructured for better AI consumption
     context = {
         "meta": {
             "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -406,6 +503,46 @@ def main():
             "fixtures_difficulty": calculate_fixtures_difficulty(context),
             "transfer_suggestions": suggest_transfers(context)
         }
+    
+    # Create summary and validate data quality
+    summary = create_summary_section(context)
+    warnings = validate_data_quality(context)
+    if warnings:
+        summary["data_quality_warnings"] = warnings
+    
+    # Restructure context to prioritize key information for AI
+    restructured_context = {
+        "IMPORTANT_READ_FIRST": {
+            "summary": summary,
+            "current_squad_details": squad_analysis,
+        },
+        "gameweek_info": {
+            "meta": context["meta"],
+            "event": context["event"],
+        },
+        "team_constraints": {
+            "bank_and_transfers": {
+                "current_bank": summary.get("bank_available", 0),
+                "free_transfers": summary.get("free_transfers", 1),
+                "chips_available": summary.get("chips_available", [])
+            },
+            "squad_rules": {
+                "max_per_club": 3,
+                "formation_constraints": "1 GK, 3-5 DEF, 2-5 MID, 1-3 FWD",
+                "current_club_counts": squad_analysis["club_counts"] if squad_analysis else {}
+            }
+        },
+        "detailed_data": {
+            "team_state": context["team_state"],
+            "market": context["market"],
+            "fixtures": context["fixtures"],
+            "live": context["live"],
+            "analysis": context.get("analysis", {})
+        }
+    }
+    
+    # Replace original context with restructured version
+    context = restructured_context
 
     with open(args.outfile, "w") as f:
         json.dump(context, f, indent=2)
