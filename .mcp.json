@@ -3,6 +3,14 @@
     "linear-personal": {
       "type": "sse",
       "url": "https://mcp.linear.app/sse"
+    },
+    "fpl": {
+      "command": "npx",
+      "args": ["tsx", "fpl-mcp-server/src/index.ts"],
+      "env": {
+        "FPL_COOKIE": "${FPL_COOKIE}",
+        "FPL_X_API_AUTH": "${FPL_X_API_AUTH}"
+      }
     }
   }
 }
