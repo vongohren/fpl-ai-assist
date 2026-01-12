@@ -206,6 +206,12 @@ export interface SquadResponse {
     active: string | null;
   };
   club_counts: Record<string, number>;
+  data_source: {
+    type: "authenticated" | "public_fallback";
+    is_stale: boolean;
+    warning?: string;
+    gameweek_fetched?: number;
+  };
 }
 
 export interface FixturesResponse {

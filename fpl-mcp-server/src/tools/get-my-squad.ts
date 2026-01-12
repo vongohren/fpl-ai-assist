@@ -24,8 +24,20 @@ export type GetMySquadInput = z.infer<typeof getMySquadSchema>;
 
 export const getMySquadTool = {
   name: "get_my_squad",
-  description:
-    "Get your current FPL squad with all 15 players, costs, captain info, and budget. ALWAYS call this first to see your owned players before making any recommendations.",
+  description: `Get your current FPL squad with all 15 players, costs, captain info, and budget. ALWAYS call this first to see your owned players before making any recommendations.
+
+🚨🚨🚨 CRITICAL - READ THIS 🚨🚨🚨
+
+You MUST check data_source.is_stale in the response:
+
+If data_source.is_stale is TRUE:
+1. Display the squad data normally
+2. AT THE VERY END of your response, display data_source.warning
+3. Show the warning EXACTLY as provided - with ALL emojis and formatting
+4. DO NOT summarize or soften the warning - show it in FULL
+5. The warning goes LAST so it stays visible (top of terminal scrolls away)
+
+This is NON-NEGOTIABLE. Users have been burned by outdated data before.`,
   inputSchema: {
     type: "object" as const,
     properties: {
@@ -65,6 +77,10 @@ export async function handleGetMySquad(
   let freeTransfers = 1;
   let availableChips: string[] = [];
   let activeChip: string | null = null;
+  let dataSourceType: "authenticated" | "public_fallback" = "authenticated";
+  let isStale = false;
+  let staleWarning: string | undefined;
+  let gameweekFetched: number | undefined;
 
   try {
     const myTeam = await cachedFetch<MyTeamResponse>(
@@ -80,6 +96,8 @@ export async function handleGetMySquad(
     availableChips = myTeam.chips
       .filter((c) => c.status_for_entry === "available")
       .map((c) => c.name);
+    dataSourceType = "authenticated";
+    isStale = false;
   } catch {
     // Fall back to public picks endpoint
     const publicPicks = await cachedFetch<PicksResponse>(
@@ -95,6 +113,23 @@ export async function handleGetMySquad(
     // Default assumptions when using public endpoint
     freeTransfers = 1;
     availableChips = ["bboost", "3xc", "wildcard", "freehit"];
+    dataSourceType = "public_fallback";
+    isStale = true;
+    gameweekFetched = currentGw;
+    staleWarning = `⚠️⚠️⚠️ STALE DATA WARNING ⚠️⚠️⚠️
+
+🚨 THIS SQUAD DATA IS OUTDATED! 🚨
+
+This data is from GAMEWEEK ${currentGw} confirmed picks only.
+It does NOT show:
+  ❌ Any transfers made since then
+  ❌ Captain/vice-captain changes
+  ❌ Bench order changes
+  ❌ Current bank balance after transfers
+
+🔧 FIX: Set FPL_COOKIE or FPL_X_API_AUTH environment variable for real-time data.
+
+⚠️⚠️⚠️ DO NOT TRUST THIS DATA FOR TRANSFER DECISIONS ⚠️⚠️⚠️`;
   }
 
   // Enrich picks with player data
@@ -161,6 +196,12 @@ export async function handleGetMySquad(
       active: activeChip,
     },
     club_counts: clubCounts,
+    data_source: {
+      type: dataSourceType,
+      is_stale: isStale,
+      warning: staleWarning,
+      gameweek_fetched: gameweekFetched,
+    },
   };
 }
 
