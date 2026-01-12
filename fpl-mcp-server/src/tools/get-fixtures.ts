@@ -49,16 +49,31 @@ export async function handleGetFixtures(
     client.getFixtures()
   );
 
-  // Filter by gameweek
-  let fixtures = allFixtures.filter((f) => f.event === targetGw);
+  // Filter by gameweek first (for accurate blank/playing calculation)
+  const gwFixtures = allFixtures.filter((f) => f.event === targetGw);
 
-  // Filter by team if specified
+  // Calculate which teams are truly blank THIS gameweek (before any team filter)
+  const allTeamIds = new Set(bootstrap.teams.map((t) => t.id));
+  const allTeamsPlayingThisGw = new Set<number>();
+  for (const f of gwFixtures) {
+    allTeamsPlayingThisGw.add(f.team_h);
+    allTeamsPlayingThisGw.add(f.team_a);
+  }
+  const teamsBlank = [...allTeamIds]
+    .filter((id) => !allTeamsPlayingThisGw.has(id))
+    .map((id) => teamLookup.get(id)?.short_name ?? "???");
+
+  // Now apply team filter for the response fixtures
+  let fixtures = gwFixtures;
+  let appliedFilter: { team: string } | undefined;
+
   if (input.team) {
     const teamShort = input.team.toUpperCase();
     const teamId = [...teamLookup.entries()].find(([, t]) => t.short_name === teamShort)?.[0];
 
     if (teamId) {
       fixtures = fixtures.filter((f) => f.team_h === teamId || f.team_a === teamId);
+      appliedFilter = { team: teamShort };
     }
   }
 
@@ -85,17 +100,6 @@ export async function handleGetFixtures(
 
   // Get event info for deadline
   const event = bootstrap.events.find((e) => e.id === targetGw);
-  const allTeamIds = new Set(bootstrap.teams.map((t) => t.id));
-  const teamsPlaying = new Set<number>();
-
-  for (const f of fixtures) {
-    teamsPlaying.add(f.team_h);
-    teamsPlaying.add(f.team_a);
-  }
-
-  const teamsBlank = [...allTeamIds]
-    .filter((id) => !teamsPlaying.has(id))
-    .map((id) => teamLookup.get(id)?.short_name ?? "???");
 
   return {
     gameweek: targetGw,
@@ -105,5 +109,6 @@ export async function handleGetFixtures(
     fixtures: enrichedFixtures,
     teams_playing: enrichedFixtures.flatMap((f) => [f.home_team, f.away_team]).filter((v, i, a) => a.indexOf(v) === i),
     teams_blank: teamsBlank,
+    filter: appliedFilter,
   };
 }

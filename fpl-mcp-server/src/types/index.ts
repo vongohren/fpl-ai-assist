@@ -222,6 +222,51 @@ export interface FixturesResponse {
   fixtures: EnrichedFixture[];
   teams_playing: string[];
   teams_blank: string[];
+  filter?: { team: string };
+}
+
+export interface TeamFixtureDetail {
+  opponent: string;
+  opponent_name: string;
+  is_home: boolean;
+  fdr: number;
+  kickoff: string | null;
+}
+
+export interface GWFixture {
+  gw: number;
+  opponent: string | null;
+  opponent_name: string | null;
+  is_home: boolean | null;
+  fdr: number | null;
+  kickoff: string | null;
+  is_double: boolean;
+  all_fixtures?: TeamFixtureDetail[];
+}
+
+export interface FixtureDifficultySummary {
+  average_fdr: number;
+  easy_fixtures: number;
+  medium_fixtures: number;
+  hard_fixtures: number;
+  blank_gameweeks: number[];
+  double_gameweeks: number[];
+}
+
+export interface FixtureDifficultyComparison {
+  league_avg_fdr: number;
+  rank_among_teams: number;
+  better_than: string[];
+}
+
+export interface FixtureDifficultyResponse {
+  team: string;
+  team_name: string;
+  analysis_range: { from: number; to: number };
+  fixtures: GWFixture[];
+  summary: FixtureDifficultySummary;
+  comparison: FixtureDifficultyComparison;
+  verdict: string;
 }
 
 export interface SearchPlayersResponse {

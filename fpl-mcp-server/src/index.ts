@@ -19,6 +19,9 @@ import {
   searchPlayersTool,
   handleSearchPlayers,
   searchPlayersSchema,
+  getFixtureDifficultyTool,
+  handleGetFixtureDifficulty,
+  getFixtureDifficultySchema,
 } from "./tools/index.js";
 
 // Initialize cache and API client
@@ -43,7 +46,7 @@ const server = new Server(
 
 // Register tool list handler
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [getMySquadTool, getFixturesTool, searchPlayersTool],
+  tools: [getMySquadTool, getFixturesTool, searchPlayersTool, getFixtureDifficultyTool],
 }));
 
 // Register tool call handler
@@ -76,6 +79,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const input = searchPlayersSchema.parse(args);
         const result = await handleSearchPlayers(input, client, cache);
         logToolResult(name, `Found ${result.total_matches} matches, returned ${result.showing}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      }
+
+      case "get_fixture_difficulty": {
+        const input = getFixtureDifficultySchema.parse(args);
+        const result = await handleGetFixtureDifficulty(input, client, cache);
+        logToolResult(name, `Analyzed ${result.team} fixtures GW${result.analysis_range.from}-${result.analysis_range.to}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         };
