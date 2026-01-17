@@ -293,6 +293,39 @@ export const POSITION_MAP: Record<number, "GK" | "DEF" | "MID" | "FWD"> = {
   4: "FWD",
 };
 
+// Community Trends types
+
+export interface TrendingPlayerSource {
+  title: string;
+  url: string;
+  source_type: "reddit" | "twitter" | "blog" | "other";
+}
+
+export interface TrendingPlayer {
+  player_name: string;
+  player_id?: number;
+  sentiment: "buy" | "sell" | "hold" | "watch";
+  mentions: number;
+  reasons: string[];
+  sources: TrendingPlayerSource[];
+}
+
+export interface CommunityTrendsResponse {
+  query: {
+    topic?: string;
+    position?: string;
+    gameweek: number;
+  };
+  fetched_at: string;
+  trending_players: TrendingPlayer[];
+  hot_topics: string[];
+  data_source: {
+    search_provider: string;
+    queries_made: number;
+    warning?: string;
+  };
+}
+
 // Helper function
 export function toMillions(tenths: number): number {
   return Math.round((tenths / 10) * 10) / 10;

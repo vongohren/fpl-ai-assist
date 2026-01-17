@@ -7,6 +7,7 @@ A Model Context Protocol (MCP) server that provides Fantasy Premier League data 
 - **get_my_squad**: Get your current 15-player squad with captain, budget, and chip info
 - **get_fixtures**: Get Premier League fixtures with difficulty ratings
 - **search_players**: Search for transfer targets by name, position, price, form, etc.
+- **get_community_trends**: Aggregate FPL community insights from Reddit, Twitter, and blogs with sentiment analysis
 
 ## Setup
 
@@ -23,6 +24,7 @@ npm install
 |----------|-------------|----------|
 | `FPL_MANAGER_ID` | Your FPL manager ID (from URL) | For get_my_squad |
 | `FPL_COOKIE` | Browser cookie for authenticated endpoints | For full features |
+| `BRAVE_SEARCH_API_KEY` | Brave Search API key for community trends | For get_community_trends |
 
 **Finding your Manager ID:**
 1. Go to https://fantasy.premierleague.com/my-team
@@ -33,6 +35,12 @@ npm install
 2. Open DevTools (F12) → Network tab
 3. Make any request to FPL
 4. Copy the `Cookie` header value
+
+**Getting your Brave Search API key (for community trends):**
+1. Go to https://brave.com/search/api/
+2. Sign up for free (2000 queries/month, no credit card required)
+3. Copy your API key
+4. Set in your shell: `export BRAVE_SEARCH_API_KEY=your-key-here`
 
 ### 3. Run the server
 
@@ -57,7 +65,8 @@ Add to your `.mcp.json` (project root or global config):
       "args": ["tsx", "fpl-mcp-server/src/index.ts"],
       "cwd": "/path/to/fpl-ai-assist",
       "env": {
-        "FPL_COOKIE": "your-cookie-here"
+        "FPL_COOKIE": "your-cookie-here",
+        "BRAVE_SEARCH_API_KEY": "your-brave-api-key-here"
       }
     }
   }
@@ -112,6 +121,25 @@ Search the player database for transfer targets.
 - Next 3 fixtures for each player
 - Ownership percentages
 
+### get_community_trends
+
+Aggregate FPL community insights from Reddit, Twitter, and FPL blogs. Use this weekly to catch players the stats might miss - the "eye test" picks, tactical changes, or emerging differentials being discussed.
+
+**Parameters:**
+- `topic` (optional): Focus area - "transfers", "captaincy", "differentials", or "general" (default)
+- `position` (optional): Filter by position - GK, DEF, MID, FWD
+- `player_name` (optional): Focus on a specific player
+- `gameweek` (optional): Gameweek number (defaults to current)
+
+**Returns:**
+- Trending players with buy/sell/hold/watch sentiment
+- Number of mentions across sources
+- Reasons extracted from discussions
+- Source links for verification
+- Hot topics in the FPL community
+
+**Note:** Requires `BRAVE_SEARCH_API_KEY` environment variable. Without it, returns setup instructions.
+
 ## Caching
 
 The server uses SQLite caching with these TTLs:
@@ -122,5 +150,6 @@ The server uses SQLite caching with these TTLs:
 | Fixtures | 1 hour |
 | Your squad | 5 minutes |
 | Live scores | 30 seconds |
+| Community trends | 6 hours |
 
 Cache is stored in `./data/cache.db` and persists across restarts.

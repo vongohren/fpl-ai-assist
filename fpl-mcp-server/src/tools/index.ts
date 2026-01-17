@@ -2,3 +2,4 @@ export { getMySquadTool, handleGetMySquad, getMySquadSchema } from "./get-my-squ
 export { getFixturesTool, handleGetFixtures, getFixturesSchema } from "./get-fixtures.js";
 export { searchPlayersTool, handleSearchPlayers, searchPlayersSchema } from "./search-players.js";
 export { getFixtureDifficultyTool, handleGetFixtureDifficulty, getFixtureDifficultySchema } from "./get-fixture-difficulty.js";
+export { getCommunityTrendsTool, handleGetCommunityTrends, getCommunityTrendsSchema } from "./get-community-trends.js";
