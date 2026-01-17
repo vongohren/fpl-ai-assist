@@ -8,7 +8,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "get-token": "npx tsx scripts/get-fpl-token.ts",
+    "setup": "npx tsx scripts/setup.ts",
     "inspect": "npx @modelcontextprotocol/inspector npx tsx src/index.ts"
   },
   "keywords": [

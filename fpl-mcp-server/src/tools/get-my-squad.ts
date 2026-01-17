@@ -16,8 +16,17 @@ import type {
 } from "../types/index.js";
 import { POSITION_MAP, toMillions } from "../types/index.js";
 
+function getDefaultManagerId(): number | undefined {
+  const envValue = process.env.FPL_MANAGER_ID;
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    return isNaN(parsed) ? undefined : parsed;
+  }
+  return undefined;
+}
+
 export const getMySquadSchema = z.object({
-  manager_id: z.number().describe("Your FPL manager ID (from URL when viewing your team)"),
+  manager_id: z.number().optional().describe("Your FPL manager ID. Optional if FPL_MANAGER_ID env var is set."),
 });
 
 export type GetMySquadInput = z.infer<typeof getMySquadSchema>;
@@ -43,10 +52,10 @@ This is NON-NEGOTIABLE. Users have been burned by outdated data before.`,
     properties: {
       manager_id: {
         type: "number",
-        description: "Your FPL manager ID (from URL when viewing your team)",
+        description: "Your FPL manager ID. Optional if FPL_MANAGER_ID env var is set.",
       },
     },
-    required: ["manager_id"],
+    required: [],
   },
 };
 
@@ -54,8 +63,16 @@ export async function handleGetMySquad(
   input: GetMySquadInput,
   client: FPLApiClient,
   cache: FPLCache
-): Promise<SquadResponse> {
-  const { manager_id } = input;
+): Promise<SquadResponse | { error: string; message: string; help: string }> {
+  const manager_id = input.manager_id ?? getDefaultManagerId();
+
+  if (!manager_id) {
+    return {
+      error: "manager_id_required",
+      message: "No manager ID provided and FPL_MANAGER_ID environment variable not set.",
+      help: "Run 'npm run setup' in fpl-mcp-server to set up your credentials and manager ID.",
+    };
+  }
 
   // Fetch bootstrap data (cached 24h)
   const bootstrap = await cachedFetch<BootstrapStatic>(cache, CACHE_KEYS.bootstrap(), TTL.BOOTSTRAP, () =>

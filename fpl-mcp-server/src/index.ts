@@ -60,7 +60,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "get_my_squad": {
         const input = getMySquadSchema.parse(args);
         const result = await handleGetMySquad(input, client, cache);
-        logToolResult(name, `Returned ${result.squad.length} players`);
+        if ("error" in result) {
+          logToolResult(name, `Error: ${result.error}`);
+        } else {
+          logToolResult(name, `Returned ${result.squad.length} players`);
+        }
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         };
