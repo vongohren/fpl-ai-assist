@@ -22,6 +22,9 @@ import {
   getFixtureDifficultyTool,
   handleGetFixtureDifficulty,
   getFixtureDifficultySchema,
+  getCommunityTrendsTool,
+  handleGetCommunityTrends,
+  getCommunityTrendsSchema,
 } from "./tools/index.js";
 
 // Initialize cache and API client
@@ -46,7 +49,7 @@ const server = new Server(
 
 // Register tool list handler
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [getMySquadTool, getFixturesTool, searchPlayersTool, getFixtureDifficultyTool],
+  tools: [getMySquadTool, getFixturesTool, searchPlayersTool, getFixtureDifficultyTool, getCommunityTrendsTool],
 }));
 
 // Register tool call handler
@@ -88,6 +91,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const input = getFixtureDifficultySchema.parse(args);
         const result = await handleGetFixtureDifficulty(input, client, cache);
         logToolResult(name, `Analyzed ${result.team} fixtures GW${result.analysis_range.from}-${result.analysis_range.to}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      }
+
+      case "get_community_trends": {
+        const input = getCommunityTrendsSchema.parse(args);
+        const result = await handleGetCommunityTrends(input, client, cache);
+        if ("error" in result) {
+          logToolResult(name, `Error: ${result.error}`);
+        } else {
+          logToolResult(name, `Found ${result.trending_players.length} trending players`);
+        }
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         };

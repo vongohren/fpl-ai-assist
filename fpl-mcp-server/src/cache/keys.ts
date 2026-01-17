@@ -6,6 +6,7 @@ export const TTL = {
   LIVE: 30 * 1000, // 30 seconds - real-time during matches
   MANAGER_INFO: 60 * 60 * 1000, // 1 hour - rarely changes
   PICKS: 5 * 60 * 1000, // 5 minutes - same as my_team
+  COMMUNITY_TRENDS: 6 * 60 * 60 * 1000, // 6 hours - community sentiment doesn't change often
 } as const;
 
 // Cache key generators
@@ -17,4 +18,5 @@ export const CACHE_KEYS = {
   picks: (managerId: number, gw: number) => `cache:picks:${managerId}:${gw}`,
   managerInfo: (managerId: number) => `cache:manager:${managerId}`,
   live: (gw: number) => `cache:live:${gw}`,
+  communityTrends: (topic: string, gw: number) => `cache:trends:${topic}:${gw}`,
 } as const;
