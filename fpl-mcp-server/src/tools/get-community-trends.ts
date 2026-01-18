@@ -76,6 +76,11 @@ Returns:
   },
 };
 
+// Helper to escape special regex characters in player names
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // Sentiment indicators
 const SENTIMENT_PATTERNS = {
   buy: [
@@ -320,53 +325,59 @@ function extractTrendingPlayers(
         continue;
       }
 
-      // Check if player is mentioned (need at least 3 chars to avoid false positives)
-      if (name.length >= 3 && text.includes(name)) {
-        const key = player.web_name;
+      // Check if player is mentioned using word boundary matching
+      // This prevents matching "adli" inside "deadline" or "headline"
+      if (name.length >= 3) {
+        const nameRegex = new RegExp(`\\b${escapeRegExp(name)}\\b`, "i");
+        if (!nameRegex.test(text)) continue;
+      } else {
+        continue; // Skip names shorter than 3 characters
+      }
 
-        if (!mentions.has(key)) {
-          mentions.set(key, {
-            player,
-            count: 0,
-            sentimentScores: { buy: 0, sell: 0, hold: 0, watch: 0 },
-            reasons: new Set(),
-            sources: [],
-          });
-        }
+      const key = player.web_name;
 
-        const data = mentions.get(key)!;
-        data.count++;
+      if (!mentions.has(key)) {
+        mentions.set(key, {
+          player,
+          count: 0,
+          sentimentScores: { buy: 0, sell: 0, hold: 0, watch: 0 },
+          reasons: new Set(),
+          sources: [],
+        });
+      }
 
-        // Analyze sentiment
-        for (const [sentiment, patterns] of Object.entries(SENTIMENT_PATTERNS)) {
-          for (const pattern of patterns) {
-            if (text.includes(pattern)) {
-              data.sentimentScores[sentiment]++;
-              data.reasons.add(pattern);
-            }
+      const data = mentions.get(key)!;
+      data.count++;
+
+      // Analyze sentiment
+      for (const [sentiment, patterns] of Object.entries(SENTIMENT_PATTERNS)) {
+        for (const pattern of patterns) {
+          if (text.includes(pattern)) {
+            data.sentimentScores[sentiment]++;
+            data.reasons.add(pattern);
           }
         }
+      }
 
-        // Determine source type
-        let sourceType: TrendingPlayerSource["source_type"] = "other";
-        if (result.url.includes("reddit.com")) sourceType = "reddit";
-        else if (result.url.includes("twitter.com") || result.url.includes("x.com")) sourceType = "twitter";
-        else if (
-          result.url.includes("fantasyfootballscout") ||
-          result.url.includes("fplstatistics") ||
-          result.url.includes("thefplwire") ||
-          result.url.includes("blog")
-        )
-          sourceType = "blog";
+      // Determine source type
+      let sourceType: TrendingPlayerSource["source_type"] = "other";
+      if (result.url.includes("reddit.com")) sourceType = "reddit";
+      else if (result.url.includes("twitter.com") || result.url.includes("x.com")) sourceType = "twitter";
+      else if (
+        result.url.includes("fantasyfootballscout") ||
+        result.url.includes("fplstatistics") ||
+        result.url.includes("thefplwire") ||
+        result.url.includes("blog")
+      )
+        sourceType = "blog";
 
-        // Avoid duplicate sources
-        if (!data.sources.some((s) => s.url === result.url)) {
-          data.sources.push({
-            title: result.title,
-            url: result.url,
-            source_type: sourceType,
-          });
-        }
+      // Avoid duplicate sources
+      if (!data.sources.some((s) => s.url === result.url)) {
+        data.sources.push({
+          title: result.title,
+          url: result.url,
+          source_type: sourceType,
+        });
       }
     }
   }

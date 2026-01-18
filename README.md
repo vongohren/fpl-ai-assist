@@ -8,7 +8,7 @@ An MCP server that gives Claude access to your Fantasy Premier League data.
    ```bash
    ./setup.sh
    ```
-   This opens a browser where you log in to FPL. Your token is saved to `~/.fpl/secrets.env`.
+   This opens a browser where you log in to FPL. After login, you'll be prompted for an optional Brave Search API key (for community trends). All secrets are saved to `~/.fpl/secrets.env`.
 
 2. Source your secrets (add to your `.zshrc` for persistence):
    ```bash

@@ -5,8 +5,9 @@
  * Opens a browser window for you to log in to FPL, then captures:
  * - X-Api-Authorization token
  * - Your manager ID
+ * - Brave Search API key (optional, prompted in CLI)
  *
- * Saves both to ~/.fpl/secrets.env
+ * Saves all to ~/.fpl/secrets.env
  *
  * Usage:
  *   npx tsx scripts/setup.ts
@@ -18,6 +19,20 @@ import { chromium } from "playwright";
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join, dirname } from "path";
+import { createInterface } from "readline";
+
+function prompt(question: string): Promise<string> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
 
 const FPL_URL = "https://fantasy.premierleague.com/my-team";
 const FPL_SECRETS_DIR = join(homedir(), ".fpl");
@@ -121,11 +136,16 @@ async function main() {
       console.log("⚠️  Error fetching manager ID:", err);
     }
 
+    // Prompt for Brave Search API key (optional)
+    console.log("\n🔍 Brave Search API Key (optional, for community trends)");
+    console.log("Get one at: https://brave.com/search/api/");
+    const braveApiKey = await prompt("Enter Brave API key (or press Enter to skip): ");
+
     // Save to secrets file
     console.log("\n📝 Saving to ~/.fpl/secrets.env...");
-    saveSecrets(capturedToken, managerId);
+    saveSecrets(capturedToken, managerId, braveApiKey || null);
 
-    console.log("\n✨ Done! Run 'source ~/.zshrc' or restart your terminal.");
+    console.log("\n✨ Done! Run 'source ~/.fpl/secrets.env' or restart your terminal.");
     console.log("\nToken preview: " + capturedToken.substring(0, 50) + "...");
 
     // Parse and show expiry
@@ -146,7 +166,7 @@ async function main() {
   }
 }
 
-function saveSecrets(token: string, managerId: number | null) {
+function saveSecrets(token: string, managerId: number | null, braveApiKey: string | null) {
   // Create ~/.fpl directory if it doesn't exist
   if (!existsSync(FPL_SECRETS_DIR)) {
     mkdirSync(FPL_SECRETS_DIR, { recursive: true });
@@ -161,6 +181,11 @@ export FPL_X_API_AUTH="${token}"
 
   if (managerId) {
     content += `export FPL_MANAGER_ID="${managerId}"
+`;
+  }
+
+  if (braveApiKey) {
+    content += `export BRAVE_SEARCH_API_KEY="${braveApiKey}"
 `;
   }
 
