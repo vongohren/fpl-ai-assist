@@ -81,7 +81,7 @@ function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// Sentiment indicators
+// Sentiment indicators - based on r/FantasyPL community lingo
 const SENTIMENT_PATTERNS = {
   buy: [
     "bringing in",
@@ -98,6 +98,22 @@ const SENTIMENT_PATTERNS = {
     "differential",
     "hidden gem",
     "underrated",
+    "haul",
+    "hauling",
+    "nailed",
+    "glued",
+    "set and forget",
+    "green arrow",
+    "enabler",
+    "returning",
+    "talisman",
+    "value pick",
+    "oop",
+    "out of position",
+    "premium",
+    "ceiling",
+    "punt",
+    "big at the back",
   ],
   sell: [
     "getting rid",
@@ -112,6 +128,22 @@ const SENTIMENT_PATTERNS = {
     "rotation risk",
     "injured",
     "out for",
+    "blanked",
+    "blanking",
+    "red arrow",
+    "mudded",
+    "in the mud",
+    "rotation roulette",
+    "bald fraud",
+    "chasing points",
+    "points chasing",
+    "sideways move",
+    "sideways",
+    "knee-jerk",
+    "kneejerking",
+    "kneejerk",
+    "bench fodder",
+    "dead weight",
   ],
   hold: [
     "keeping",
@@ -121,6 +153,11 @@ const SENTIMENT_PATTERNS = {
     "stick with",
     "trust",
     "long term",
+    "hold those knees",
+    "floor",
+    "regression",
+    "regression to the mean",
+    "set and forget",
   ],
   watch: [
     "monitor",
@@ -131,6 +168,11 @@ const SENTIMENT_PATTERNS = {
     "potential",
     "emerging",
     "breaking through",
+    "eye test",
+    "looks good",
+    "cover",
+    "handcuff",
+    "effective ownership",
   ],
 };
 
@@ -230,29 +272,44 @@ function buildSearchQueries(
   const positionStr = position ? ` ${position.toLowerCase()}` : "";
 
   if (playerName) {
-    // Player-specific searches
+    // Player-specific searches - Reddit + general
+    queries.push(`site:reddit.com/r/FantasyPL "${playerName}" gameweek ${gameweek}`);
+    queries.push(`site:reddit.com/r/FantasyPL "${playerName}" transfer`);
     queries.push(`FPL "${playerName}" transfer advice ${year}`);
     queries.push(`"${playerName}" fantasy premier league reddit`);
     return queries;
   }
 
+  // Reddit-specific queries first (r/FantasyPL focused)
   switch (topic) {
     case "transfers":
+      queries.push(`site:reddit.com/r/FantasyPL gameweek ${gameweek} transfer`);
+      queries.push(`site:reddit.com/r/FantasyPL GW${gameweek} RMT`);
+      // General searches
       queries.push(`FPL gameweek ${gameweek} transfers Reddit ${year}`);
       queries.push(`FPL${positionStr} transfer targets gameweek ${gameweek}`);
       queries.push(`fantasy premier league who to buy${positionStr} ${year}`);
       break;
     case "captaincy":
+      queries.push(`site:reddit.com/r/FantasyPL gameweek ${gameweek} captain poll`);
+      queries.push(`site:reddit.com/r/FantasyPL GW${gameweek} TC captain`);
+      // General searches
       queries.push(`FPL gameweek ${gameweek} captain Reddit`);
       queries.push(`FPL who to captain GW${gameweek}`);
       queries.push(`fantasy premier league captain picks ${year}`);
       break;
     case "differentials":
+      queries.push(`site:reddit.com/r/FantasyPL differentials gameweek ${gameweek}`);
+      queries.push(`site:reddit.com/r/FantasyPL hidden gem punt${positionStr} ${year}`);
+      // General searches
       queries.push(`FPL differentials${positionStr} gameweek ${gameweek}`);
       queries.push(`FPL hidden gems${positionStr} ${year}`);
       queries.push(`fantasy premier league low ownership picks`);
       break;
     default:
+      queries.push(`site:reddit.com/r/FantasyPL gameweek ${gameweek} rant discussion`);
+      queries.push(`site:reddit.com/r/FantasyPL GW${gameweek} ${year}`);
+      // General searches
       queries.push(`FPL gameweek ${gameweek} Reddit discussion`);
       queries.push(`fantasy premier league tips${positionStr} ${year}`);
       break;
@@ -261,10 +318,16 @@ function buildSearchQueries(
   return queries;
 }
 
-async function executeBraveSearch(query: string, apiKey: string): Promise<BraveSearchResult[]> {
+async function executeBraveSearch(
+  query: string,
+  apiKey: string,
+  freshness: string = "pm"
+): Promise<BraveSearchResult[]> {
   const url = new URL("https://api.search.brave.com/res/v1/web/search");
   url.searchParams.set("q", query);
-  url.searchParams.set("count", "10");
+  url.searchParams.set("count", "20");
+  // freshness: pd=past day, pw=past week, pm=past month, py=past year
+  url.searchParams.set("freshness", freshness);
 
   const response = await fetch(url.toString(), {
     headers: {
@@ -418,17 +481,22 @@ function extractTrendingPlayers(
 function extractHotTopics(results: BraveSearchResult[]): string[] {
   const topicPatterns = [
     { pattern: /salah\s+vs?\s+haaland/i, topic: "Salah vs Haaland captaincy" },
-    { pattern: /dgw|double\s+gameweek/i, topic: "Double Gameweek planning" },
-    { pattern: /bgw|blank\s+gameweek/i, topic: "Blank Gameweek navigation" },
-    { pattern: /wildcard/i, topic: "Wildcard timing" },
-    { pattern: /free\s+hit/i, topic: "Free Hit usage" },
-    { pattern: /bench\s+boost/i, topic: "Bench Boost strategy" },
-    { pattern: /triple\s+captain/i, topic: "Triple Captain picks" },
-    { pattern: /price\s+rise|price\s+change/i, topic: "Price rises/falls" },
+    { pattern: /\bdgw\b|double\s+gameweek/i, topic: "Double Gameweek planning" },
+    { pattern: /\bbgw\b|blank\s+gameweek/i, topic: "Blank Gameweek navigation" },
+    { pattern: /\bwc\b|wildcard/i, topic: "Wildcard timing" },
+    { pattern: /\bfh\b|free\s+hit/i, topic: "Free Hit usage" },
+    { pattern: /\bbb\b|bench\s+boost/i, topic: "Bench Boost strategy" },
+    { pattern: /\btc\b|triple\s+captain/i, topic: "Triple Captain picks" },
+    { pattern: /price\s+rise|price\s+change|price\s+drop/i, topic: "Price rises/falls" },
     { pattern: /template/i, topic: "Template team discussion" },
-    { pattern: /rotation|roulette/i, topic: "Rotation concerns" },
-    { pattern: /injury|injured/i, topic: "Injury updates" },
+    { pattern: /rotation|roulette|bald\s+fraud/i, topic: "Rotation concerns" },
+    { pattern: /injury|injured|out\s+for/i, topic: "Injury updates" },
     { pattern: /presser|press\s+conference/i, topic: "Press conference insights" },
+    { pattern: /\brmt\b|rate\s+my\s+team/i, topic: "Rate My Team trends" },
+    { pattern: /kneejerk|knee.?jerk/i, topic: "Kneejerk transfers warning" },
+    { pattern: /\beo\b|effective\s+ownership/i, topic: "Effective ownership analysis" },
+    { pattern: /chip\s+strateg/i, topic: "Chip strategy planning" },
+    { pattern: /captaincy\s+poll|captain\s+poll/i, topic: "Captaincy poll results" },
   ];
 
   const foundTopics = new Set<string>();
