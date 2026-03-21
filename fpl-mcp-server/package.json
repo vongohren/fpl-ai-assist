@@ -9,6 +9,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "setup": "npx tsx scripts/setup.ts",
+    "refresh-token": "npx tsx scripts/refresh-token.ts",
+    "save-credentials": "npx tsx scripts/refresh-token.ts --save-credentials",
     "inspect": "npx @modelcontextprotocol/inspector npx tsx src/index.ts"
   },
   "keywords": [
