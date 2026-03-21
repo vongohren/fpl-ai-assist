@@ -11,6 +11,8 @@
     "setup": "npx tsx scripts/setup.ts",
     "refresh-token": "npx tsx scripts/refresh-token.ts",
     "save-credentials": "npx tsx scripts/refresh-token.ts --save-credentials",
+    "onboard": "npx tsx scripts/onboard.ts",
+    "check": "npx tsx scripts/onboard.ts --check",
     "inspect": "npx @modelcontextprotocol/inspector npx tsx src/index.ts"
   },
   "keywords": [

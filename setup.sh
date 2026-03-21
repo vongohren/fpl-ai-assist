@@ -2,6 +2,9 @@
 # FPL AI Assistant - Setup Script
 # Run with: source setup.sh (to load env vars into current shell)
 # Or just: ./setup.sh (env vars won't be loaded into current shell)
+#
+# For full onboarding (checks everything): cd fpl-mcp-server && npm run onboard
+# For headless token refresh: cd fpl-mcp-server && npm run refresh-token
 
 set -e
 
