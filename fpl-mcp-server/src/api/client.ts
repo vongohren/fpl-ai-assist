@@ -6,6 +6,8 @@ import type {
   FPLPlayer,
   FPLTeam,
   FPLEvent,
+  TransferPayload,
+  SaveTeamPayload,
 } from "../types/index.js";
 
 export interface FPLAuthConfig {
@@ -84,6 +86,49 @@ export class FPLApiClient {
 
   async getManagerInfo(managerId: number): Promise<{ id: number; name: string; player_first_name: string; player_last_name: string }> {
     return this.fetch(`entry/${managerId}/`);
+  }
+
+  private async post<T>(endpoint: string, body: unknown): Promise<T> {
+    if (!this.hasAuth()) {
+      throw new FPLApiError("Authentication required for POST requests. Set FPL_COOKIE or FPL_X_API_AUTH", 401);
+    }
+
+    const url = `${this.baseUrl}/${endpoint}`;
+    const headers = {
+      ...this.getHeaders(),
+      "Content-Type": "application/json",
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      let errorBody: unknown;
+      try {
+        errorBody = await response.json();
+      } catch {
+        errorBody = await response.text();
+      }
+      throw new FPLApiError(
+        `FPL API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`,
+        response.status
+      );
+    }
+
+    const text = await response.text();
+    if (!text) return {} as T;
+    return JSON.parse(text) as T;
+  }
+
+  async postTransfers(payload: TransferPayload): Promise<unknown> {
+    return this.post("transfers/", payload);
+  }
+
+  async postMyTeam(managerId: number, payload: SaveTeamPayload): Promise<unknown> {
+    return this.post(`my-team/${managerId}/`, payload);
   }
 }
 

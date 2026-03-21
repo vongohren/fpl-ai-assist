@@ -3,3 +3,5 @@ export { getFixturesTool, handleGetFixtures, getFixturesSchema } from "./get-fix
 export { searchPlayersTool, handleSearchPlayers, searchPlayersSchema } from "./search-players.js";
 export { getFixtureDifficultyTool, handleGetFixtureDifficulty, getFixtureDifficultySchema } from "./get-fixture-difficulty.js";
 export { getCommunityTrendsTool, handleGetCommunityTrends, getCommunityTrendsSchema } from "./get-community-trends.js";
+export { makeTransfersTool, handleMakeTransfers, makeTransfersSchema } from "./make-transfers.js";
+export { saveTeamTool, handleSaveTeam, saveTeamSchema } from "./save-team.js";

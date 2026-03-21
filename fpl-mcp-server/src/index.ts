@@ -25,6 +25,12 @@ import {
   getCommunityTrendsTool,
   handleGetCommunityTrends,
   getCommunityTrendsSchema,
+  makeTransfersTool,
+  handleMakeTransfers,
+  makeTransfersSchema,
+  saveTeamTool,
+  handleSaveTeam,
+  saveTeamSchema,
 } from "./tools/index.js";
 
 // Initialize cache and API client
@@ -49,7 +55,7 @@ const server = new Server(
 
 // Register tool list handler
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [getMySquadTool, getFixturesTool, searchPlayersTool, getFixtureDifficultyTool, getCommunityTrendsTool],
+  tools: [getMySquadTool, getFixturesTool, searchPlayersTool, getFixtureDifficultyTool, getCommunityTrendsTool, makeTransfersTool, saveTeamTool],
 }));
 
 // Register tool call handler
@@ -110,6 +116,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      }
+
+      case "make_transfers": {
+        const input = makeTransfersSchema.parse(args);
+        const result = await handleMakeTransfers(input, client, cache);
+        logToolResult(name, result.success ? result.message : `Error: ${result.message}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          isError: !result.success,
+        };
+      }
+
+      case "save_team": {
+        const input = saveTeamSchema.parse(args);
+        const result = await handleSaveTeam(input, client, cache);
+        logToolResult(name, result.success ? result.message : `Error: ${result.message}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          isError: !result.success,
         };
       }
 

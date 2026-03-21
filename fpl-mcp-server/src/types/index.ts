@@ -326,6 +326,34 @@ export interface CommunityTrendsResponse {
   };
 }
 
+// Transfer submission types
+
+export interface TransferItem {
+  element_in: number;
+  element_out: number;
+  purchase_price: number; // Tenths of millions (e.g., 75 = £7.5m)
+  selling_price: number; // Tenths of millions
+}
+
+export interface TransferPayload {
+  chip: "freehit" | "wildcard" | null;
+  entry: number;
+  event: number;
+  transfers: TransferItem[];
+}
+
+export interface SaveTeamPick {
+  element: number;
+  position: number;
+  is_captain: boolean;
+  is_vice_captain: boolean;
+}
+
+export interface SaveTeamPayload {
+  chip: "bboost" | "3xc" | null;
+  picks: SaveTeamPick[];
+}
+
 // Helper function
 export function toMillions(tenths: number): number {
   return Math.round((tenths / 10) * 10) / 10;
