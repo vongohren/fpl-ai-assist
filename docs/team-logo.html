@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Midten er vår plass - Logo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+  .logo {
+    width: 700px;
+    text-align: center;
+  }
+  .logo svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 8px 24px rgba(30,90,180,0.35));
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <svg viewBox="-10 -10 320 420" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="shieldOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#1a1a1a"/>
+        <stop offset="100%" style="stop-color:#0d0d0d"/>
+      </linearGradient>
+      <linearGradient id="shieldInner" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#1e5ab4"/>
+        <stop offset="60%" style="stop-color:#143d7a"/>
+        <stop offset="100%" style="stop-color:#0d2d5e"/>
+      </linearGradient>
+      <linearGradient id="stripe" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:rgba(255,255,255,0.12)"/>
+        <stop offset="100%" style="stop-color:rgba(255,255,255,0.03)"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Outer shield (black) -->
+    <path d="M150 8 L284 50 L284 210 Q284 310 150 368 Q16 310 16 210 L16 50 Z"
+          fill="url(#shieldOuter)" stroke="#fff" stroke-width="3"/>
+
+    <!-- Inner shield (blue) -->
+    <path d="M150 28 L264 63 L264 205 Q264 295 150 348 Q36 295 36 205 L36 63 Z"
+          fill="url(#shieldInner)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+    <!-- Football -->
+    <circle cx="150" cy="90" r="26" fill="none" stroke="#fff" stroke-width="2"/>
+    <!-- Pentagon pattern -->
+    <path d="M150 64 L141 76 L144 88 L156 88 L159 76 Z" fill="none" stroke="#fff" stroke-width="1.2"/>
+    <line x1="141" y1="76" x2="127" y2="82" stroke="#fff" stroke-width="1.2"/>
+    <line x1="159" y1="76" x2="173" y2="82" stroke="#fff" stroke-width="1.2"/>
+    <line x1="144" y1="88" x2="136" y2="101" stroke="#fff" stroke-width="1.2"/>
+    <line x1="156" y1="88" x2="164" y2="101" stroke="#fff" stroke-width="1.2"/>
+
+    <!-- Team name: MIDTEN -->
+    <text x="150" y="155" text-anchor="middle"
+          font-family="Oswald, sans-serif" font-weight="700" font-size="32"
+          fill="#ffffff" letter-spacing="5">MIDTEN</text>
+
+    <!-- ER VAR -->
+    <text x="150" y="182" text-anchor="middle"
+          font-family="Oswald, sans-serif" font-weight="600" font-size="16"
+          fill="rgba(255,255,255,0.6)" letter-spacing="4">ER V&#xC5;R</text>
+
+    <!-- PLASS -->
+    <text x="150" y="214" text-anchor="middle"
+          font-family="Oswald, sans-serif" font-weight="700" font-size="32"
+          fill="#ffffff" letter-spacing="5">PLASS</text>
+
+    <!-- Decorative stars -->
+    <text x="112" y="248" text-anchor="middle" fill="#d4af37" font-size="18" font-family="serif">&#9733;</text>
+    <text x="150" y="243" text-anchor="middle" fill="#d4af37" font-size="22" font-family="serif">&#9733;</text>
+    <text x="188" y="248" text-anchor="middle" fill="#d4af37" font-size="18" font-family="serif">&#9733;</text>
+
+    <!-- Est. line -->
+    <text x="150" y="272" text-anchor="middle"
+          font-family="Oswald, sans-serif" font-weight="600" font-size="11"
+          fill="rgba(255,255,255,0.3)" letter-spacing="3">EST. 2025</text>
+  </svg>
+</div>
+
+</body>
+</html>
