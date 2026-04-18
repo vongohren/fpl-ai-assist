@@ -14,3 +14,4 @@ Each gameweek file records:
 
 ## Decision Files
 - [GW29](gw29.md) - Wirtz + Guiu out, Dewsbury-Hall + Sesko in
+- [GW33](gw33.md) - DGW33 triple transfer: Šeško/Stach/Timber out, Welbeck/Okafor/Guéhi in. Captain Palmer. Chip plan locked: WC34 → BB36 → TC38.
