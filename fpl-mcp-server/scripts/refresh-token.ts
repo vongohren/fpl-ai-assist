@@ -117,9 +117,41 @@ function getTokenExpiry(token: string): Date | null {
 }
 
 function isTokenValid(token: string): boolean {
+  if (!isUserAccessToken(token)) return false;
   const expiry = getTokenExpiry(token);
   if (!expiry) return false;
   return expiry.getTime() > Date.now() + 5 * 60 * 1000;
+}
+
+// Reject tokens that aren't post-login user access tokens for the FPL API.
+// The DaVinci OAuth provider hands out short-lived "flow" JWTs while driving
+// the login state machine; those have usage=startSpecificFlowOrPolicyNonUserContext
+// (or sub==aud, i.e. no user identity) and the FPL resource server signs them
+// with a different JWKS — using one results in
+// {"detail": "Unable to find a signing key that matches: ..."} 401s.
+function isUserAccessToken(rawToken: string): boolean {
+  try {
+    const tok = rawToken.startsWith("Bearer ") ? rawToken.slice(7) : rawToken;
+    const parts = tok.split(".");
+    if (parts.length < 2) return false;
+    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString()) as {
+      usage?: string;
+      sub?: string;
+      aud?: string;
+    };
+    if (payload.usage === "startSpecificFlowOrPolicyNonUserContext") return false;
+    if (payload.sub && payload.aud && payload.sub === payload.aud) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Only trust tokens seen on calls to the FPL resource server. Tokens flowing
+// through account.premierleague.com / users.premierleague.com belong to the
+// OAuth provider, not to the API we're authenticating against.
+function isFplApiUrl(url: string): boolean {
+  return url.includes("fantasy.premierleague.com/api/");
 }
 
 function loadExistingToken(): string | null {
@@ -184,34 +216,29 @@ async function refreshToken() {
 
   let capturedToken: string | null = null;
 
-  // Listen for the auth token in request headers
+  // Listen for the auth token in request headers — but only on calls to the
+  // FPL resource server. DaVinci sends flow-bootstrap JWTs in the same header
+  // during the OAuth dance; those are the wrong tokens (they have
+  // usage=startSpecificFlowOrPolicyNonUserContext and are signed by a
+  // different JWKS than the FPL API trusts).
   page.on("request", (request) => {
+    if (capturedToken) return;
+    if (!isFplApiUrl(request.url())) return;
     const headers = request.headers();
-    // Check multiple header names
     const authHeader = headers["x-api-authorization"] || headers["authorization"];
-    if (authHeader && authHeader.includes("eyJ") && !capturedToken) {
-      capturedToken = authHeader.startsWith("Bearer ") ? authHeader : `Bearer ${authHeader}`;
-      console.log("   ✅ Token captured from request header!");
-    }
+    if (!authHeader || !authHeader.includes("eyJ")) return;
+    const candidate = authHeader.startsWith("Bearer ") ? authHeader : `Bearer ${authHeader}`;
+    if (!isUserAccessToken(candidate)) return;
+    capturedToken = candidate;
+    console.log("   ✅ Token captured from FPL API request");
   });
 
-  // Also inject a fetch interceptor to catch tokens added by JS
-  await page.addInitScript(() => {
-    const origFetch = window.fetch;
-    window.fetch = function (...args: Parameters<typeof fetch>) {
-      const request = args[0];
-      const init = args[1];
-      const headers = init?.headers;
-      if (headers) {
-        const headerObj = headers instanceof Headers ? Object.fromEntries(headers.entries()) : headers as Record<string, string>;
-        const auth = headerObj["X-Api-Authorization"] || headerObj["x-api-authorization"] || headerObj["Authorization"] || headerObj["authorization"];
-        if (auth && auth.includes("eyJ")) {
-          (window as unknown as Record<string, string>).__fpl_token = auth;
-        }
-      }
-      return origFetch.apply(this, args);
-    };
-  });
+  // PKCE state — required by the AS even though we let the SPA do the exchange.
+  const codeVerifier = randomBytes(32).toString("base64url");
+  const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
+  const state = randomBytes(16).toString("hex");
+  const CLIENT_ID = "bfcbaf69-aade-4c1b-8f00-c1cb8a193030";
+  const REDIRECT_URI = "https://fantasy.premierleague.com/";
 
   try {
     // Navigate to FPL
@@ -221,19 +248,14 @@ async function refreshToken() {
     let url = page.url();
     console.log(`   Current URL: ${url.substring(0, 80)}...`);
 
-    // Build OAuth2 PKCE authorize URL and navigate directly to login
-    // This bypasses the SPA's login button which has redirect_uri issues in headless mode
+    // Build OAuth2 PKCE authorize URL and navigate directly to login.
+    // This bypasses the SPA's login button which has redirect_uri issues in headless mode.
     if (!url.includes("account.premierleague.com")) {
       console.log("📝 Building OAuth2 PKCE login URL...");
 
-      const codeVerifier = randomBytes(32).toString("base64url");
-      const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
-      const state = randomBytes(16).toString("hex");
-
-      // Store verifier for potential token exchange (the SPA handles this via redirect)
       const authorizeUrl = new URL("https://account.premierleague.com/as/authorize");
-      authorizeUrl.searchParams.set("client_id", "bfcbaf69-aade-4c1b-8f00-c1cb8a193030");
-      authorizeUrl.searchParams.set("redirect_uri", "https://fantasy.premierleague.com/");
+      authorizeUrl.searchParams.set("client_id", CLIENT_ID);
+      authorizeUrl.searchParams.set("redirect_uri", REDIRECT_URI);
       authorizeUrl.searchParams.set("response_type", "code");
       authorizeUrl.searchParams.set("scope", "openid profile email offline_access");
       authorizeUrl.searchParams.set("state", state);
@@ -305,78 +327,26 @@ async function refreshToken() {
         await passwordInput.press("Enter");
       }
 
-      // Wait for redirect back to FPL
-      try {
-        await page.waitForURL(/fantasy\.premierleague\.com/, { timeout: 30000 });
-        console.log("✅ Login redirect successful");
-      } catch {
-        const currentUrl = page.url();
-        console.error(`⚠️  Redirect timeout. Current URL: ${currentUrl.substring(0, 80)}`);
-        const errorText = await page.locator('.error, .alert, [class*="error"]').textContent().catch(() => null);
-        if (errorText) console.error(`   Login error: ${errorText.trim()}`);
+      // After login the SPA reloads at fantasy.premierleague.com, completes
+      // its own auth handshake, and fires authenticated /api/ calls. Our
+      // request listener (URL-gated to /api/, JWT-validated) snatches the
+      // first user access token off one of those calls.
+      console.log("🔍 Waiting for SPA to make an authenticated API call...");
+      const deadline = Date.now() + 30_000;
+      while (!capturedToken && Date.now() < deadline) {
+        await page.waitForTimeout(250);
       }
-    }
 
-    // Navigate to my-team to trigger authenticated API calls
-    for (let attempt = 1; attempt <= 3 && !capturedToken; attempt++) {
-      console.log(`🔍 Capturing token (attempt ${attempt}/3)...`);
-      await page.goto(FPL_URL, { waitUntil: "domcontentloaded", timeout: 30000 });
-      await page.waitForTimeout(5000);
-
-      // Check if token was intercepted by our fetch wrapper
+      // Fallback: if the listener missed (e.g. the SPA cached a token from a
+      // prior session and didn't re-auth in time), navigate to /my-team to
+      // force fresh API calls.
       if (!capturedToken) {
-        const intercepted = await page.evaluate(() => (window as unknown as Record<string, string>).__fpl_token || null);
-        if (intercepted) {
-          capturedToken = intercepted.startsWith("Bearer ") ? intercepted : `Bearer ${intercepted}`;
-          console.log("   ✅ Token captured from fetch interceptor!");
+        console.log("   ↳ no token yet, forcing /my-team to trigger API calls...");
+        await page.goto(FPL_URL, { waitUntil: "domcontentloaded", timeout: 30000 }).catch(() => {});
+        const deadline2 = Date.now() + 15_000;
+        while (!capturedToken && Date.now() < deadline2) {
+          await page.waitForTimeout(250);
         }
-      }
-
-      // Check if token is in localStorage or sessionStorage
-      if (!capturedToken) {
-        const storedToken = await page.evaluate(() => {
-          // Check localStorage
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            const value = localStorage.getItem(key || "");
-            if (value && (value.includes("eyJ") || key?.includes("token") || key?.includes("auth"))) {
-              return { source: `localStorage[${key}]`, value: value.substring(0, 200) };
-            }
-          }
-          // Check sessionStorage
-          for (let i = 0; i < sessionStorage.length; i++) {
-            const key = sessionStorage.key(i);
-            const value = sessionStorage.getItem(key || "");
-            if (value && (value.includes("eyJ") || key?.includes("token") || key?.includes("auth"))) {
-              return { source: `sessionStorage[${key}]`, value: value.substring(0, 200) };
-            }
-          }
-          return null;
-        });
-
-        if (storedToken) {
-          console.log(`   Found token in ${storedToken.source}`);
-          // Extract JWT from stored value
-          const jwtMatch = storedToken.value.match(/(eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/);
-          if (jwtMatch) {
-            capturedToken = `Bearer ${jwtMatch[1]}`;
-            console.log("   ✅ JWT extracted from storage!");
-          }
-        }
-      }
-
-      // Also check cookies
-      if (!capturedToken) {
-        const cookies = await context.cookies();
-        const authCookie = cookies.find((c) => c.name.includes("token") || c.name.includes("auth") || c.name === "pl_profile");
-        if (authCookie) {
-          console.log(`   Found cookie: ${authCookie.name}=${authCookie.value.substring(0, 30)}...`);
-        }
-      }
-
-      if (!capturedToken) {
-        await page.reload({ waitUntil: "domcontentloaded" });
-        await page.waitForTimeout(3000);
       }
     }
 
