@@ -87,6 +87,8 @@ For each dead-weight position, run `mcp__fpl__search_players`:
 
 If the user asks for "differentials", filter `selected_by < 10%` mentally when ranking.
 
+**Hard rule — no intra-squad fixture hedging.** Before recommending any transfer IN, check that the candidate is NOT playing against a defender or GK already in the squad in the same GW (and vice versa: don't bring in a defender against an attacker you already own). Even if both players are in form, owning both sides of the same fixture cancels out — one player's points come at the direct expense of the other's clean sheet / save bonus / goal. Build for concentrated upside, not hedges. If a candidate triggers this conflict, drop them from the shortlist and surface the next option, OR flag the conflict explicitly and recommend resolving by also moving the conflicting squad player. Apply the same check in Step 7 (captain) and Step 8 (final recommendation).
+
 ### Step 7 — Validate captain options
 
 Cross-reference top-form players against next-GW fixtures:
@@ -158,3 +160,4 @@ Read MEMORY.md early in the session if it exists.
 3. **Selling price ≠ purchase price** — use `selling_price` from squad data when calculating budget.
 4. **DGW followed by BGW** — most DGWs precede a blank for the same teams. If a Wildcard or Free Hit isn't available, warn the user before they overload on DGW assets.
 5. **Don't suggest using a chip outside the locked plan** without explicitly flagging the deviation and the reason.
+6. **No intra-squad fixture hedging** — never recommend an attacker who plays against a defender/GK already in the squad (or the reverse). Owning both sides of the same fixture is anti-correlated, not diversification. See Step 6 hard rule. Cross-reference the next-GW fixture list against squad team IDs before finalising any plan.
