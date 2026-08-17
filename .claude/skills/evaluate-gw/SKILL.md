@@ -42,16 +42,46 @@ Now that auth is verified, run in parallel:
 
 ### Step 2 — Read prior GW decisions
 
+Paths are **relative to the repo root** — do not hardcode a machine-specific path,
+this repo is worked on from more than one box.
+
 ```
-Read /Users/vongohren/code/personal-projects/fpl-ai-assist/docs/gw-decisions/README.md
+Read docs/gw-decisions/README.md
 ```
 
-Then read the **most recent** decision file (e.g. `gw32.md` if planning GW33). Extract:
+Logs are namespaced by season: `docs/gw-decisions/<season>/gw<NN>.md`, e.g.
+`docs/gw-decisions/2026-27/gw1.md`.
+
+Then read the most recent decision file **within the current season folder**. Extract:
 - Locked chip plan (which chips for which GWs)
 - Prior reasoning that constrains current options
 - Any "watch" flags or hypotheses to verify
 
 If a chip plan is locked (e.g. WC GW34 → BB GW36 → TC GW38), do NOT propose breaking it without explicitly flagging the deviation.
+
+⚠️ **Never carry a chip plan across a season boundary.** Gameweek numbers restart
+every August. If you are planning GW1–3 and the newest file you can find is a
+`gw37.md` from the previous season, that plan is dead — chips have been reset.
+Read it as history only.
+
+### Step 2b — Pre-season and early-season handling (GW1–4)
+
+Before the first gameweek finishes, most of the usual signals are empty:
+
+- **`form` is 0.0 for every player.** It cannot rank anything. `search_players`
+  detects this and silently sorts by prior-season `points_per_game` instead,
+  reporting it in `preseason_notice`. Do not ask for `sort_by: form` and treat
+  the result as meaningful.
+- **Rank on** `points_per_game`, `total_points`, `ep_next`, `xgi_per_90`,
+  `defensive_contribution_per_90` and `starts` from the prior season, plus price
+  and fixtures.
+- **Prior-season stats belong to a player's PREVIOUS club** if they moved in the
+  window. Check `team_join_date`. A player with 180 points who joined in July
+  earned them somewhere else, in a different role and system.
+- **Skip the Step 3 dead-weight rule entirely.** `form < 2 AND ep_next < 3` will
+  flag nearly the whole squad pre-season. Use minutes/starts risk instead.
+- **Promoted-club and new-signing players have no PL evidence at all** (0 minutes).
+  Treat high ownership as the community's expectation, not as data.
 
 ### Step 3 — Identify dead weight
 
@@ -77,6 +107,20 @@ Run all three:
 - `mcp__fpl__get_community_trends` with `topic=differentials, gameweek=<next GW>`
 
 Weight community signal heavily — surface differentials with high mention counts even if not in your stat-driven shortlist.
+
+**This tool needs `BRAVE_SEARCH_API_KEY`.** If it is unset the tool returns nothing
+— do NOT silently skip the step and present a stat-only recommendation. Fall back
+to `WebSearch` over the same three angles (template/transfers, captaincy,
+differentials) and say in the output which source was used.
+
+Cross-check community picks against the API rather than trusting an article's
+numbers: ownership percentages and fixtures move, and articles are often written
+days earlier. **The API is authoritative for fixtures, prices and ownership.**
+
+The single most useful thing from this step is **effective ownership on the
+captain**. Not owning a 70%-owned captain is a double hit when he hauls: his
+points plus the doubled points everyone else banks. Always state that risk
+explicitly rather than burying it.
 
 ### Step 6 — Search transfer-in candidates
 
@@ -132,9 +176,10 @@ Never auto-call `mcp__fpl__make_transfers` or `mcp__fpl__save_team`. Always wait
 
 After the user confirms or declines, ALWAYS ask:
 
-> "Want me to save this evaluation as `docs/gw-decisions/gw<NN>.md` in the existing format? It captures the context, flags, decision, projected XI, and leaves Outcome + Learnings sections blank to fill in after the GW."
+> "Want me to save this evaluation as `docs/gw-decisions/<season>/gw<NN>.md` in the existing format? It captures the context, flags, decision, projected XI, and leaves Outcome + Learnings sections blank to fill in after the GW."
 
-If yes: write the file using the same structure as `gw29.md` / `gw33.md`. Include:
+If yes: write it into the **current season's** folder, using the same structure as
+`2025-26/gw33.md` or `2026-27/gw1.md`. Include:
 - Pre-GW context (squad, budget, chips, prior GW result if known)
 - Flags & key signals (DGW/BGW context, fixture leaders, community buzz, captaincy reframes)
 - Panel/community analysis (transfer plans considered, captain debate)
@@ -143,21 +188,43 @@ If yes: write the file using the same structure as `gw29.md` / `gw33.md`. Includ
 - Empty Outcome section (Actual Points + per-player table + flag outcomes checklist)
 - Empty Learnings section (what we got right/wrong, gut calibration, adjustments, lessons for next chip)
 
-Then add a one-line entry to `docs/gw-decisions/README.md` Decision Files list.
+Then add a one-line entry under the current season's heading in
+`docs/gw-decisions/README.md`. If the season has no heading yet (first log of a
+new campaign), add one and mark it `(current)`, moving the marker off the old season.
+
+## Chip windows — there are TWO of each chip
+
+Since 2025/26 the season is split in half and you get a full set of chips per half:
+
+| Chip | First half | Second half |
+|---|---|---|
+| Wildcard | GW2–19 | GW20–38 |
+| Free Hit | GW2–19 | GW20–38 |
+| Bench Boost | GW1–19 | GW20–38 |
+| Triple Captain | GW1–19 | GW20–38 |
+
+Consequences to reason about, not just report:
+- A first-half chip **expires at GW19**. It does not roll over. Flag an unused
+  first-half chip from about GW15 onward.
+- Wildcard and Free Hit are **not available in GW1** — they open at GW2.
+- `get_my_squad` returns `chips.available_detail` with `half`, `start_event`,
+  `stop_event` and `playable_now`, plus `chips.playable_now`. Use those. The bare
+  `chips.available` name list can contain the same name twice and cannot tell you
+  which half a chip belongs to.
 
 ## Memory awareness
 
-Memory at `/Users/vongohren/.cloak/profiles/mine/projects/-Users-vongohren-code-personal-projects-fpl-ai-assist/memory/` may contain:
-- `chip_strategy_2026.md` — locked multi-GW chip plan
-- `user_fpl_style.md` — collaboration preferences (community-weighted, differential-aware, confirm before executing)
-
-Read MEMORY.md early in the session if it exists.
+Session memory may contain a locked multi-GW chip plan and collaboration
+preferences (community-weighted, differential-aware, confirm before executing).
+Read `MEMORY.md` early in the session if it exists. Do not hardcode an absolute
+memory path here — it differs per machine.
 
 ## Common pitfalls (from prior sessions)
 
 1. **Player `next_fixture` field can be stale** — always cross-check against the GW fixtures list.
 2. **Club limit is 3** — when adding multiple players from one team (e.g. MCI signings), check `club_counts` first.
 3. **Selling price ≠ purchase price** — use `selling_price` from squad data when calculating budget.
+3b. **Free transfers roll up to 5**, not 1. Read `budget.free_transfers`; don't assume. And check `budget.unlimited_transfers` — pre-season and during a wildcard it is `true`, transfers cost nothing, and the squad can be rebuilt wholesale. Do not compute hits in that state.
 4. **DGW followed by BGW** — most DGWs precede a blank for the same teams. If a Wildcard or Free Hit isn't available, warn the user before they overload on DGW assets.
 5. **Don't suggest using a chip outside the locked plan** without explicitly flagging the deviation and the reason.
 6. **No intra-squad fixture hedging** — never recommend an attacker who plays against a defender/GK already in the squad (or the reverse). Owning both sides of the same fixture is anti-correlated, not diversification. See Step 6 hard rule. Cross-reference the next-GW fixture list against squad team IDs before finalising any plan.
