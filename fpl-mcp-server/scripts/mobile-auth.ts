@@ -33,7 +33,7 @@
  *     secret, so the box can complete the exchange on its own.
  */
 
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
+import { writeFileSync, readFileSync, existsSync, mkdirSync, rmSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 import { createInterface } from "readline";
@@ -277,11 +277,46 @@ async function renderQr(text: string) {
   }
 }
 
+// ------------------------------------------------------- pending flow state
+
+// --start and --finish run as two separate processes (so an agent can print the
+// link, let you go to your phone, and complete the exchange in a later turn).
+// The PKCE verifier has to survive in between, so it is parked here.
+const PENDING_FILE = join(FPL_DIR, "pending-auth.json");
+const PENDING_TTL_MS = 30 * 60 * 1000;
+
+interface PendingAuth {
+  codeVerifier: string;
+  state: string;
+  createdAt: number;
+}
+
+function writePending(pending: PendingAuth) {
+  if (!existsSync(FPL_DIR)) mkdirSync(FPL_DIR, { recursive: true });
+  writeFileSync(PENDING_FILE, JSON.stringify(pending, null, 2), { mode: 0o600 });
+}
+
+function readPending(): PendingAuth | null {
+  if (!existsSync(PENDING_FILE)) return null;
+  try {
+    return JSON.parse(readFileSync(PENDING_FILE, "utf-8")) as PendingAuth;
+  } catch {
+    return null;
+  }
+}
+
+function clearPending() {
+  try {
+    if (existsSync(PENDING_FILE)) rmSync(PENDING_FILE);
+  } catch {
+    // best effort
+  }
+}
+
 // ------------------------------------------------------------------- flows
 
-async function login() {
-  const previous = readSecrets();
-
+/** Build the authorize URL and show it. Returns the PKCE state to complete with. */
+async function beginLogin(): Promise<PendingAuth> {
   const codeVerifier = randomBytes(32).toString("base64url");
   const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
   const state = randomBytes(16).toString("hex");
@@ -307,12 +342,17 @@ async function login() {
   console.log("page. That is expected and means it worked.");
   console.log("");
   console.log("Copy the FULL URL of that 404 page from the address bar");
-  console.log("(long-press the address bar → Copy) and paste it below.");
+  console.log("(long-press the address bar → Copy).");
   console.log("It looks like:");
   console.log(`  ${REDIRECT_URI}?code=...&state=...`);
   console.log("─────────────────────────────────────────────────────────────");
 
-  const pasted = await prompt("\nPaste the URL (or just the code): ");
+  return { codeVerifier, state, createdAt: Date.now() };
+}
+
+/** Exchange a pasted URL/code against a pending PKCE state. */
+async function completeLogin(pending: PendingAuth, pasted: string) {
+  const previous = readSecrets();
   const parsed = extractCodeAndState(pasted);
 
   if (!parsed) {
@@ -321,7 +361,7 @@ async function login() {
     process.exit(1);
   }
 
-  if (parsed.state && parsed.state !== state) {
+  if (parsed.state && parsed.state !== pending.state) {
     console.error("\n❌ State mismatch — this response does not belong to this login attempt.");
     console.error("   Start over with: npm run auth");
     process.exit(1);
@@ -336,7 +376,7 @@ async function login() {
     client_id: CLIENT_ID,
     code: parsed.code,
     redirect_uri: REDIRECT_URI,
-    code_verifier: codeVerifier,
+    code_verifier: pending.codeVerifier,
   });
 
   if (!tokens.access_token) {
@@ -388,20 +428,71 @@ async function refresh({ force }: { force: boolean }) {
   await persistTokens(tokens, previous);
 }
 
+/** Interactive one-process login: show the link, wait at the prompt, exchange. */
+async function login() {
+  const pending = await beginLogin();
+  const pasted = await prompt("\nPaste the URL (or just the code): ");
+  await completeLogin(pending, pasted);
+  clearPending();
+}
+
+/** Print the link and park the PKCE state for a later --finish. */
+async function startLogin() {
+  const pending = await beginLogin();
+  writePending(pending);
+  console.log("\n⏳ Waiting for you. When you have the URL, run:");
+  console.log("      npm --prefix fpl-mcp-server run auth:finish -- '<pasted-url>'");
+}
+
+/** Complete a login started earlier by --start. */
+async function finishLogin(pasted: string | undefined) {
+  if (!pasted) {
+    console.error("❌ Nothing to finish with. Pass the URL you copied:");
+    console.error("   npm --prefix fpl-mcp-server run auth:finish -- '<pasted-url>'");
+    process.exit(1);
+  }
+
+  const pending = readPending();
+  if (!pending) {
+    console.error("❌ No login in progress. Start one with:");
+    console.error("   npm --prefix fpl-mcp-server run auth:start");
+    process.exit(1);
+  }
+
+  if (Date.now() - pending.createdAt > PENDING_TTL_MS) {
+    clearPending();
+    console.error("❌ That login attempt is over 30 minutes old and has been discarded.");
+    console.error("   Start a fresh one:  npm --prefix fpl-mcp-server run auth:start");
+    process.exit(1);
+  }
+
+  await completeLogin(pending, pasted);
+  clearPending();
+}
+
 // -------------------------------------------------------------------- entry
 
 const args = process.argv.slice(2);
 if (args.includes("--help") || args.includes("-h")) {
   console.log("Usage:");
-  console.log("  npx tsx scripts/mobile-auth.ts              mobile-assisted login (one-off)");
-  console.log("  npx tsx scripts/mobile-auth.ts --refresh    silent refresh via refresh token");
+  console.log("  npx tsx scripts/mobile-auth.ts                     interactive login (one process)");
+  console.log("  npx tsx scripts/mobile-auth.ts --start             print the link, park PKCE state");
+  console.log("  npx tsx scripts/mobile-auth.ts --finish '<url>'    complete a --start login");
+  console.log("  npx tsx scripts/mobile-auth.ts --refresh           silent refresh via refresh token");
   console.log("  npx tsx scripts/mobile-auth.ts --refresh --force   refresh even if still valid");
   process.exit(0);
 }
 
-const run = args.includes("--refresh")
-  ? refresh({ force: args.includes("--force") })
-  : login();
+let run: Promise<void>;
+if (args.includes("--refresh")) {
+  run = refresh({ force: args.includes("--force") });
+} else if (args.includes("--start")) {
+  run = startLogin();
+} else if (args.includes("--finish")) {
+  run = finishLogin(args[args.indexOf("--finish") + 1]);
+} else {
+  run = login();
+}
 
 run.catch((error) => {
   console.error("❌ Unexpected error:", error);
