@@ -3,10 +3,15 @@
 # Run with: source setup.sh (to load env vars into current shell)
 # Or just: ./setup.sh (env vars won't be loaded into current shell)
 #
-# Behavior:
-#   - If ~/.fpl/credentials.env exists, runs headless login (refresh-token).
-#   - Otherwise, prompts you to save credentials, then runs headless login.
-#   - Pass --interactive to force the manual browser-login flow instead.
+# Behavior (default = mobile-assisted OAuth, no password stored on this box):
+#   - If a refresh token is stored, refreshes silently. No browser, no phone.
+#   - Otherwise starts the one-off phone login: the box prints a link + QR code,
+#     you log in on your phone, then paste the resulting URL back.
+#
+# Flags:
+#   --login              force a fresh phone login (e.g. refresh token revoked)
+#   --password           legacy: stored email/password + headless browser
+#   --interactive, -i    legacy: headful browser on THIS machine (needs a display)
 #
 # For full onboarding (checks everything): npm --prefix fpl-mcp-server run onboard
 
@@ -23,11 +28,14 @@ SERVER_DIR="$(cd "$(dirname "$_FPL_SCRIPT_PATH")/fpl-mcp-server" && pwd)"
 unset _FPL_SCRIPT_PATH
 
 FPL_CREDENTIALS_FILE="$HOME/.fpl/credentials.env"
+FPL_SECRETS_FILE="$HOME/.fpl/secrets.env"
 MODE="auto"
 for arg in "$@"; do
   case "$arg" in
     --interactive|-i) MODE="interactive" ;;
     --save-credentials) MODE="save-credentials" ;;
+    --password) MODE="password" ;;
+    --login) MODE="login" ;;
   esac
 done
 
@@ -37,36 +45,48 @@ if [ ! -d "$SERVER_DIR/node_modules" ]; then
   npm --prefix "$SERVER_DIR" install
 fi
 
-# Check if playwright browsers are installed (npx resolves from cwd, so use a subshell)
-if ! (cd "$SERVER_DIR" && npx playwright --version > /dev/null 2>&1); then
-  echo "Installing Playwright browsers..."
-  (cd "$SERVER_DIR" && npx playwright install chromium)
-fi
+# Only the legacy password/browser flows need a real Chromium. The default
+# mobile flow is pure HTTP, so don't make everyone download a browser.
+ensure_playwright() {
+  if ! (cd "$SERVER_DIR" && npx playwright --version > /dev/null 2>&1); then
+    echo "Installing Playwright browsers..."
+    (cd "$SERVER_DIR" && npx playwright install chromium)
+  fi
+}
 
 echo ""
 
 if [ "$MODE" = "interactive" ]; then
-  # Manual browser login (user types credentials in the browser)
+  # Legacy: headful browser on THIS machine (needs a display).
+  ensure_playwright
   npm --prefix "$SERVER_DIR" run setup
 elif [ "$MODE" = "save-credentials" ]; then
+  ensure_playwright
   npm --prefix "$SERVER_DIR" run save-credentials
   npm --prefix "$SERVER_DIR" run refresh-token
-elif [ -f "$FPL_CREDENTIALS_FILE" ]; then
-  echo "🔐 Found stored credentials at $FPL_CREDENTIALS_FILE"
-  echo "   Running headless login..."
-  echo ""
-  npm --prefix "$SERVER_DIR" run refresh-token
+elif [ "$MODE" = "password" ]; then
+  # Legacy: stored email/password + headless browser.
+  ensure_playwright
+  if [ -f "$FPL_CREDENTIALS_FILE" ]; then
+    npm --prefix "$SERVER_DIR" run refresh-token
+  else
+    npm --prefix "$SERVER_DIR" run save-credentials
+    npm --prefix "$SERVER_DIR" run refresh-token
+  fi
+elif [ "$MODE" = "login" ]; then
+  # Force a fresh phone login even if a refresh token is stored.
+  npm --prefix "$SERVER_DIR" run auth
+elif grep -q "FPL_REFRESH_TOKEN" "$FPL_SECRETS_FILE" 2>/dev/null; then
+  # Default happy path: silent refresh, no browser and no phone needed.
+  npm --prefix "$SERVER_DIR" run auth:refresh
 else
-  echo "🔐 No stored credentials found at $FPL_CREDENTIALS_FILE"
-  echo "   Saving credentials so future runs can log in headlessly."
+  # First run: box prints a link/QR, you finish the login on your phone.
+  echo "🔐 No refresh token yet — starting the one-off phone login."
   echo ""
-  npm --prefix "$SERVER_DIR" run save-credentials
-  echo ""
-  npm --prefix "$SERVER_DIR" run refresh-token
+  npm --prefix "$SERVER_DIR" run auth
 fi
 
 # Source the secrets file to load env vars into current shell
-FPL_SECRETS_FILE="$HOME/.fpl/secrets.env"
 if [ -f "$FPL_SECRETS_FILE" ]; then
   echo ""
   echo "🔄 Loading environment variables..."

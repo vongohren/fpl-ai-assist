@@ -6,9 +6,11 @@ An MCP server that gives Claude access to your Fantasy Premier League data.
 
 1. Run the setup script to authenticate with FPL:
    ```bash
-   ./setup.sh
+   source setup.sh
    ```
-   This opens a browser where you log in to FPL. After login, you'll be prompted for an optional Brave Search API key (for community trends). All secrets are saved to `~/.fpl/secrets.env`.
+   On first run the box prints a login URL and a QR code. Open it on your phone, log in to your Premier League account, and you'll land on a blank "404 Not Found" page — that means it worked. Copy that page's full URL from the address bar and paste it back into the terminal.
+
+   The box exchanges it for an access token **and a refresh token**, both saved to `~/.fpl/secrets.env`. From then on `source setup.sh` refreshes silently: no browser, no phone, and no password ever stored on the box.
 
 2. Source your secrets (add to your `.zshrc` for persistence):
    ```bash
@@ -31,4 +33,17 @@ Once authenticated, Claude can:
 
 ## Re-authenticating
 
-Tokens expire periodically. When tools stop working, run `./setup.sh` again.
+Access tokens expire often. Run `source setup.sh` — it refreshes silently using the stored refresh token.
+
+If the refresh token itself has expired or been revoked, redo the one-off phone login:
+
+```bash
+source setup.sh --login
+```
+
+Legacy flows (store your FPL password on the box, require Chromium):
+
+```bash
+source setup.sh --password      # headless browser login
+source setup.sh --interactive   # headful browser, needs a display
+```
