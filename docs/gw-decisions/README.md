@@ -2,6 +2,16 @@
 
 Tracking decisions, hypotheses, and outcomes to calibrate intuition over time.
 
+## Layout
+
+Logs are namespaced by season: `<season>/gw<NN>.md`, e.g. `2026-27/gw1.md`.
+
+This matters more than it looks. Gameweek numbers restart every August, so an
+un-namespaced `gw1.md` sits ambiguously next to the previous season's `gw37.md`
+— and "read the most recent decision file for chip-plan context" would hand you
+a chip plan that expired in May. Always read within the **current** season
+folder, and treat a prior season's locked plan as history, not as a constraint.
+
 ## Structure
 
 Each gameweek file records:
@@ -12,8 +22,13 @@ Each gameweek file records:
 - **Outcome** - Actual results (filled in after the GW)
 - **Learnings** - What we got right/wrong and why
 
-## Decision Files
-- [GW29](gw29.md) - Wirtz + Guiu out, Dewsbury-Hall + Sesko in
-- [GW33](gw33.md) - DGW33 triple transfer: Šeško/Stach/Timber out, Welbeck/Okafor/Guéhi in. Captain Palmer. Chip plan locked: WC34 → BB36 → TC38.
-- [GW34](gw34.md) - **WILDCARD**. BGW34 escape: 8 moves (Hen/Sen/Col/Gué/O'Rei/Pal/Scott/JP out → Hermansen/N.Wil/Muk/Ald/Sal/GW/Rog/Watkins in). Captain Gibbs-White (NFO h BUR FDR 1).
-- [GW37](gw37.md) - **BENCH BOOST** (chip-plan deviation: BB36 was missed). 3 transfers w/ surprise -4 hit (squad showed 3 FTs, FPL credited 2): Okafor/Gibbs-White/Rogers out → Hinshelwood/Saka/Cherki in. Captain Haaland, VC Saka. TC38 still locked.
+## Seasons
+
+### 2026-27 (current)
+- [GW1](2026-27/gw1.md) - **Season opener, full squad rebuild.** 12 transfers off the auto-generated random squad. Deliberately Haaland-less (71.6% EO) in favour of a spread build. Captain B.Fernandes (MUN: HUL away), VC Gabriel.
+
+### 2025-26
+- [GW29](2025-26/gw29.md) - Wirtz + Guiu out, Dewsbury-Hall + Sesko in
+- [GW33](2025-26/gw33.md) - DGW33 triple transfer: Šeško/Stach/Timber out, Welbeck/Okafor/Guéhi in. Captain Palmer. Chip plan locked: WC34 → BB36 → TC38.
+- [GW34](2025-26/gw34.md) - **WILDCARD**. BGW34 escape: 8 moves (Hen/Sen/Col/Gué/O'Rei/Pal/Scott/JP out → Hermansen/N.Wil/Muk/Ald/Sal/GW/Rog/Watkins in). Captain Gibbs-White (NFO h BUR FDR 1).
+- [GW37](2025-26/gw37.md) - **BENCH BOOST** (chip-plan deviation: BB36 was missed). 3 transfers w/ surprise -4 hit (squad showed 3 FTs, FPL credited 2): Okafor/Gibbs-White/Rogers out → Hinshelwood/Saka/Cherki in. Captain Haaland, VC Saka. TC38 still locked.

@@ -4,6 +4,7 @@ import { buildPlayerLookup, buildTeamLookup, getCurrentGameweek } from "../api/c
 import { FPLCache, cachedFetch } from "../cache/sqlite.js";
 import { TTL, CACHE_KEYS } from "../cache/keys.js";
 import type {
+  ChipAvailability,
   EnrichedPlayer,
   SquadResponse,
   FPLPick,
@@ -93,6 +94,8 @@ export async function handleGetMySquad(
   let bank = 0;
   let freeTransfers = 1;
   let availableChips: string[] = [];
+  let availableChipDetail: ChipAvailability[] = [];
+  let unlimitedTransfers = false;
   let activeChip: string | null = null;
   let dataSourceType: "authenticated" | "public_fallback" = "authenticated";
   let isStale = false;
@@ -109,10 +112,22 @@ export async function handleGetMySquad(
 
     picks = myTeam.picks;
     bank = toMillions(myTeam.transfers.bank);
+    // Pre-season and during a wildcard the API reports limit: null, which means
+    // unlimited rather than one.
+    unlimitedTransfers = myTeam.transfers.status === "unlimited" || myTeam.transfers.limit === null;
     freeTransfers = (myTeam.transfers.limit ?? 1) - myTeam.transfers.made;
-    availableChips = myTeam.chips
-      .filter((c) => c.status_for_entry === "available")
-      .map((c) => c.name);
+    const chipsAvailable = myTeam.chips.filter((c) => c.status_for_entry === "available");
+    availableChips = chipsAvailable.map((c) => c.name);
+    availableChipDetail = chipsAvailable
+      .filter((c) => c.start_event !== undefined && c.stop_event !== undefined)
+      .map((c) => ({
+        name: c.name,
+        half: (c.start_event ?? 1) >= 20 ? (2 as const) : (1 as const),
+        start_event: c.start_event!,
+        stop_event: c.stop_event!,
+        chip_type: c.chip_type ?? "team",
+        playable_now: currentGw >= c.start_event! && currentGw <= c.stop_event!,
+      }));
     dataSourceType = "authenticated";
     isStale = false;
   } catch {
@@ -203,6 +218,7 @@ It does NOT show:
     budget: {
       bank,
       free_transfers: Math.max(0, freeTransfers),
+      unlimited_transfers: unlimitedTransfers,
       total_squad_value: Math.round(totalSquadValue * 10) / 10,
       max_cost_increase: bank,
     },
@@ -210,6 +226,8 @@ It does NOT show:
     vice_captain: viceCaptain ? { id: viceCaptain.id, name: viceCaptain.name } : { id: 0, name: "Unknown" },
     chips: {
       available: availableChips,
+      available_detail: availableChipDetail,
+      playable_now: availableChipDetail.filter((c) => c.playable_now).map((c) => c.name),
       active: activeChip,
     },
     club_counts: clubCounts,

@@ -15,9 +15,12 @@ export const searchPlayersSchema = z.object({
   min_form: z.number().optional().describe("Minimum form rating"),
   min_minutes: z.number().optional().describe("Minimum minutes played this season"),
   sort_by: z
-    .enum(["form", "total_points", "ep_next", "price", "selected_by"])
+    .enum(["form", "total_points", "ep_next", "price", "selected_by", "points_per_game"])
     .optional()
-    .describe("Sort results by field"),
+    .describe(
+      "Sort results by field. Note: `form` is 0.0 for everyone until a gameweek has finished — " +
+        "pre-season it is silently replaced by points_per_game."
+    ),
   limit: z.number().optional().describe("Max results to return (default 10, max 20)"),
 });
 
@@ -61,8 +64,10 @@ export const searchPlayersTool = {
       },
       sort_by: {
         type: "string",
-        enum: ["form", "total_points", "ep_next", "price", "selected_by"],
-        description: "Sort results by field",
+        enum: ["form", "total_points", "ep_next", "price", "selected_by", "points_per_game"],
+        description:
+          "Sort results by field. `form` is 0.0 for every player until a gameweek has finished; " +
+          "pre-season the tool substitutes points_per_game and says so in preseason_notice.",
       },
       limit: {
         type: "number",
@@ -143,8 +148,26 @@ export async function handleSearchPlayers(
 
   const totalMatches = players.length;
 
-  // Sort
-  const sortBy = input.sort_by ?? "form";
+  // Before the first gameweek finishes, `form` is 0.0 for EVERY player, so
+  // sorting by it returns an arbitrary slice. Fall back to prior-season
+  // points-per-game, which is the only real evidence available at that point.
+  const seasonUnderway = bootstrap.events.some((e) => e.finished);
+  let preseasonNotice: string | undefined;
+  let sortBy = input.sort_by ?? "form";
+  if (!seasonUnderway && (sortBy === "form" || input.sort_by === undefined)) {
+    if (input.sort_by === "form") {
+      preseasonNotice =
+        "No gameweek has finished yet, so `form` is 0.0 for every player and cannot rank anything. " +
+        "Sorted by prior-season points_per_game instead. Also weigh ep_next, xgi_per_90, " +
+        "defensive_contribution_per_90 and fixtures — and note that stats belong to a player's " +
+        "PREVIOUS club if they moved in the window.";
+    } else {
+      preseasonNotice =
+        "Pre-season: `form` is 0.0 for everyone, so the default sort used prior-season " +
+        "points_per_game. Those stats were earned at a player's previous club if they moved.";
+    }
+    sortBy = "points_per_game";
+  }
   players.sort((a, b) => {
     switch (sortBy) {
       case "form":
@@ -157,6 +180,8 @@ export async function handleSearchPlayers(
         return b.now_cost - a.now_cost;
       case "selected_by":
         return parseFloat(b.selected_by_percent) - parseFloat(a.selected_by_percent);
+      case "points_per_game":
+        return parseFloat(b.points_per_game) - parseFloat(a.points_per_game);
       default:
         return parseFloat(b.form) - parseFloat(a.form);
     }
@@ -186,6 +211,10 @@ export async function handleSearchPlayers(
       minutes: p.minutes,
       total_points: p.total_points,
       selected_by: `${p.selected_by_percent}%`,
+      points_per_game: parseFloat(p.points_per_game ?? "0"),
+      xgi_per_90: p.expected_goal_involvements_per_90 ?? 0,
+      defensive_contribution_per_90: p.defensive_contribution_per_90 ?? 0,
+      starts: p.starts ?? 0,
       next_fixtures: nextFixtures,
     };
   });
@@ -194,6 +223,8 @@ export async function handleSearchPlayers(
     query: input as Record<string, unknown>,
     total_matches: totalMatches,
     showing: enrichedPlayers.length,
+    preseason_notice: preseasonNotice,
+    sorted_by: sortBy,
     players: enrichedPlayers,
   };
 }

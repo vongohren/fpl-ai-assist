@@ -30,6 +30,15 @@ export interface FPLPlayer {
   expected_goal_involvements: string;
   expected_goals_per_90: number;
   expected_assists_per_90: number;
+  points_per_game: string;
+  expected_goal_involvements_per_90: number;
+  /** Tackles + CBIT + recoveries per 90. Scores 2 pts at a positional threshold. */
+  defensive_contribution_per_90: number;
+  defensive_contribution: number;
+  starts: number;
+  penalties_order: number | null;
+  /** Set when a player joined a new club — prior-season stats were earned elsewhere. */
+  team_join_date: string | null;
 }
 
 export interface FPLTeam {
@@ -109,6 +118,27 @@ export interface FPLChip {
   name: string;
   status_for_entry: "available" | "played";
   played_by_entry?: number[];
+  // Since 2025/26 there are TWO of each chip, one per half of the season, and
+  // the API says which half via these fields. Without them a chip list reads
+  // ["wildcard","wildcard","freehit",...] with no way to plan around windows.
+  id?: number;
+  number?: number;
+  start_event?: number;
+  stop_event?: number;
+  chip_type?: "transfer" | "team";
+  is_pending?: boolean;
+}
+
+/** A chip flattened for tool output, with its usable window made explicit. */
+export interface ChipAvailability {
+  name: string;
+  /** 1 for the first-half chip, 2 for the second-half one. */
+  half: 1 | 2;
+  start_event: number;
+  stop_event: number;
+  chip_type: "transfer" | "team";
+  /** True when the current gameweek falls inside this chip's window. */
+  playable_now: boolean;
 }
 
 export interface FPLTransfers {
@@ -196,13 +226,20 @@ export interface SquadResponse {
   budget: {
     bank: number;
     free_transfers: number;
+    /** Pre-season and during a wildcard, transfers are unlimited and free. */
+    unlimited_transfers: boolean;
     total_squad_value: number;
     max_cost_increase: number;
   };
   captain: { id: number; name: string };
   vice_captain: { id: number; name: string };
   chips: {
+    /** Names only, kept for backwards compatibility. May contain duplicates. */
     available: string[];
+    /** Same chips with their season-half windows, when the API supplies them. */
+    available_detail: ChipAvailability[];
+    /** Chips whose window covers the current gameweek. */
+    playable_now: string[];
     active: string | null;
   };
   club_counts: Record<string, number>;
@@ -273,9 +310,17 @@ export interface SearchPlayersResponse {
   query: Record<string, unknown>;
   total_matches: number;
   showing: number;
+  /** Set before any gameweek has finished, when `form` is 0 for every player. */
+  preseason_notice?: string;
+  sorted_by: string;
   players: Array<
     Omit<EnrichedPlayer, "is_captain" | "is_vice_captain" | "in_starting_xi" | "bench_order"> & {
       selected_by: string;
+      /** Prior-season carryover stats — the only evidence available pre-season. */
+      points_per_game: number;
+      xgi_per_90: number;
+      defensive_contribution_per_90: number;
+      starts: number;
       next_fixtures: Array<{
         opponent: string;
         is_home: boolean;
