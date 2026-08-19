@@ -180,14 +180,23 @@ export async function handleGetCommunityTrends(
   input: GetCommunityTrendsInput,
   client: FPLApiClient,
   cache: FPLCache
-): Promise<CommunityTrendsResponse | { error: string; setup_instructions: string }> {
+): Promise<CommunityTrendsResponse | { error: string; setup_instructions: string; fallback: string }> {
   const apiKey = process.env.BRAVE_SEARCH_API_KEY;
 
   if (!apiKey) {
     return {
       error: "BRAVE_SEARCH_API_KEY not configured",
-      setup_instructions:
-        "Get a free API key at https://brave.com/search/api/ and set BRAVE_SEARCH_API_KEY environment variable",
+      setup_instructions: [
+        "Get a free API key at https://brave.com/search/api/, then:",
+        "1. Add it to ~/.fpl/secrets.env as: export BRAVE_SEARCH_API_KEY=\"<key>\"",
+        "2. Make sure .mcp.json forwards BRAVE_SEARCH_API_KEY in the fpl server's env block —",
+        "   setting it in the shell alone is not enough if the key is not passed through.",
+        "3. source ~/.fpl/secrets.env, then restart Claude Code so the server picks it up.",
+      ].join("\n"),
+      fallback:
+        "Do NOT skip the community step and present a stat-only recommendation. " +
+        "Use WebSearch over the same angles (template/transfers, captaincy, differentials) " +
+        "and state in the output which source was used.",
     };
   }
 

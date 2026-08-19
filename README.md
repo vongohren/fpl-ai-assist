@@ -31,6 +31,25 @@ Once authenticated, Claude can:
 - **Fixture difficulty** - Analyze a team's fixture run over multiple gameweeks
 - **Community trends** - Get FPL community sentiment from Reddit/Twitter (requires `BRAVE_SEARCH_API_KEY`)
 
+## Community trends key
+
+```bash
+./scripts/set-brave-key.sh            # prompt (hidden), verify, save
+./scripts/set-brave-key.sh --show     # is a key set? (masked)
+./scripts/set-brave-key.sh --remove   # delete it
+```
+
+The key is checked against the Brave API before saving, so a bad paste fails
+immediately instead of silently at the next gameweek evaluation. Then
+`source ~/.fpl/secrets.env` and restart Claude Code.
+
+⚠️ On a spawn box, `~/.fpl` is on the container's overlay filesystem and does
+**not** survive a rebuild — that takes the FPL refresh token with it too. For a
+key that outlives rebuilds, put it in the box's fnox profile and the world's
+`SECRETS` list, then rebuild (`fnox.toml` is baked at build time, so a restart
+is not enough). Everything here reads the env var first, so no code changes are
+needed once it arrives that way.
+
 ## Re-authenticating
 
 Access tokens expire often. Run `source setup.sh` — it refreshes silently using the stored refresh token.
