@@ -121,40 +121,84 @@ Haaland is owned by **71.6%**. Not owning him is a double hit when he hauls: his
 
 ---
 
-## Outcome (fill in after GW1)
+## Checkpoint: 2026-08-24, 9 of 10 fixtures played
 
-**Actual points:**
-**Overall rank:**
-**Captain return:**
+**NOT FINAL.** João Pedro (CHE) still to play at FUL, Monday 2026-08-24 19:00 UTC. `event.finished = false`, `data_checked = false`, and no autosubs have been applied yet. Everything below is provisional and must be re-confirmed after the Monday game.
 
-| Player | Points | Notes |
+**Provisional points:** 34 (XI) · 6 left on the bench
+**GW average:** 36 · **Highest score in the game:** 114
+**Provisional overall rank:** 4,983,466 (~56th percentile, of ~5.2m)
+
+| Player | Pts | Notes |
 |---|---|---|
-| | | |
+| Raya (ARS) | 6 | Clean sheet vs COV |
+| Gabriel (ARS) | 5 | Clean sheet |
+| Guéhi (MCI) | 10 | Squad top scorer |
+| Muñoz (CRY) | 0 | 54 min, EVE 2-0 CRY |
+| O'Reilly (MCI) | 2 | 62 min, started. Minutes risk was real but mild |
+| **B.Fernandes (C)** | 2 → **4** | 90 min, HUL 2-0 MUN |
+| Semenyo (MCI) | 2 | |
+| Bruno G. (ARS) | 0 | **0 min, thigh injury** |
+| Gibbs-White (NFO) | 2 | |
+| Wilson (LEE) | 3 | 65 min |
+| João Pedro (CHE) | n/a | Yet to play |
+| *Bench: Georginio* | *5* | *90 min, BHA 4-0 AVL* |
+| *Bench: Mitchell* | *1* | *90 min* |
+| *Bench: Dubravka, Obi* | *0* | *0 min each* |
 
 ### Flag outcomes
-- [ ] Haaland exposure — cost in rank terms:
-- [ ] B.Fernandes captaincy return:
-- [ ] Gibbs-White / Wilson same-fixture dilution:
-- [ ] New-club players' carryover accuracy:
-- [ ] Minutes risks (O'Reilly, Muñoz):
+
+- [x] **Haaland exposure, cost so far: zero.** Haaland scored **2** (90 min, no goal, no assist, 7 BPS) in MCI 2-1 BOU. He was confirmed as the GW's `most_captained` and `most_selected` player at 69.1% ownership. As the field's captain he returned **4**; our B.Fernandes captaincy also returned **4**. **Net armband swing: 0.** Raw ownership swing (had we held him as a non-captain): **−2**.
+- [x] **B.Fernandes captaincy vs HUL (A): 2 pts (4 doubled).** The promoted-side opener did *not* deliver. MUN lost 2-0 away at Hull. The pick was right on process and wrong on outcome; it broke even against the consensus armband only because Haaland also blanked.
+- [x] **Gibbs-White / Wilson same-fixture pairing: no meaningful dilution.** NFO 0-1 LEE returned 2 and 3 respectively. Low return from both, but the pairing itself was not the cause.
+- [x] **New-club carryover: mixed, and the split is informative.** Guéhi (MCI) 10 was the squad's best return. Semenyo (MCI) 2, Wilson (LEE) 3, O'Reilly (MCI) 2 were flat. Bruno G. (ARS) never got on the pitch.
+- [x] **Minutes risks: both started, neither lasted.** O'Reilly 62 min, Muñoz 54 min. The starts were correctly predicted; the *completion* was not, and both were subbed before any late-game returns.
+- [x] **Bench fodder: one autosub required, and the bench order cost us.** See learnings below.
 
 ---
 
-## Learnings (fill in after GW1)
+## Learnings
 
 ### What we got right
--
+
+- **The differential risk was correctly identified and correctly priced.** The GW1 doc named Haaland exposure as "the defining risk of the build" before a ball was kicked, and framed it precisely: his points *plus* the doubled points the field banks. That is exactly the variable that decided the week, and it resolved in our favour.
+- **Refusing to burn Triple Captain in week one.** TC on B.Fernandes would have turned a 2-point return into a wasted chip with 18 gameweeks of runway still on it.
+- **Guéhi retained from the random squad.** The one carryover player that was actively re-evaluated rather than swept out returned the squad's top score.
 
 ### What we got wrong
--
+
+- **Bench ordering was never considered, and it cost 4 points.** Bruno G. played 0 minutes, so an autosub will fire at GW finalisation. Bench order is Dubravka (GK) → Mitchell → Georginio → Obi. FPL takes the *first* eligible bench player whose introduction keeps a legal formation. Mitchell (DEF, **1 pt**) qualifies (5-4-1 is legal), so he comes in ahead of Georginio (FWD, **5 pts**), who would *also* have been a legal swap (4-4-2). **Net +1 instead of +5.** The GW1 doc treated the bench purely as "non-playing filler" and ordered it arbitrarily. That was a free option we declined to take.
+- **The squad was built for spread but the spread did not spread.** The whole case for Build A over Build B was a deeper XI. Five midfielders returned 2, 2, 2, 3 and 0. Depth only pays if the depth returns; this week it was breadth without output.
+- **`points_per_game × 34` over-trusted prior-season output for players at new clubs.** Semenyo, Wilson and O'Reilly were all projected on carryover numbers from a different side and all landed flat. The minutes-reliability weighting handled *availability* but nothing in the model handled *role change at a new club*.
+- **No injury re-check between analysis and deadline.** The analysis was dated 2026-08-17; the deadline was 2026-08-21. Bruno G.'s thigh problem cost a starting slot and there is no evidence in the log that fitness was re-verified in that four-day window.
 
 ### Gut calibration
-- Was skipping the 71.6%-owned captain defensible, or did it cost more than the 24 projected points it was supposed to save?
-- Did `points_per_game × 34` prove a reasonable pre-season projection, or did it over-trust prior-season output for players at new clubs?
+
+**Was skipping the 71.6%-owned captain defensible?** Yes, and this week is weak evidence for it, not strong evidence. The correct read is *risk validated, execution mediocre*. We did not get punished, but we did not gain either: we sit 2 points **below** the 36-point average, with the one week most likely to blow the build up now behind us. The call survived its worst-case test; it has not yet been shown to be a *good* call, only a non-fatal one.
+
+The honest counterfactual is narrower than "we dodged a bullet": one 2-point Haaland blank is a single draw from a distribution where he is captained by two thirds of the field every week. Surviving week one says nothing about weeks 2-38. The exposure is still live and still the defining risk of the season.
+
+**Was `points_per_game × 34` reasonable?** Adequate as a ranking device, poor as a point estimate. It correctly separated tiers but produced no usable signal within them, and it has a known blind spot on transferred players (above).
 
 ### Adjustments for next time
--
+
+1. **Order the bench deliberately, every single week.** Highest-expected-return outfielder first, and check the formation legality of each swap. This is a zero-cost decision we simply were not making.
+2. **Re-verify injuries and press-conference news in the final 24h before deadline**, not at analysis time. Add it as a hard pre-deadline checklist item.
+3. **Discount projections for players who changed clubs in the window**: carryover PPG assumes a role that may no longer exist. Apply an explicit haircut rather than trusting `minutes` alone to catch it.
+4. **Track the Haaland differential cumulatively, not per-GW.** A running "swing vs. the field's captain" ledger across the season is the only way to judge the build decision. One week is noise.
+5. **Do not treat a survived risk as a vindicated one.** Re-examine the no-Haaland structure when the wildcard opens at GW2 on its merits, not on relief that week one was fine.
 
 ### Chip planning notes
-- First-half BB and TC both expire **GW19** — do not let them roll unused.
-- Wildcard and Free Hit open at GW2; a GW2-4 wildcard is a live option if the opener exposes structural problems.
+
+- BB and TC both still unused, both expire **GW19**.
+- **Wildcard and Free Hit open at GW2.** The opener did not expose a structural break (the squad's shape is sound and the returns were simply low), so there is no case for a panic GW2 wildcard off one below-average week. Revisit at GW4-6 once real form data exists.
+- Bench Boost is not close to playable: Dubravka, Obi and Georginio are filler and two of the four bench players recorded 0 minutes.
+
+---
+
+## Still to confirm after Monday's FUL v CHE
+
+- [ ] João Pedro's return and the final GW1 total
+- [ ] That the Bruno G. → Mitchell autosub fired as predicted (validates the bench-ordering lesson above)
+- [ ] Final overall rank once `data_checked = true`
+- [ ] Bonus points are provisional until the GW is finalised
