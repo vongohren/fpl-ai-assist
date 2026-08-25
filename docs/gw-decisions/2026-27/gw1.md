@@ -196,9 +196,54 @@ The honest counterfactual is narrower than "we dodged a bullet": one 2-point Haa
 
 ---
 
-## Still to confirm after Monday's FUL v CHE
+## Finalisation check: 2026-08-25 (post-mortem attempted, BLOCKED)
 
-- [ ] João Pedro's return and the final GW1 total
-- [ ] That the Bruno G. → Mitchell autosub fired as predicted (validates the bench-ordering lesson above)
+The GW1 post-mortem was attempted on 2026-08-25 and deliberately **not written**. FPL has not finalised the gameweek, so no final points, rank or per-player table is recorded here. The Outcome section stays empty on purpose.
+
+### Gate status
+
+```
+events[0].finished     = false
+events[0].data_checked = false
+```
+
+Confirmed on two cache-busted refetches (`Cache-Control: no-cache`, random query string), so this is not a stale CDN response.
+
+All 10 fixtures report `minutes: 90` and `finished_provisional: true`, including FUL v CHE (Mon 2026-08-24 19:00 UTC). The football is complete. FPL's final data check has not run.
+
+### Why the gap is not cosmetic here
+
+- **The autosub has not fired.** `/api/entry/5047923/event/1/picks/` returns `automatic_subs: []`. Bruno G. played 0 minutes and has not been replaced, so the live total of 45 is a **10-man XI score**. Recording 45 as the final total would be wrong within hours, and would silently bury the single flag this doc most wants validated.
+- **Bonus is provisional.** Guéhi (2) and João Pedro (2) show bonus in the live feed, but bonus is not locked until `data_checked` flips.
+- **Rank is still drifting.** Two calls minutes apart returned 5,156,448 (`/picks/`) and 5,156,373 (`/entry/`).
+- **The benchmarks themselves moved.** Since the 2026-08-24 checkpoint the GW average went 36 to 48 and the highest score 114 to 131. The numbers this post-mortem would grade itself against are not settled either.
+
+### Live state at check time (NOT FINAL, do not cite)
+
+Recorded only as a starting point for whoever finishes the job. The one genuinely new data point versus the 08-24 checkpoint is João Pedro, who was still to play then and returned the squad's top score.
+
+| Player | Min | Pts | | Player | Min | Pts |
+|---|---|---|---|---|---|---|
+| Raya | 90 | 6 | | Gibbs-White | 90 | 2 |
+| Gabriel | 90 | 5 | | Wilson | 65 | 3 |
+| Guéhi | 90 | 10 | | **João Pedro** | 90 | **11** |
+| Muñoz | 54 | 0 | | *Mitchell (bench)* | 90 | *1* |
+| O'Reilly | 62 | 2 | | *Georginio (bench)* | 90 | *5* |
+| **B.Fernandes (C)** | 90 | **2 x2** | | *Dubravka, Obi (bench)* | 0 | *0* |
+| Semenyo | 90 | 2 | | | | |
+
+Live XI total **45**, bench 6. Unvalidated prediction: removing Bruno G. leaves 4-4-1, and Mitchell (DEF, 1 pt) is the first legal swap at 5-4-1, ahead of Georginio (FWD, 5 pts) at 4-4-2. That points to a final of **46** and would confirm the bench-ordering lesson above, but it has **not** happened yet and must be read from `automatic_subs` when it does.
+
+### Still to confirm once the gate opens
+
+- [ ] Final GW1 total after the autosub applies
+- [ ] That the Bruno G. to Mitchell autosub fired as predicted (validates the bench-ordering lesson)
 - [ ] Final overall rank once `data_checked = true`
-- [ ] Bonus points are provisional until the GW is finalised
+- [ ] Final bonus points
+
+### Process learning from this check
+
+- **The finalisation gate is `finished && data_checked` on the *event*, not `finished_provisional` on the *fixtures*.** Every fixture can read 90 minutes and provisionally final while the gameweek is still open. Checking fixture state alone would have produced a confident, wrong post-mortem.
+- **`automatic_subs == []` on a squad with a 0-minute starter is the cheap tell** that finalisation has not run. It is a one-field check and it is more legible than the event flags, because it names the specific number that is about to change.
+- **A post-mortem's headline number should be gated, not caveated.** The 08-24 checkpoint handled this correctly by labelling itself NOT FINAL rather than presenting provisional numbers as results, and that convention is carried forward here.
+- No recurring watcher was scheduled to catch finalisation. Re-run this check manually before writing the post-mortem.
