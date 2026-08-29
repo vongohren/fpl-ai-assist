@@ -50,6 +50,25 @@ key that outlives rebuilds, put it in the box's fnox profile and the world's
 is not enough). Everything here reads the env var first, so no code changes are
 needed once it arrives that way.
 
+## Keeping the login alive
+
+```bash
+scripts/auth-keepalive.sh            # refresh if due; alert if the grant is dead
+scripts/auth-keepalive.sh --status   # report token state, change nothing
+```
+
+Scheduled on the life box every 6 hours (`jobctl list | grep fpl-auth`). It
+refreshes when under 2h remain, so the access token is never stale when a tool
+needs it.
+
+It does **not** promise the login never dies. The refresh token has twice been
+revoked server-side (2026-08-23, 2026-08-28) while its own `exp` was still
+months away — not expiry, but the session being invalidated upstream, most
+likely by a fresh login elsewhere such as the FPL app. Nothing on this box can
+prevent that. What the job does guarantee is that we find out within 6 hours
+instead of twelve hours before a gameweek deadline, which is what actually cost
+us a transfer in GW2.
+
 ## Re-authenticating
 
 Access tokens expire often. Run `source setup.sh` — it refreshes silently using the stored refresh token.
