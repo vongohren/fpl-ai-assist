@@ -21,6 +21,24 @@ If there is no refresh token yet (first run), or the refresh token has been revo
 - The redirect target is `/static/oauth-callback`, which the FPL CDN serves as a plain nginx 404 with no JavaScript. The SPA never boots there, so nothing consumes or strips the `?code=` before it can be copied. Redirecting to `/` would hand the code to the FPL app itself.
 - The token endpoint accepts the FPL client as a **public client with no secret**, so the box can complete the exchange alone.
 
+### Recovering a dead grant without a live agent
+
+`scripts/auth-portal.mjs` serves the paste-back step as a page on the tailnet at
+`http://fpl-auth.beast.go`. Start login, log in on the phone, paste the address of
+the blank 404 page, done.
+
+It exists because the previous route was a Beeper chat, which the box can only read
+through an MCP tool — meaning an agent session had to stay alive for the whole
+30-minute PKCE window to catch the paste. On 2026-08-29 one did not, and the box
+ran on a dead grant for a day. The page needs no live agent and no chat.
+
+The portal owns no auth logic: it shells out to `mobile-auth.ts` under the same
+`flock` the keepalive job takes, so there is exactly one holder of the rotating
+refresh-token chain and a login can never interleave with a scheduled refresh.
+Announce it with `--identity whois` so Caddy injects a Tailscale-verified identity;
+it refuses any request without one. Set `FPL_AUTH_ALLOW` to pin it to a single
+login (the page shows you yours).
+
 Legacy fallbacks still exist but store your password on the box and need Chromium: `source setup.sh --password` (headless) and `source setup.sh --interactive` (needs a display).
 
 ## Project Structure
