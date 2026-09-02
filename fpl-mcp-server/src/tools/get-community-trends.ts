@@ -10,6 +10,7 @@ import type {
   TrendingPlayer,
   TrendingPlayerSource,
 } from "../types/index.js";
+import { readSecret } from "../config/secrets.js";
 
 // Brave Search API response types
 interface BraveSearchResult {
@@ -181,7 +182,7 @@ export async function handleGetCommunityTrends(
   client: FPLApiClient,
   cache: FPLCache
 ): Promise<CommunityTrendsResponse | { error: string; setup_instructions: string; fallback: string }> {
-  const apiKey = process.env.BRAVE_SEARCH_API_KEY;
+  const apiKey = readSecret("BRAVE_SEARCH_API_KEY");
 
   if (!apiKey) {
     return {
@@ -189,9 +190,8 @@ export async function handleGetCommunityTrends(
       setup_instructions: [
         "Get a free API key at https://brave.com/search/api/, then:",
         "1. Add it to ~/.fpl/secrets.env as: export BRAVE_SEARCH_API_KEY=\"<key>\"",
-        "2. Make sure .mcp.json forwards BRAVE_SEARCH_API_KEY in the fpl server's env block —",
-        "   setting it in the shell alone is not enough if the key is not passed through.",
-        "3. source ~/.fpl/secrets.env, then restart Claude Code so the server picks it up.",
+        "2. That is all. The server reads the file directly and re-reads it on change,",
+        "   so the key is live on the next tool call with no restart.",
       ].join("\n"),
       fallback:
         "Do NOT skip the community step and present a stat-only recommendation. " +

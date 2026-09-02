@@ -15,18 +15,24 @@ export interface FPLAuthConfig {
   xApiAuth?: string;
 }
 
+/**
+ * Resolves credentials at the moment they are needed. Passing a resolver rather
+ * than a fixed config is what lets a long-lived server pick up a token the
+ * keepalive job rotated underneath it.
+ */
+export type FPLAuthResolver = () => FPLAuthConfig;
+
 export class FPLApiClient {
   private baseUrl = "https://fantasy.premierleague.com/api";
-  private cookie?: string;
-  private xApiAuth?: string;
+  private resolveAuth: FPLAuthResolver;
 
-  constructor(auth?: FPLAuthConfig) {
-    this.cookie = auth?.cookie;
-    this.xApiAuth = auth?.xApiAuth;
+  constructor(auth?: FPLAuthConfig | FPLAuthResolver) {
+    this.resolveAuth = typeof auth === "function" ? auth : () => auth ?? {};
   }
 
   hasAuth(): boolean {
-    return Boolean(this.cookie || this.xApiAuth);
+    const { cookie, xApiAuth } = this.resolveAuth();
+    return Boolean(cookie || xApiAuth);
   }
 
   private getHeaders(): Record<string, string> {
@@ -37,12 +43,14 @@ export class FPLApiClient {
       "x-requested-with": "XMLHttpRequest",
     };
 
-    if (this.cookie) {
-      headers["Cookie"] = this.cookie;
+    const { cookie, xApiAuth } = this.resolveAuth();
+
+    if (cookie) {
+      headers["Cookie"] = cookie;
     }
 
-    if (this.xApiAuth) {
-      headers["X-Api-Authorization"] = this.xApiAuth;
+    if (xApiAuth) {
+      headers["X-Api-Authorization"] = xApiAuth;
     }
 
     return headers;

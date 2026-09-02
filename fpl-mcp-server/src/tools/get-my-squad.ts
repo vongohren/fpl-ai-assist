@@ -16,15 +16,7 @@ import type {
   PicksResponse,
 } from "../types/index.js";
 import { POSITION_MAP, toMillions } from "../types/index.js";
-
-function getDefaultManagerId(): number | undefined {
-  const envValue = process.env.FPL_MANAGER_ID;
-  if (envValue) {
-    const parsed = parseInt(envValue, 10);
-    return isNaN(parsed) ? undefined : parsed;
-  }
-  return undefined;
-}
+import { getManagerId as getDefaultManagerId } from "../config/secrets.js";
 
 export const getMySquadSchema = z.object({
   manager_id: z.number().optional().describe("Your FPL manager ID. Optional if FPL_MANAGER_ID env var is set."),
@@ -159,7 +151,8 @@ It does NOT show:
   ❌ Bench order changes
   ❌ Current bank balance after transfers
 
-🔧 FIX: Set FPL_COOKIE or FPL_X_API_AUTH environment variable for real-time data.
+🔧 FIX: No valid token found in ~/.fpl/secrets.env (or FPL_X_API_AUTH / FPL_COOKIE).
+   Run: source setup.sh    (re-reads automatically, no restart needed)
 
 ⚠️⚠️⚠️ DO NOT TRUST THIS DATA FOR TRANSFER DECISIONS ⚠️⚠️⚠️`;
   }
