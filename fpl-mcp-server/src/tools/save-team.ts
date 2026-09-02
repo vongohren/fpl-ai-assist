@@ -3,15 +3,7 @@ import type { FPLApiClient } from "../api/client.js";
 import { FPLCache } from "../cache/sqlite.js";
 import { CACHE_KEYS } from "../cache/keys.js";
 import type { SaveTeamPayload, SaveTeamPick } from "../types/index.js";
-
-function getDefaultManagerId(): number | undefined {
-  const envValue = process.env.FPL_MANAGER_ID;
-  if (envValue) {
-    const parsed = parseInt(envValue, 10);
-    return isNaN(parsed) ? undefined : parsed;
-  }
-  return undefined;
-}
+import { getManagerId as getDefaultManagerId } from "../config/secrets.js";
 
 const pickSchema = z.object({
   element: z.number().describe("Player ID"),

@@ -40,8 +40,8 @@ Once authenticated, Claude can:
 ```
 
 The key is checked against the Brave API before saving, so a bad paste fails
-immediately instead of silently at the next gameweek evaluation. Then
-`source ~/.fpl/secrets.env` and restart Claude Code.
+immediately instead of silently at the next gameweek evaluation. The MCP server
+reads the file directly, so the key is live on the next tool call with no restart.
 
 ⚠️ On a spawn box, `~/.fpl` is on the container's overlay filesystem and does
 **not** survive a rebuild — that takes the FPL refresh token with it too. For a

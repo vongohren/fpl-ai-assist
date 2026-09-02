@@ -7,6 +7,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { FPLApiClient } from "./api/client.js";
+import { getAuthConfig, secretsPath } from "./config/secrets.js";
 import { FPLCache } from "./cache/sqlite.js";
 import { log, logToolCall, logToolResult, logError } from "./logger.js";
 import {
@@ -33,12 +34,10 @@ import {
   saveTeamSchema,
 } from "./tools/index.js";
 
-// Initialize cache and API client
+// Initialize cache and API client. Auth is passed as a resolver, not a snapshot,
+// so a token rotated on disk mid-session is picked up without a server restart.
 const cache = new FPLCache();
-const client = new FPLApiClient({
-  cookie: process.env.FPL_COOKIE,
-  xApiAuth: process.env.FPL_X_API_AUTH,
-});
+const client = new FPLApiClient(getAuthConfig);
 
 // Create MCP server
 const server = new Server(
@@ -156,6 +155,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   log("INFO", "FPL MCP Server starting...", {
     hasAuth: client.hasAuth(),
+    secretsFile: secretsPath(),
     cacheStats: cache.stats(),
   });
 

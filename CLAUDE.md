@@ -10,7 +10,9 @@ The FPL API requires a valid `FPL_X_API_AUTH` token (JWT). Tokens expire regular
 source setup.sh
 ```
 
-Normally this is silent: it uses the stored refresh token to mint a new access token over plain HTTP. No browser, no phone, no password. It then loads env vars into the current shell. Restart Claude Code afterwards so the MCP server picks up the new token.
+Normally this is silent: it uses the stored refresh token to mint a new access token over plain HTTP. No browser, no phone, no password. It then loads env vars into the current shell.
+
+No restart needed: the MCP server reads `~/.fpl/secrets.env` itself and re-reads it whenever the file changes, so a rotated token is picked up on the next tool call. Environment variables, when set to a non-empty value, still override the file.
 
 If there is no refresh token yet (first run), or the refresh token has been revoked, `setup.sh` falls back to a one-off **phone login**: the box prints a login URL plus a QR code, you complete the login on your phone, and paste the resulting URL back. Force it with `source setup.sh --login`.
 
