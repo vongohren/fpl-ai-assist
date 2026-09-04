@@ -25,7 +25,9 @@ Each gameweek file records:
 ## Seasons
 
 ### 2026-27 (current)
-- [GW1](2026-27/gw1.md) - **Season opener, full squad rebuild.** 12 transfers off the auto-generated random squad. Deliberately Haaland-less (71.6% EO) in favour of a spread build. Captain B.Fernandes (MUN: HUL away), VC Gabriel.
+- [GW1](2026-27/gw1.md) - **Season opener, full squad rebuild.** 12 transfers off the auto-generated random squad. Deliberately Haaland-less (71.6% EO) in favour of a spread build. Captain B.Fernandes (MUN: HUL away), VC Gabriel. Finalised at 46; the bench-ordering error cost 4 pts.
+- [GW2](2026-27/gw2.md) - *Retro-written.* No transfers, no evaluation run. 93 pts on a B.Fernandes haul (+20 armband swing vs Haaland), rank 5.57m -> 3.35m. Masked three dead squad slots.
+- [GW3](2026-27/gw3.md) - **First hit of the season (-4).** Bruno G./Wilson/Munoz out, Mbeumo/Hall/Gomez in. Built an underlying-stats xPts model and found the premium tier is a value trap: every player above £9m is worse value than everything below. Captain B.Fernandes, VC moved to Gibbs-White. No chip.
 
 ### 2025-26
 - [GW29](2025-26/gw29.md) - Wirtz + Guiu out, Dewsbury-Hall + Sesko in

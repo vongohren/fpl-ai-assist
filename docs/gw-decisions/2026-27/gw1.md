@@ -247,3 +247,49 @@ Live XI total **45**, bench 6. Unvalidated prediction: removing Bruno G. leaves 
 - **`automatic_subs == []` on a squad with a 0-minute starter is the cheap tell** that finalisation has not run. It is a one-field check and it is more legible than the event flags, because it names the specific number that is about to change.
 - **A post-mortem's headline number should be gated, not caveated.** The 08-24 checkpoint handled this correctly by labelling itself NOT FINAL rather than presenting provisional numbers as results, and that convention is carried forward here.
 - No recurring watcher was scheduled to catch finalisation. Re-run this check manually before writing the post-mortem.
+
+---
+
+## Finalisation resolved: 2026-09-03
+
+The gameweek finalised. `events[0].finished = true`, `data_checked = true`. Filling in
+the four items left open above.
+
+**Final points: 46** · **GW average: 50** · **Overall rank: 5,572,584**
+**Most captained in the game:** Haaland (2 pts)
+
+### The four open items
+
+- [x] **Final GW1 total after the autosub: 46.** The 2026-08-25 check predicted exactly
+      46. The prediction was correct.
+- [x] **The Bruno G. → Mitchell autosub fired as predicted.** `automatic_subs` reads
+      `[{element_out: Bruno G., element_in: Mitchell}]`. Mitchell came on for **1 point**
+      where Georginio, also a legal swap at 4-4-2, would have returned **5**.
+      **The bench-ordering lesson is confirmed, and it cost 4 points.**
+- [x] **Final overall rank: 5,572,584.** Below the GW average of 50 by 4 points.
+- [x] **Final bonus:** included in the per-player totals below; no change from the
+      provisional reading.
+
+### Final per-player
+
+| Player | Min | Pts | | Player | Min | Pts |
+|---|---|---|---|---|---|---|
+| Raya | 90 | 6 | | Wilson | 65 | 3 |
+| Gabriel | 90 | 5 | | João Pedro | 90 | 11 |
+| Guéhi | 90 | 10 | | **Mitchell (autosub in)** | 90 | **1** |
+| Muñoz | 54 | 0 | | *Bench: Georginio* | 90 | *5* |
+| O'Reilly | 62 | 2 | | *Bench: Bruno G.* | 0 | *0* |
+| **B.Fernandes (C)** | 90 | **2 x2** | | *Bench: Dubravka, Obi* | 0 | *0* |
+| Semenyo | 90 | 2 | | | | |
+| Gibbs-White | 90 | 2 | | | | |
+
+### What the resolved data confirms
+
+- **The gating discipline was correct and worth the delay.** Recording the provisional
+  45 would have been wrong. Recording 46 with the autosub named is right, and the
+  prediction method (read the formation legality, not just the points) held up exactly.
+- **The bench-ordering loss is now measured, not estimated: −4 points.** That is the
+  single most actionable lesson of the season so far, and it was applied from GW3 onward.
+- **The Haaland armband swing for GW1 is 0.** Our B.Fernandes returned 4 doubled; the
+  field's Haaland returned 4 doubled. Recorded in the cumulative ledger in
+  [gw3.md](gw3.md).
