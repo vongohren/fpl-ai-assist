@@ -6,13 +6,7 @@
     },
     "fpl": {
       "command": "npx",
-      "args": ["tsx", "fpl-mcp-server/src/index.ts"],
-      "env": {
-        "FPL_COOKIE": "${FPL_COOKIE}",
-        "FPL_X_API_AUTH": "${FPL_X_API_AUTH}",
-        "FPL_MANAGER_ID": "${FPL_MANAGER_ID}",
-        "BRAVE_SEARCH_API_KEY": "${BRAVE_SEARCH_API_KEY}"
-      }
+      "args": ["tsx", "fpl-mcp-server/src/index.ts"]
     }
   }
 }
