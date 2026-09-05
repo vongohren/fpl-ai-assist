@@ -34,18 +34,31 @@ interface FileCache {
 
 let cached: FileCache | null = null;
 
+/** An unexpanded "${VAR}" placeholder, i.e. interpolation that never resolved. */
+const PLACEHOLDER = /^\$\{[A-Za-z_][A-Za-z0-9_]*\}$/;
+
 /**
- * An empty or whitespace-only value counts as unset.
+ * An empty, whitespace-only, or unexpanded value counts as unset.
  *
- * This matters for more than tidiness: unresolved "${FPL_X_API_AUTH}"
- * interpolation in .mcp.json lands in the environment as an empty string, and
- * treating that as "set" is what let a blank env var shadow a perfectly good
- * token on disk.
+ * This matters for more than tidiness: .mcp.json passes credentials as
+ * "${FPL_X_API_AUTH}", and how that arrives depends on the launching shell.
+ * Sourced setup.sh: the real token. Sourced nothing, variable defined but
+ * blank: an empty string. Variable never defined at all: the literal text
+ * "${FPL_X_API_AUTH}", passed through verbatim.
+ *
+ * All three have to read as unset, because env wins over the file in
+ * readSecret(). The blank case was handled first; the literal case was not,
+ * and it is the worse of the two. A placeholder is non-empty, so it counted as
+ * a real value and shadowed a perfectly good token on disk: the server logged
+ * hasAuth: true, sent "${FPL_X_API_AUTH}" as the bearer, got a 401, and fell
+ * back to public data behind a warning that said no token was found. The
+ * manager ID failed the same way, via parseInt() on the placeholder.
  */
 function clean(value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
   const trimmed = value.trim();
-  return trimmed === "" ? undefined : trimmed;
+  if (trimmed === "" || PLACEHOLDER.test(trimmed)) return undefined;
+  return trimmed;
 }
 
 /**
