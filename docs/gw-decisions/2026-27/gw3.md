@@ -223,11 +223,17 @@ decision point: **GW5-6**, per GW1's deferral.
 |---|---|---|---|---|---|---|
 | 1 | B.Fernandes | 2 (4) | Haaland | 2 (4) | 0 | 0 |
 | 2 | B.Fernandes | 23 (46) | Haaland | 13 (26) | **+20** | **+20** |
-| 3 | B.Fernandes | | Haaland | | | |
+| 3 | B.Fernandes | 2 (4) | Haaland | 9 (18) | **-14** | **+6** |
+
+Haaland was the most-captained player in the game for the third consecutive week.
+Three gameweeks in, the whole no-Haaland structure is **+6 points ahead** on the
+armband: one big week and one bad week have very nearly cancelled.
 
 ---
 
 ## Watch flags for GW3
+
+*Resolved in [Flag outcomes](#flag-outcomes) below.*
 
 - [ ] **Mbeumo's xG converts.** The entire premium-is-a-trap thesis rests on 2.26 xG
       from one goal reverting upward. If he blanks repeatedly the model's regression
@@ -247,52 +253,176 @@ decision point: **GW5-6**, per GW1's deferral.
 
 ## Outcome
 
-*(fill in after GW3)*
+**Actual points: 56 gross, -4 hit, 52 net** (bench 0) · **GW average: 51** ·
+**Highest score: 119**
+**Overall rank: 3,504,624** (down from 3,345,863, **-158,761 places**)
+**GW rank:** 3,726,330 · **Season total: 191**
+**Most captained in the game:** Haaland (9 pts)
 
-**Actual points:**
-**GW average:**
-**Overall rank:**
+Finalisation gate confirmed before writing: `events[2].finished = true`,
+`data_checked = true`, and `automatic_subs` is populated, per the GW1 process learning.
 
 | Player | Min | Pts | Notes |
 |---|---|---|---|
-| Raya | | | |
-| Gabriel | | | |
-| Guéhi | | | |
-| Hall | | | |
-| O'Reilly | | | |
-| B.Fernandes (C) | | | |
-| Semenyo | | | |
-| Mbeumo | | | |
-| Gibbs-White (V) | | | |
-| Gomez | | | |
-| João Pedro | | | |
-| *Bench: Dubravka* | | | |
-| *Bench: Mitchell* | | | |
-| *Bench: Georginio* | | | |
-| *Bench: Obi* | | | |
+| Raya | 90 | 3 | 4 saves, conceded 1. ARS 2-1 CHE |
+| Gabriel | 90 | 2 | No clean sheet. DC 7, below the 10 threshold |
+| Guéhi | 90 | 8 | Clean sheet + 2 bonus, DC 9. MCI 1-0 COV |
+| **Hall** | 89 | 4 | Assist, conceded 2. **DC 6** (see flag) |
+| O'Reilly | 0 | 0 | **Autosubbed out.** Unused, not in the matchday squad |
+| **B.Fernandes (C)** | 90 | **2 x2 = 4** | Appearance only, 0.15 xG. EVE 2-2 MUN |
+| Semenyo | 90 | 6 | Assist + clean sheet |
+| **Mbeumo** | 90 | **8** | Goal + 1 bonus, from **0.05 xG** (see flag) |
+| Gibbs-White (V) | 90 | 3 | Clean sheet, 0.48 xG, no return. NFO 0-0 TOT |
+| **Gomez** | 90 | 2 | Appearance only. DC 9, MID threshold is 12 |
+| João Pedro | 90 | 1 | Yellow card, no return |
+| **Mitchell (autosub in)** | 73 | **15** | **2 goals + 2 bonus** from 0.66 xG. FUL 2-3 CRY |
+| *Bench: Dubravka* | 0 | 0 | |
+| *Bench: Georginio* | 0 | 0 | |
+| *Bench: Obi* | 0 | 0 | |
+
+**Autosub:** O'Reilly → Mitchell (O'Reilly played 0 minutes). A defender-for-defender
+swap, so the XI stayed 4-5-1.
+
+XI total **56**, bench **0**, transfer cost **-4**, net **52**. Beat the GW average by
+1 net (5 gross) and still **lost rank**, because the field's captain hauled.
 
 ### Flag outcomes
 
-- [ ] Mbeumo's xG converts
-- [ ] Hall's DC points hold
-- [ ] Was -4 the right price
-- [ ] Elanga regression
-- [ ] MUN triple-up
-- [ ] ARS v CHE clash
-- [ ] Bench order
+- [x] **Mbeumo's xG converts: RETURN YES, THESIS UNTESTED.** He scored and took 8
+      points, joint second-best in the squad. But the goal came from **0.05 xG in GW3**.
+      His season xG moved 2.26 to **2.31** and goals 1 to 2. The 2.26-xG backlog did not
+      convert; a near-zero-xG goal landed on top of it. **Right answer, wrong mechanism.**
+      The regression thesis got a good week but no evidence, and the unconverted backlog
+      is still sitting there.
+- [x] **Hall's DC points hold: NO, FAILED.** DC of **6** against 11 and 13 in GW1-2,
+      below the 10 threshold, so **0 DC points banked**. His 4 came from an assist minus
+      a goal-conceded. NEW drew 2-2 at home to BOU, so no clean sheet either. The
+      "single most robust pick on the board" returned 4 in the *easiest* fixture of the
+      run it was bought for.
+- [x] **Was -4 the right price: YES, +9.** In: Mbeumo 8, Hall 4, Gomez 2 = **14**.
+      Out: Bruno G. 0 (0 min), Wilson 0 (17 min), Muñoz 1 (31 min) = **1**. So 14
+      against 1 + 4 = 5, **net +9**. The full-XI counterfactual agrees: leaving the
+      squad untouched puts those three into the same slots for 1 point combined and no
+      hit, giving **43** against the actual **52**. Same +9 either way. The three
+      outgoing players managed **48 minutes between them**.
+- [x] **Elanga regression: YES, THE REJECTION WAS CORRECT.** 76 minutes, **1 point**,
+      **0.00 xG**. His season xG is unchanged at 0.42 and he is still on 2 goals. Buying
+      him over Mbeumo would have been a straight 7-point downgrade in week one of the
+      decision.
+- [x] **MUN triple-up: SURVIVED, BUT THE CAPTAIN BROKE IT.** EVE 2-2 MUN returned
+      Mbeumo 8, B.Fernandes 2 (4 doubled) and Obi 0 from the bench: **12 of 56 from one
+      fixture**. The concentration itself was not punished. The armband inside it was.
+- [x] **ARS v CHE clash: YES, IT CANCELLED, AND BOTH SIDES LOST.** ARS 2-1 CHE gave
+      Raya 3, Gabriel 2 and João Pedro 1: **6 points from £21.7m across three squad
+      slots**. Chelsea's goal denied the clean sheet that was the whole case for holding
+      Raya and Gabriel, and Arsenal winning denied João Pedro. The pre-deadline note that
+      FDR 4 "is a hard game for both sides" was not mitigation, it was the loss condition
+      for both halves at once.
+- [x] **Bench order: YES, AND IT WAS THE WEEK.** O'Reilly played 0 minutes and Mitchell
+      came in for **15**, against 0 from both Georginio and Obi. GW1's costed lesson
+      (bench order, -4) was applied in GW3 and paid **+15** the first week it was tested.
+      One correction to the pre-deadline note: it anticipated a 5-4-1 swap for a
+      midfielder, and what actually fired was defender-for-defender at 4-5-1. The
+      ordering rule produced the right result anyway, because it ranked on minutes
+      certainty rather than on which specific slot would open.
 
 ---
 
 ## Learnings
 
-*(fill in after GW3)*
-
 ### What we got right
+
+- **Bench ordering, applied deliberately for the first time, returned +15.** Mitchell
+  ahead of Georginio on minutes certainty (180/180) was the single largest decision of
+  the week. GW1 measured this lesson at **-4**; GW3 collected **+15** on it. It is the
+  clearest process-to-points link in the log so far.
+- **The dead-weight audit and the -4 that followed were correct: +9.** Bruno G., Wilson
+  and Muñoz played 48 minutes between them for 1 point. Without the restructure this is
+  a **43-point** week against a 51 average: a bad week, not a mediocre one.
+- **The xG-based rejection of Elanga held.** 1 point, 0.00 xG. Form-based shortlisting
+  would have cost 7 points against Mbeumo in the very first week.
+- **The finalisation gate was respected.** `finished && data_checked` plus a populated
+  `automatic_subs`, exactly as GW1's process learning specified. The 15-point autosub is
+  the number that would have been missed by writing this early.
 
 ### What we got wrong
 
+- **The captaincy, and it cost more than every transfer decision earned.** B.Fernandes
+  returned 2 (4 doubled) against Haaland's 9 (18): a **-14 swing** that wiped out the +9
+  from the restructure and then some. Three weeks in, the transfer market has been the
+  profitable half of this operation and the armband has been the volatile half.
+- **Hall's "most robust pick on the board" failed its first test.** The robustness claim
+  rested on two DC readings (11, 13) that happened to sit above a hard threshold of 10.
+  A third reading of 6 puts his mean roughly *on* the threshold, which is the worst
+  possible place for a binary scoring rule to sit. Two samples on one side of a cliff is
+  not robustness, it is a coin flip that landed twice.
+- **The premium-is-a-value-trap thesis got no test at all.** GW3 split the tier it was
+  meant to condemn: Isak 13 and Haaland 9 against Saka 2 and Palmer 1. Nothing was
+  discriminated, and the week must not be read as confirmation.
+- **Mbeumo's 8 points are not evidence for the model that bought him.** 0.05 xG produced
+  that goal. Counting it as the regression thesis paying off would be exactly the
+  reasoning error the GW3 analysis was built to avoid, the "form is fake" trap pointed
+  inward at our own pick.
+- **The ARS v CHE clash was labelled unfixable and then treated as priced.** It was
+  neither. Three slots, £21.7m, 6 points, and the two failure modes are perfectly
+  anti-correlated: any result that pays one side blanks the other. "Unfixable within
+  three transfers" is a statement about one week's constraints, not a reason to stop
+  costing it.
+
 ### Gut calibration
+
+**We beat the average and lost 158,761 places.** That sentence is the season's
+structural problem in one line. 56 gross against a 51 average, minus the hit, is a net
++1 week, and a net +1 week is a losing week whenever 71% of the field has the haul
+captained. The Haaland exposure does not show up as a single catastrophic gameweek. It
+shows up as a slow leak on every week where he returns and we merely match the average.
+
+**Is the armband ledger still evidence for the build?** Barely. **+6 cumulative** after
+three weeks, with enormous variance: 0, +20, -14. GW1's log warned that one week is
+noise, and the same caution now cuts the other way: +20 should not have been read as
+vindication in GW2 any more than -14 should be read as refutation now. What the ledger
+actually says after three weeks is that the no-Haaland build is running approximately
+level while carrying materially more week-to-week variance than the field. That is a
+defensible position to hold and it is not yet a winning one.
+
+**Separate process from outcome.** Four of the seven flags resolved in favour of the
+process (bench order, the -4, Elanga, the MUN concentration), one against (Hall), one
+cancelled out (ARS v CHE), and one is a right answer reached by the wrong route
+(Mbeumo). The decision-making was the best of the season so far and the week still lost
+rank. Both of those are true and neither should be used to argue with the other.
 
 ### Adjustments for next time
 
+1. **Grade defensive-contribution picks on a rolling 4-6 game rate, not two readings.**
+   DC scoring is a hard threshold, so a player averaging ~10 is worth far less than a
+   player averaging 13. Record the per-game DC series, not just the average, and treat
+   a threshold-adjacent mean as a red flag rather than a robustness claim.
+2. **Give the captaincy its own model.** Three gameweeks, three B.Fernandes armbands,
+   cumulative +6. The armband is currently chosen on season form while the transfers are
+   chosen on per-fixture underlying xPts. Run the captaincy through the same
+   fixture-level framework the transfers already use.
+3. **Cost intra-squad clashes explicitly instead of declaring them unfixable.** Put a
+   number on the anti-correlation and carry it into the next wildcard as a constraint,
+   rather than re-discovering it as an accepted risk every week.
+4. **Never read a goal as confirmation of an xG thesis without checking which xG
+   produced it.** Mbeumo's return would have passed an outcome-only check and told us
+   nothing. Check the mechanism first, then the result.
+5. **Keep auditing minutes, not points, on every squad slot** (carried from GW2, and it
+   worked). O'Reilly has now recorded 0 minutes in a home fixture against a promoted
+   side and is the next dead-weight candidate.
+
 ### Chip planning notes
+
+- **No chip played. All four still available**, all expiring **GW19**, so 16 gameweeks
+  of runway and a narrowing useful window.
+- **Bench Boost remains unplayable and got worse.** The bench returned **0** in GW3, and
+  Dubravka and Obi have **0 minutes between them all season**. Georginio added 0 this
+  week too. Three of four bench slots are non-playing filler.
+- **Wildcard: the case has shifted from "the midfield is dead" to "the armband is the
+  problem".** The -4 already did the midfield surgery, which was GW1's stated wildcard
+  trigger. What remains unresolved is the thing this log has now said three times:
+  Haaland is unreachable without selling a forward, and the best forward sale leaves
+  £7.9m short. **That is now the wildcard's actual job**, and the GW5-6 decision point
+  should be argued on that basis rather than on squad health.
+- **Free Hit and Triple Captain:** no case yet. Both want a DGW or a fixture outlier and
+  GW3-7 contains neither for this squad.
