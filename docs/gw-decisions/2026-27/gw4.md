@@ -285,7 +285,7 @@ trigger to evaluate (the MUN/BHA fixture collapse) rather than a vague one.
 | 1 | B.Fernandes | 2 (4) | Haaland | 2 (4) | 0 | 0 |
 | 2 | B.Fernandes | 23 (46) | Haaland | 13 (26) | **+20** | +20 |
 | 3 | B.Fernandes | 2 (4) | Haaland | 9 (18) | **-14** | **+6** |
-| 4 | **João Pedro** | | Haaland *(MUN away, FDR 4)* | | | |
+| 4 | **João Pedro** | 12 (24) | Haaland *(MUN away, FDR 4)* | 9 (18) | **+6** | **+12** |
 
 First armband change of the season. Note for the post-mortem: this is also the first
 week where the field's captain is in a genuinely hard fixture, so a small positive swing
@@ -317,43 +317,105 @@ here is worth less as evidence than the raw number will suggest.
 
 ## Outcome
 
-*To be filled in after GW4 finalises. Respect the finalisation gate from GW1:*
-*`events[3].finished = true`, `data_checked = true`, and `automatic_subs` populated.*
+**Actual points: 75** (bench 3, no hit) · **GW average: 69** · **Highest score: 151**
+**Overall rank: 3,200,152** (up from 3,504,624, **+304,472 places**)
+**GW rank:** 3,763,037 · **Season total: 266**
+**Most captained in the game:** Haaland (9 pts)
 
-**Actual points:**
-**Overall rank:**
-**GW rank:**
-**Season total:**
-**Most captained in the game:**
+Finalisation gate confirmed before writing: `events[3].finished = true`,
+`data_checked = true`, and `automatic_subs` is final (empty, because all eleven
+starters played). One process note: `get_fixtures` still reported `is_finished: false`
+at the time, because the MCP server caches the bootstrap for 24 hours; the gate was
+confirmed against the live `bootstrap-static` endpoint instead. See adjustments.
 
 | Player | Min | Pts | Notes |
 |---|---|---|---|
-| Raya | | | |
-| Gabriel | | | |
-| Calafiori | | | |
-| Hall | | | |
-| Mitchell | | | |
-| Guéhi | | | |
-| B.Fernandes (V) | | | |
-| Mbeumo | | | |
-| Semenyo | | | |
-| Gibbs-White | | | |
-| João Pedro (C) | | | |
-| *Bench: Dubravka* | | | |
-| *Bench: Gomez* | | | |
-| *Bench: Georginio* | | | |
-| *Bench: Obi* | | | |
+| **Raya** | 90 | **14** | **Penalty save**, clean sheet, 3 bonus. SUN 0-2 ARS |
+| Gabriel | 90 | 9 | Clean sheet, 2 bonus, **DC 11** (2 pts banked), yellow card |
+| **Calafiori** | 90 | 6 | Clean sheet. DC 4, xGI 0.07: the points came from the team event, not from him |
+| **Hall** | 90 | **0** | **Conceded 4**, -2. LEE 4-1 NEW. **DC 6** again (see flag) |
+| Mitchell | 76 | 1 | Conceded 2, subbed. **CRY 2-3 IPS at home, FDR 2** |
+| Guéhi | 90 | 6 | Clean sheet, DC 7. MUN 0-1 MCI |
+| B.Fernandes (V) | 90 | 2 | Appearance only. 0.36 xGI in the derby |
+| Mbeumo | 90 | 2 | Appearance only. 0.49 xG, no return |
+| Semenyo | 90 | 3 | Midfield clean-sheet point, 0.06 xGI |
+| Gibbs-White | 90 | 8 | Assist + 3 bonus from **0.91 xA**. AVL 1-2 NFO |
+| **João Pedro (C)** | 90 | **12 x2 = 24** | **Goal + assist + 3 bonus** from 0.29 xG. CHE 2-2 HUL |
+| *Bench: Dubravka* | 0 | 0 | |
+| *Bench: Gomez* | 83 | 3 | Clean sheet point. BHA 5-0 COV |
+| *Bench: Georginio* | 0 | 0 | **Unused in a 5-0 win.** Still a 75% doubt |
+| *Bench: Obi* | 0 | 0 | **Loaned to Willem II**, status `u`. Permanently zero |
+
+**No autosub.** All eleven starters played, so the bench order (Gomez first) was never
+tested. Bench 3, all of it Gomez.
+
+XI total **75**, bench **3**, no transfer cost. Beat the GW average by **6** and gained
+**304,472 places**: the first week of the season where beating the average and gaining
+rank happened together.
 
 ### Flag outcomes
 
-- [ ] Hull's clean-sheet run:
-- [ ] The armband switch:
-- [ ] Calafiori over Lacroix:
-- [ ] The derby clash:
-- [ ] Guéhi over Gomez:
-- [ ] ARS×3 concentration:
-- [ ] Bench order:
-- [ ] MUN/BHA fixture collapse:
+- [x] **Hull's clean-sheet run: BROKEN, BUT HULL TOOK A POINT AT STAMFORD BRIDGE.**
+      CHE 2-2 HUL. Hull conceded for the first time this season, and scored twice
+      (Belloumi 2 goals from 0.17 xG). **Margin: none.** Rotation: no, the back line was
+      Ajayi, Egan and Giles for 90 minutes each, Mendy came off at 58. So the "FDR 2 was
+      right after all" reading is **not** available: Chelsea did not win, no Chelsea
+      defender kept a clean sheet, and Palmer returned **5**. Both halves of the
+      pre-deadline call held. The fixture was good enough for João Pedro to haul in and
+      not good enough to Triple Captain into: **TC Palmer would have been 15 against our
+      24 from a plain armband.**
+- [x] **The armband switch: YES, +20 AGAINST THE INCUMBENT.** João Pedro 12 (24)
+      against what B.Fernandes would have returned in the derby, 2 (4). Against the
+      field's captain: Haaland 9 (18), a **+6 swing**, cumulative **+12**. The
+      pre-deadline note said a small positive swing here would be worth less as
+      evidence because Haaland was in a hard fixture, and that caution stands: he scored
+      anyway. The number that matters is the internal one. **The first time the
+      captaincy was run at fixture level, it moved the armband off a player who then
+      blanked and onto a player who then hauled.** Without the switch this is a 55-point
+      week, below the average, and a fourth week of lost rank.
+- [x] **Calafiori over Lacroix: YES, +5, FOR A REASON WE NEVER PRICED.** Lacroix
+      played **4 minutes** off the bench for 1 point. Calafiori played 90 for 6. The DC
+      question is moot: nobody banks a threshold from the bench. The rejection was
+      argued entirely on the threshold-adjacent DC mean, and the actual failure mode was
+      **minutes**. Right pick, incomplete reasoning: the minutes audit that GW2-3 applied
+      to holds was never applied to the buy list. And the other half of the thesis got no
+      test either: Calafiori's 6 came from the Arsenal clean sheet (xGI 0.07), not from
+      the xGI that bought him. GW3 learning #4 applies inward: **do not read this as
+      confirmation of the xGI model.**
+- [x] **The derby clash: THE ANTI-CORRELATION BIT EXACTLY AS DESCRIBED.** MUN 0-1 MCI.
+      City side: Guéhi 6 + Semenyo 3 = **9**. United side: B.Fernandes 2 + Mbeumo 2 =
+      **4**. **13 points from £34.3m across four XI slots**, 3.25 per slot against an XI
+      average of 6.8. Guéhi's clean sheet coincided with both United blanks, which is
+      precisely the mechanism the pre-deadline analysis costed. The price was set at
+      "roughly a point" and the true cost is not separable from the fixture being hard
+      for everyone in it, but the thing that made the derby survivable was moving the
+      armband out of it. Footnote: Gvardiol, rejected for "re-entering the derby we are
+      trying to unwind", returned **11**.
+- [x] **Guéhi over Gomez: YES, +3.** 6 against 3. Both kept clean sheets; a defender's
+      is worth 4 and a midfielder's 1. Benching the best defender in the squad to
+      decorrelate would have cost 3 points. Pricing the clash instead of reflexively
+      avoiding it, GW3's adjustment #3, paid in its first week.
+- [x] **ARS×3 concentration: PAID, 29 POINTS.** SUN 0-2 ARS. Raya 14 (penalty save
+      plus 3 bonus), Gabriel 9, Calafiori 6. **39% of the week from one clean sheet.**
+      This is what positive concentration looks like when it hits; the same three slots
+      return roughly 6 combined if Sunderland score once. Note for GW5: the fixture is
+      **BHA v ARS**, which puts ARS×3 directly against BHA×2. That is the GW3 ARS v CHE
+      shape again, one week after the log promised to cost such clashes rather than
+      re-discover them.
+- [x] **Bench order: UNTESTED.** No autosub fired. The order was right in principle,
+      Gomez was the only bench player who scored, but there is no evidence either way.
+      What the bench did produce is a squad-health finding: Georginio did not get on the
+      pitch in a match Brighton won **5-0**, and **Obi has been loaned to Willem II**
+      (status `u`, 0% chance of playing). Three of four bench slots are now structurally
+      zero, and one of them cannot return this season.
+- [x] **MUN/BHA fixture collapse: HALF RIGHT, AND THE WRONG HALF IS THE INSTRUCTIVE
+      ONE.** The MUN half showed up in returns: B.Fernandes 2, Mbeumo 2, Obi 0, **4 points
+      from £24.4m**. The BHA half did not: Brighton won **5-0** at Coventry, Groß was the
+      **top scorer in the whole game (17)**, Dunk 12, De Cuyper 11. Our two Brighton
+      slots returned 3 from the bench and 0 unused. The "rank 20 over GW4-9" figure was a
+      six-week average that concealed an FDR-2 fixture in the very week it was used.
+      **Our Brighton problem is not their fixtures, it is that we own the wrong Brighton
+      players.** The De Cuyper rejection (BHA×3, rank 20) cost 5 against Calafiori.
 
 ---
 
@@ -361,10 +423,118 @@ here is worth less as evidence than the raw number will suggest.
 
 ### What we got right
 
+- **The captaincy model, first run, +20 against the incumbent.** Moving off B.Fernandes
+  for the first time all season was the largest single decision of the week and it
+  decided the week. GW3's adjustment #2 has a measured value in its first outing, and
+  it is larger than the bench-order lesson's +15 in GW3.
+- **The Hull read was right, both ways.** Not Triple Captain material (Palmer 5, TC
+  would have been 15 against our 24) and not a defence to buy into (no Chelsea clean
+  sheet, Lacroix benched anyway). Reading a promoted side off this season's data rather
+  than off FDR beat the community consensus.
+- **Pricing the clash instead of avoiding it: +3.** Guéhi over Gomez in the 5-4-1.
+- **The dead-weight transfer.** O'Reilly played 8 minutes for 1 point; Calafiori
+  returned 6. Fourth consecutive week the minutes audit produced a positive transfer.
+- **ARS×3 as positive concentration: 29 points.** Correctly distinguished from the GW3
+  hedge, and correctly held.
+- **Beat the average by 6 and gained 304,472 places.** For the first time this season
+  the process, the points and the rank all pointed the same way.
+
 ### What we got wrong
+
+- **Hall, again, and now the series says it.** DC per game: **11, 13, 6, 6**. Rolling
+  mean 9.0, below the threshold of 10. Zero points at Leeds (four conceded), 4 points
+  in GW3. This is exactly the red-flag pattern GW3's adjustment #1 described, and the
+  "single most robust pick on the board" has returned 4 from two starts since it was
+  written. The fixture run (NEW ranked 3rd, GW4-9) did nothing: Leeds were FDR 3 and
+  scored four.
+- **FDR 2 against promoted sides failed twice in one week.** Palace lost **2-3 at home**
+  to Ipswich (Mitchell 1). Chelsea drew at home to Hull (no clean sheet). Add Hull
+  beating Man Utd in GW1. The pre-deadline Hull finding was treated as a Hull fact when
+  it is a **promoted-side fact**: the FDR of 2 on these fixtures is priced off last
+  season's division, not this season's results.
+- **The BHA "rank 20" reading used the wrong lens.** A six-week average told us to
+  avoid Brighton in a week they won 5-0 and produced the top scorer in the game. The
+  average was true and irrelevant to a one-week decision. And it distracted from the
+  real finding: Gomez and Georginio are the wrong Brighton assets, not Brighton the
+  wrong team.
+- **Three structural filters rejected the three best defensive returns on the board.**
+  Bogle 15 (rejected: hedges against Hall), Gvardiol 11 (re-enters the derby),
+  De Cuyper 11 (BHA×3, rank 20). Calafiori's 6 was fine; the rejected alternatives
+  were better by 5 to 9. One week, and GW3's ARS v CHE showed the opposite, so this is
+  not a reason to drop the rules. It is a reason to notice that they trade ceiling for
+  variance reduction, and to price that trade rather than treat the rules as free.
+- **The buy list was never minutes-audited.** Lacroix was rejected on DC and would
+  have failed on minutes. The result was the same this week; the process had a hole.
+- **Obi is a structural zero and we found out from the API, after the fact.** Loaned to
+  Willem II with status `u`. Between Dubravka (0 minutes all season), Obi (gone) and
+  Georginio (unused in a 5-0), the bench is three dead slots and one Gomez.
 
 ### Gut calibration
 
+**One decision was the whole week.** 75 with the armband on João Pedro; 55 with it left
+on B.Fernandes. The difference between a +304,000 week and a fourth consecutive week of
+lost rank was a single fixture-level call. That is the strongest evidence yet that the
+transfer market has been the stable half of this operation and the armband the lever.
+
+**Is the armband ledger evidence for the build now?** More than it was. **+12
+cumulative** over four weeks (0, +20, -14, +6), and this week's +6 came against a
+Haaland who *scored*, in an FDR-4 fixture. The ledger was previously "level with more
+variance". After GW4 it is "slightly positive, still with more variance, and the
+variance is now partly under our control", because the captaincy is chosen on a model
+rather than on autopilot. That is not a winning position yet. It is the first week the
+build has looked like one.
+
+**Separate process from outcome, both directions.** Five flags resolved for the process
+(armband, Hull, Guéhi over Gomez, ARS×3, Calafiori), one untested (bench), two mixed
+(derby, MUN/BHA). But the two biggest individual returns were Raya's penalty save and
+João Pedro's 3 bonus, neither of which any model predicts, and three rejected
+candidates outscored the pick. Good week, good process, and the good week is larger
+than the good process accounts for.
+
 ### Adjustments for next time
 
+1. **Hall is the next transfer candidate.** The DC series (11, 13, 6, 6) meets the
+   red-flag definition set in GW3. He is not sold on one bad week; he is sold on a
+   rolling mean below a hard threshold plus two starts for 4 points. GW5 is NEW v HUL,
+   and after this week "FDR 2 against a promoted side" is not a reason to keep him.
+2. **Minutes-audit the buy list, not just the squad.** "Is he nailed" becomes the first
+   gate on every transfer target, before form, xGI or DC. Lacroix would have failed it.
+3. **Discount FDR against promoted sides until their results say otherwise.** Hull
+   drew at Chelsea and beat Man Utd; Ipswich won at Palace. Treat FDR 2 v HUL/IPS/COV
+   as FDR 3 until the API shows them conceding like a bottom-half side.
+4. **A fixture-run average is not a fixture.** Read the current week's FDR and the
+   GW-run average as two separate inputs. Rank 20 over six weeks can contain the
+   easiest fixture of the round, and it did.
+5. **Price the structural filters.** "No intra-squad hedging" and "no triple-up into a
+   bad run" filtered out 15, 11 and 11 this week. Keep the rules, but when a filter
+   removes the highest-xPts candidate, write down what it cost, so the trade is visible
+   over the season rather than rediscovered week by week.
+6. **Do not trust `get_fixtures.is_finished` for the finalisation gate.** The MCP
+   server's bootstrap cache is 24 hours; it reported `is_finished: false` while the live
+   API had `finished` and `data_checked` both true. Check the live `bootstrap-static`
+   endpoint, or shorten the TTL for the events block.
+7. **Keep the captaincy model** (GW3 adjustment #2, now with a +20 first result), and
+   run it again from scratch for GW5 rather than defaulting to João Pedro because it
+   worked once. That would be the same autopilot that cost -14 in GW3, with a different
+   name on it.
+
 ### Chip planning notes
+
+- **No chip played. All four still available**, all expiring **GW19**: 14 gameweeks of
+  runway.
+- **Bench Boost is dead for this squad.** Obi cannot play (loan). Dubravka has 0
+  minutes. Georginio was unused in a 5-0. Bench Boost on this bench is Gomez plus
+  nothing, and it would take three transfers to make it playable.
+- **Wildcard: the GW5-6 decision point is now, and the trigger list has grown.** GW3
+  reframed the wildcard's job as "the armband is the problem", meaning Haaland is
+  unreachable without a rebuild. GW4 adds: Obi is a permanent zero, Hall's DC series has
+  failed, the MUN triple returned 4 points from £24.4m in the fixture run it was flagged
+  for, and both Brighton slots are the wrong players. Against that: a 75-point week,
+  £98.4m value with £1.3m ITB and 1 FT, and a captaincy model that just worked. **The
+  GW5 evaluation should argue the wildcard seriously and on this list**, not on squad
+  health in general. GW5 itself is a bad week to judge by: ARS×3 v BHA×2 at the Amex, and
+  MUN away at Fulham (FDR 4) again.
+- **Triple Captain:** the community's TC-Palmer-into-Hull would have paid 15. Holding
+  was right. The field's TC spot in GW5 is Haaland at home to Sunderland (FDR 5 for
+  Sunderland) and we do not own him; no case for us.
+- **Free Hit:** no DGW/BGW in sight.
