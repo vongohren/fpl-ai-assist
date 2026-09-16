@@ -152,8 +152,11 @@ function acpSpawn(title, prompt) {
     { encoding: "utf8" }
   );
   if (r.status !== 0) throw new Error(`acp spawn failed: ${r.stderr || r.stdout}`);
-  // acp prints the conversation link; keep the whole first line as the address.
-  return (r.stdout || "").trim().split("\n")[0];
+  // acp prints "conversation: c576"; a human needs the link, not the id.
+  const id = ((r.stdout || "").match(/conversation:\s*(\S+)/) || [])[1];
+  if (!id) return (r.stdout || "").trim().split("\n")[0];
+  const link = spawnSync(ACP, ["link", id], { encoding: "utf8" });
+  return link.status === 0 && link.stdout.trim() ? link.stdout.trim() : id;
 }
 
 function renderBrief(name, vars) {
