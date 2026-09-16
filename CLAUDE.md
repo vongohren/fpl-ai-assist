@@ -43,9 +43,19 @@ login (the page shows you yours).
 
 Legacy fallbacks still exist but store your password on the box and need Chromium: `source setup.sh --password` (headless) and `source setup.sh --interactive` (needs a display).
 
+## The gameweek loop
+
+`scripts/gw-loop/` is the hourly job (`fpl-gw-loop`) that runs the season: research and
+a proposal PR at T-72h before each deadline, nudges on the phone until the team changes,
+a Decision record when the deadline passes, and the post-mortem when FPL finalises. It
+never makes transfers. If you are woken by it, the prompt names a rendered brief under
+`/workspace/.spawn/fpl-gw-loop/briefs/`; read that and nothing else first. Details and
+operating commands: `scripts/gw-loop/README.md`.
+
 ## Project Structure
 
 - `fpl-mcp-server/` - MCP server providing FPL tools (squad, fixtures, search, trends)
+- `scripts/gw-loop/` - The hourly gameweek loop (tick + agent briefs), see above
 - `setup.sh` - Token refresh script (calls `npm run setup` which runs `fpl-mcp-server/scripts/setup.ts`)
 - `.mcp.json` - MCP server config, reads `FPL_COOKIE`, `FPL_X_API_AUTH`, `FPL_MANAGER_ID` from env
 
