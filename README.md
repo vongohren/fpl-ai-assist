@@ -4,13 +4,23 @@ An MCP server that gives Claude access to your Fantasy Premier League data.
 
 ## Setup
 
-1. Run the setup script to authenticate with FPL:
+1. Authenticate with FPL:
    ```bash
    source setup.sh
    ```
-   On first run the box prints a login URL and a QR code. Open it on your phone, log in to your Premier League account, and you'll land on a blank "404 Not Found" page — that means it worked. Copy that page's full URL from the address bar and paste it back into the terminal.
+   **On a fleet box** (one with `oauth-token`): the token comes through the
+   oauth-broker on beast, which holds the FPL refresh token. First time, run
+   `source setup.sh --login`: the broker's approve link is printed and buzzed to
+   your phone; approve, log in to your Premier League account in the new tab,
+   land on a blank "404 Not Found" page (that means it worked), copy that page's
+   address and paste it into the same broker page. From then on `source setup.sh`
+   refreshes silently — nothing rotating is stored on the box.
 
-   The box exchanges it for an access token **and a refresh token**, both saved to `~/.fpl/secrets.env`. From then on `source setup.sh` refreshes silently: no browser, no phone, and no password ever stored on the box.
+   **Anywhere else**: on first run the box prints a login URL and a QR code. Open it
+   on your phone, log in, land on the blank 404 page, copy its address and paste it
+   back into the terminal. The box exchanges it for an access token **and a
+   refresh token**, both saved to `~/.fpl/secrets.env`; from then on `source setup.sh`
+   refreshes silently. No password is ever stored on the box.
 
 2. Source your secrets (add to your `.zshrc` for persistence):
    ```bash
@@ -53,35 +63,33 @@ needed once it arrives that way.
 ## Keeping the login alive
 
 ```bash
-scripts/auth-keepalive.sh            # refresh if due; alert if the grant is dead
+scripts/auth-keepalive.sh            # refresh (through the broker if there is one); alert if the grant is dead
 scripts/auth-keepalive.sh --status   # report token state, change nothing
+scripts/auth-keepalive.sh --login    # start a fresh login (broker: the link goes to the phone)
 ```
 
-Scheduled on the life box every 6 hours (`jobctl list | grep fpl-auth`). It
-refreshes when under 2h remain, so the access token is never stale when a tool
-needs it.
+Scheduled on the life box every 6 hours (`jobctl list | grep fpl-auth`). Every
+fire refreshes, because an access token is a signed JWT that keeps verifying no
+matter what happened to the session behind it — a refresh is the only way to
+learn the grant is alive.
 
 It does **not** promise the login never dies. The refresh token has twice been
 revoked server-side (2026-08-23, 2026-08-28) while its own `exp` was still
 months away — not expiry, but the session being invalidated upstream, most
-likely by a fresh login elsewhere such as the FPL app. Nothing on this box can
-prevent that. What the job does guarantee is that we find out within 6 hours
-instead of twelve hours before a gameweek deadline, which is what actually cost
-us a transfer in GW2.
+likely by a fresh login elsewhere such as the FPL app. Nothing here can prevent
+that. What the job does guarantee is that we find out within 6 hours instead of
+twelve hours before a gameweek deadline (which is what cost us a transfer in
+GW2) — and, in broker mode, that it has already started the re-login and put
+the approve link on the phone when it does.
 
 ## Re-authenticating
 
-Access tokens expire often. Run `source setup.sh` — it refreshes silently using the stored refresh token.
+Access tokens expire often. Run `source setup.sh` — it refreshes silently.
 
-If the refresh token itself has expired or been revoked, redo the one-off phone login:
-
-```bash
-source setup.sh --login
-```
-
-Legacy flows (store your FPL password on the box, require Chromium):
+If the refresh token itself has expired or been revoked, redo the login:
 
 ```bash
-source setup.sh --password      # headless browser login
-source setup.sh --interactive   # headful browser, needs a display
+source setup.sh --login       # broker: approve link to the phone; legacy: link + QR, paste back
 ```
+
+

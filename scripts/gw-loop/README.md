@@ -42,7 +42,7 @@ outright. If that policy changes later, it changes in the brief, not in `tick.mj
 | still pending | T-48h, T-24h (default), T-6h (high), T-2h (urgent) |
 | deadline passed | "FPL GW5 låst: matched", captain, transfers, chip |
 | gameweek finalised | "FPL GW5 ferdig: 75 poeng (snitt 69)" |
-| `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h), click opens `fpl-auth.beast.go`; at most one per 6h |
+| `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; at most one per 6h |
 | an agent produced nothing in 6h, three times | "sitter fast" (high) |
 
 Agents themselves are told **not** to message the human; every buzz comes from the
