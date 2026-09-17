@@ -65,7 +65,7 @@ needed once it arrives that way.
 ```bash
 scripts/auth-keepalive.sh            # refresh (through the broker if there is one); alert if the grant is dead
 scripts/auth-keepalive.sh --status   # report token state, change nothing
-scripts/auth-keepalive.sh --login    # start a fresh login (broker: the link goes to the phone)
+scripts/auth-keepalive.sh --login    # start a fresh login (broker: the phone rings, tap = approve)
 ```
 
 Scheduled on the life box every 6 hours (`jobctl list | grep fpl-auth`). Every
@@ -79,8 +79,10 @@ months away — not expiry, but the session being invalidated upstream, most
 likely by a fresh login elsewhere such as the FPL app. Nothing here can prevent
 that. What the job does guarantee is that we find out within 6 hours instead of
 twelve hours before a gameweek deadline (which is what cost us a transfer in
-GW2) — and, in broker mode, that it has already started the re-login and put
-the approve link on the phone when it does.
+GW2) — and, in broker mode, that it has already started the re-login and rung
+the phone (tap = the approve page) when it does. It rings at most once per 6 h,
+shared with the gameweek loop's own 401 alarm, and a dead grant with the
+doorbell rung exits 0 — nothing for deadman to heal.
 
 ## Re-authenticating
 

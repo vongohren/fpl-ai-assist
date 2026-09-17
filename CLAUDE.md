@@ -25,14 +25,21 @@ No restart needed: the MCP server reads `~/.fpl/secrets.env` itself and re-reads
 scripts/auth-keepalive.sh --login      # = oauth-token login fpl --force
 ```
 
-It prints the broker's approve link **and buzzes it to the phone** (ntfy), then
-waits up to 20 minutes. Snorre opens the link, presses Approve, logs in to the
-Premier League in the new tab, lands on a blank 404 page, copies its address and
-pastes it into the same broker page. The box collects the token on its next poll.
-The keepalive job does this by itself when it finds the grant dead, and the
-gameweek loop's "innloggingen er død" alarm starts it too — so by the time a human
-reads the alarm the link is already on the phone. **Never start two logins at
-once** (the keepalive lock guards the scheduled one).
+It prints the broker's approve link **and rings the phone** (ntfy, and the tap
+opens the approve page), then waits up to 20 minutes. Snorre taps, presses
+Approve, logs in to the Premier League in the new tab, lands on a blank 404 page,
+copies its address and pastes it into the same broker page. The box collects the
+token on its next poll.
+
+**There is exactly one doorbell.** The keepalive job rings it by itself when it
+finds the grant dead, and the gameweek loop's 401 alarm rings it too (with
+`urgent` inside 24 h of a deadline and the deadline in the label) — both through
+`--login --if-due`, which rings **at most once per 6 h**. A ring whose link has
+expired is worse than no ring, so every ring is a fresh 20-minute login; the
+cadence is the notification count. A dead grant with the doorbell rung is the
+job doing its job, so it **exits 0** — deadman must not send an Opus healer at
+something only a phone can fix. A human `--login` always rings. **Never start
+two logins at once** (the keepalive lock guards the scheduled one).
 
 Legacy phone login (no broker): `source setup.sh --login` — the box prints a link
 + QR, you paste the 404 page's address back into the terminal.

@@ -5,6 +5,20 @@
 #   scripts/auth-keepalive.sh            refresh if needed, alert on failure
 #   scripts/auth-keepalive.sh --status   report token state, change nothing
 #   scripts/auth-keepalive.sh --login    start a fresh login (the doorbell)
+#   scripts/auth-keepalive.sh --login --if-due   …unless one rang < 6 h ago
+#
+# THE DOORBELL, and why there is exactly one. In broker mode a dead grant is
+# fixed by ONE tap: `oauth-token login fpl --force` rings ntfy with the
+# broker's approve page as the tap action (priority from
+# OAUTH_TOKEN_NTFY_PRIORITY; the gameweek loop sets urgent inside 24 h of a
+# deadline and passes the deadline as the label). Every caller — this job's
+# scheduled run, the gameweek loop's 401 alarm, a human — goes through
+# broker_login, and `--if-due` makes the automatic ones ring at most once per
+# 6 h (a ring whose link has expired is worse than no ring, so each ring IS a
+# fresh 20-minute login, and the cadence is the notification count). A dead
+# grant with the doorbell rung is this job DOING ITS JOB, so it exits 0 —
+# deadman must not treat "the human has been told" as a stalled job and send
+# an Opus healer at something only a phone can fix.
 #
 # TWO MODES, picked by what is on the box:
 #
@@ -180,13 +194,25 @@ write_broker_secrets() { # write_broker_secrets <access-token>
   chmod 600 "$tmp" && mv -f "$tmp" "$SECRETS"
 }
 
-broker_login() {
-  echo "🔐 Starting an FPL login through the oauth-broker (the link goes to the phone too)…"
+DOORBELL="$HOME/.fpl/login-started"     # epoch of the last automatic ring
+DOORBELL_EVERY=$((6 * 3600))
+
+broker_login() { # broker_login [if-due]  → 0 logged in · 2 rang but not approved · 3 skipped (rang recently) · 1 could not ring
+  if [ "${1:-}" = if-due ] && [ -f "$DOORBELL" ]; then
+    local last; last="$(cat "$DOORBELL" 2>/dev/null || echo 0)"
+    if [ $(( $(date +%s) - last )) -lt "$DOORBELL_EVERY" ]; then
+      echo "a login link was already sent $(( ( $(date +%s) - last ) / 60 )) min ago — not ringing again yet"
+      return 3
+    fi
+  fi
+  echo "🔐 Starting an FPL login through the oauth-broker (the link goes to the phone: tap = approve)…"
+  date +%s > "$DOORBELL"
   # --force: replace whatever grant is stored, live or dead. Blocks until the
   # human is done or the broker's window (20 min for fpl) closes.
-  if ! oauth-token login "$PROVIDER" --force; then
-    echo "❌ the login did not complete" >&2
-    return 1
+  local label="${FPL_LOGIN_LABEL:-life · FPL}"
+  if ! oauth-token login "$PROVIDER" --force --label "$label"; then
+    echo "⏳ the login did not complete in the broker's window — the link on the phone is spent; the next ring is ≥ 6 h away unless someone runs --login" >&2
+    return 2
   fi
   local tok
   if tok="$(oauth-token get "$PROVIDER")"; then
@@ -233,7 +259,11 @@ fi
 # ------------------------------------------------------------------- --login
 if [ "${1-}" = "--login" ]; then
   if command -v oauth-token >/dev/null 2>&1; then
-    broker_login; exit $?
+    if [ "${2-}" = "--if-due" ]; then broker_login if-due; else broker_login; fi
+    rc=$?
+    # 2 (rang, unapproved) and 3 (rang recently) are not failures of this
+    # script — the human has the link. Only "could not ring" is.
+    case "$rc" in 0|2|3) exit 0 ;; *) exit 1 ;; esac
   fi
   echo "no oauth-token on this box — use the legacy phone login: npx tsx $AUTH --start / --finish" >&2
   exit 1
@@ -255,12 +285,13 @@ if broker_mode; then
   fi
   cat "$HOME/.fpl/keepalive.err" >&2 2>/dev/null
   case "$rc" in
-    3)  record refresh_failed "invalid_grant"
-        alert "The broker refused to refresh the FPL grant — it is dead upstream (a login elsewhere, most likely). Starting a fresh login now; approve the link on the phone."
-        broker_login; exit $? ;;
-    2)  record refresh_failed "no-grant"
-        alert "No FPL grant on the box. Starting a fresh login now; approve the link on the phone."
-        broker_login; exit $? ;;
+    3|2)
+        record refresh_failed "$([ "$rc" = 3 ] && echo invalid_grant || echo no-grant)"
+        echo "the FPL grant is $([ "$rc" = 3 ] && echo 'dead upstream (a login elsewhere, most likely)' || echo 'missing') — ringing the doorbell" >&2
+        broker_login if-due; lrc=$?
+        # The human has been told (or was told < 6 h ago): this job did its
+        # job. exit 0 keeps deadman quiet; nothing an Opus healer can do here.
+        case "$lrc" in 0|2|3) exit 0 ;; *) alert "Could not start an FPL login through the broker (oauth-token login failed to even ring)."; exit 1 ;; esac ;;
     4)  record refresh_failed "broker-unreachable"
         alert "The oauth-broker on beast is unreachable and the cached FPL token has expired."; exit 1 ;;
     *)  record refresh_failed "rc-$rc"

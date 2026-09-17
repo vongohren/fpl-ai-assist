@@ -549,31 +549,36 @@ async function main() {
 function authAlert(state, gw, T, force = false) {
   const last = state.auth?.alerted ? (Date.now() - new Date(state.auth.alerted).getTime()) / 36e5 : Infinity;
   log(gw, "auth-dead", `my-team 401, T-${T.toFixed(1)}h`);
-  if (last < 6 && !force) return; // one buzz per six hours, not one per tick
+  if (last < 6 && !force) return; // one ring per six hours, not one per tick
   state.auth = { ...state.auth, alerted: nowIso() };
-  // The fix is a login through the oauth-broker, and the BOX has to start it:
-  // `auth-keepalive.sh --login` runs `oauth-token login fpl --force`, which
-  // prints + ntfy-sends the broker's approve link and waits (20 min) for the
-  // human. Detached, so the tick never blocks on a phone; the link arrives as
-  // its own notification right after this one. (Until 2026-09-17 this pointed
-  // at fpl-auth.beast.go, the box's own paste-back page; the broker's approve
-  // page is that page now.)
+  const prio = T < 24 ? "urgent" : "high";
   const keepalive = path.join(REPO, "scripts", "auth-keepalive.sh");
-  if (DRY) {
-    console.log(`DRY ${keepalive} --login (detached)`);
-  } else {
+  const broker = spawnSync("sh", ["-c", "command -v oauth-token"], { stdio: "ignore" }).status === 0;
+  if (broker) {
+    // ONE notification, and its tap IS the fix: auth-keepalive.sh --login
+    // runs `oauth-token login fpl --force`, which rings ntfy with the broker's
+    // approve page as the click action and waits (20 min) for the human. The
+    // keepalive owns the doorbell (and rate-limits it to one ring per 6 h via
+    // --if-due, shared with its own scheduled run), so this tick sends nothing
+    // of its own — a second buzz saying "go tap the other buzz" is noise.
+    // Detached: the tick never blocks on a phone. (Until 2026-09-17 this rang
+    // itself and pointed at fpl-auth.beast.go, the box's own paste-back page;
+    // the broker's approve page is that page now.)
+    const env = { ...process.env, OAUTH_TOKEN_NTFY_PRIORITY: prio,
+      FPL_LOGIN_LABEL: `FPL GW${gw} · innloggingen er død · frist om ${Math.round(T)}t` };
+    if (DRY) { console.log(`DRY ${keepalive} --login --if-due (detached, ${prio})`); return; }
     try {
-      const child = spawn("nohup", [keepalive, "--login"], { cwd: REPO, detached: true, stdio: "ignore" });
+      const child = spawn("nohup", [keepalive, "--login", "--if-due"], { cwd: REPO, env, detached: true, stdio: "ignore" });
       child.unref();
     } catch (e) {
       log(gw, "auth-login-spawn-failed", String(e?.message || e));
     }
+    return;
   }
   ntfy({
     title: "FPL: innloggingen er død",
-    prio: T < 24 ? "urgent" : "high",
-    click: "https://oauth.go.vongohren.me/device",
-    msg: `my-team svarer 401 og GW${gw}-fristen er om ${Math.round(T)}t. Godkjenn lenken i neste varsel (oauth-broker), logg inn hos Premier League og lim inn 404-adressen på samme side — så fortsetter loopen av seg selv.`,
+    prio,
+    msg: `my-team svarer 401 og GW${gw}-fristen er om ${Math.round(T)}t. Logg inn på nytt (source setup.sh --login på boksen), så fortsetter loopen av seg selv.`,
   });
 }
 
