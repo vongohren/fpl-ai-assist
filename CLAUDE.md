@@ -13,7 +13,8 @@ source setup.sh
 On a spawn box this goes **through the oauth-broker on beast** (since 2026-09-17):
 the broker holds the FPL refresh token, `oauth-token get fpl` returns a fresh
 access token, and `scripts/auth-keepalive.sh` writes it into `~/.fpl/secrets.env`
-(every 6 h as the `fpl-auth-keepalive` job, and on `source setup.sh`). Nothing
+(every 30 min as the `fpl-auth-keepalive` job — PingOne access tokens are 60 min
+since 2026-09-17 — and on `source setup.sh`). Nothing
 rotating lives on this box. Off the fleet (no `oauth-token`), the legacy path
 still works: the refresh token in `~/.fpl/secrets.env` is used directly.
 

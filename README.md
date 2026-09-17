@@ -68,10 +68,14 @@ scripts/auth-keepalive.sh --status   # report token state, change nothing
 scripts/auth-keepalive.sh --login    # start a fresh login (broker: the link goes to the phone)
 ```
 
-Scheduled on the life box every 6 hours (`jobctl list | grep fpl-auth`). Every
-fire refreshes, because an access token is a signed JWT that keeps verifying no
-matter what happened to the session behind it — a refresh is the only way to
-learn the grant is alive.
+Scheduled on the life box **every 30 minutes** (`jobctl list | grep fpl-auth`;
+`jobctl add "*/30 * * * *" fpl-auth-keepalive -- /workspace/fpl-ai-assist/scripts/auth-keepalive.sh`).
+It was 6-hourly while PingOne issued ~6–8 h access tokens; since 2026-09-17 it
+issues **60-minute** ones (measured on the 18:21 refresh that day, before the
+broker was involved), so a 6 h cadence left the file stale five hours in six.
+Every fire refreshes, because an access token is a signed JWT that keeps
+verifying no matter what happened to the session behind it — a refresh is the
+only way to learn the grant is alive.
 
 It does **not** promise the login never dies. The refresh token has twice been
 revoked server-side (2026-08-23, 2026-08-28) while its own `exp` was still
