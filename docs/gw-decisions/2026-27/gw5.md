@@ -286,6 +286,26 @@ knee is a multi-week injury, that settles it.
   Gomez and one of Mitchell/Barry.
 - **FH:** no DGW/BGW in sight.
 
+### Thursday recheck (2026-09-17, after the six press conferences)
+
+Re-run on request. Live `bootstrap-static` (the MCP cache was 24h stale, GW4 adjustment
+#6) shows **no new flags on the squad**: João Pedro still `d` 75%, everyone else `a`.
+What the pressers changed:
+
+| News | Effect on the proposal |
+|---|---|
+| **João Pedro:** Alonso: "no-one is ruled out for Friday", late fitness test after Friday training, "it's a possibility" he plays and skips Brazil | Unchanged. Still decided after our deadline; the 4-4-2 with Mitchell first bench covers a non-appearance automatically |
+| **Newcastle:** N. González (concussion), Dedić (hamstring), Burn, Joelinton, Ramsey all out; Elanga MRI | A NEW clean sheet v Hull is less likely. **Hall's price for staying rises from about -2 to about -3 against Bogle**; still under the 4-point hit, still starts over Mitchell (Palace have conceded 11) |
+| **Coventry:** Amenda (calf) out, Awoniyi suspended, on top of 0 scored / 9 conceded | Captain Gibbs-White strengthened |
+| **Sunderland:** Reinildo suspended (two yellows) | Guéhi and Semenyo v SUN strengthened |
+| **Hull:** Mendy (concussion) and Hughes out, Targett doubtful | Newcastle more likely to score: helps Hall's attacking side, and Wissa if the human prefers him to Barry |
+| **Arsenal:** Gabriel's half-time sub "was planned", Timber being managed, White 75% | ARS×3 intact |
+| **Forest:** Milenković out, Jair Cunha doubtful | Gibbs-White unaffected |
+| Arsenal, Brighton, Everton, City, United pressers are **Friday** | No word yet on Barry, Haaland's EFL Cup minutes, or Shaw (75%) |
+
+**Proposal unchanged.** A pitch-view for the phone was published at
+https://artifacts.go.vongohren.me/life/fpl-gw5-team.
+
 ---
 
 ## Proposal
