@@ -12,6 +12,7 @@
 #           beast owns the FPL refresh token (it rotates on every use, and the
 #           broker is its only holder); this box asks it for a fresh ACCESS
 #           token and writes that into ~/.fpl/secrets.env as FPL_X_API_AUTH.
+#           Scheduled every 30 min: PingOne's access tokens are 60 min now.
 #           A dead grant is recovered by `oauth-token login fpl --force`: it
 #           prints + ntfy-sends the broker's approve link, the human approves on
 #           the phone, logs in to the Premier League in a new tab, pastes the
@@ -244,7 +245,8 @@ if broker_mode; then
   # Every fire refreshes through the broker (--force), even when the access
   # token still looks healthy: an access token is a signed JWT that keeps
   # verifying until its own exp no matter what happened to the session behind
-  # it, so a refresh is the ONLY way to learn the grant is alive. Four a day.
+  # it, so a refresh is the ONLY way to learn the grant is alive. Every
+  # 30 min since the access token shrank to 60 min (2026-09-17).
   record probe
   tok="$(oauth-token get "$PROVIDER" --force 2>"$HOME/.fpl/keepalive.err")"; rc=$?
   if [ "$rc" -eq 0 ]; then
