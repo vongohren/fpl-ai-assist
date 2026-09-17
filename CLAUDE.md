@@ -10,36 +10,43 @@ The FPL API requires a valid `FPL_X_API_AUTH` token (JWT). Tokens expire regular
 source setup.sh
 ```
 
-Normally this is silent: it uses the stored refresh token to mint a new access token over plain HTTP. No browser, no phone, no password. It then loads env vars into the current shell.
+On a spawn box this goes **through the oauth-broker on beast** (since 2026-09-17):
+the broker holds the FPL refresh token, `oauth-token get fpl` returns a fresh
+access token, and `scripts/auth-keepalive.sh` writes it into `~/.fpl/secrets.env`
+(every 6 h as the `fpl-auth-keepalive` job, and on `source setup.sh`). Nothing
+rotating lives on this box. Off the fleet (no `oauth-token`), the legacy path
+still works: the refresh token in `~/.fpl/secrets.env` is used directly.
 
 No restart needed: the MCP server reads `~/.fpl/secrets.env` itself and re-reads it whenever the file changes, so a rotated token is picked up on the next tool call. Environment variables, when set to a non-empty value, still override the file.
 
-If there is no refresh token yet (first run), or the refresh token has been revoked, `setup.sh` falls back to a one-off **phone login**: the box prints a login URL plus a QR code, you complete the login on your phone, and paste the resulting URL back. Force it with `source setup.sh --login`.
+### When the grant is dead (401 that a refresh does not fix)
+
+```bash
+scripts/auth-keepalive.sh --login      # = oauth-token login fpl --force
+```
+
+It prints the broker's approve link **and buzzes it to the phone** (ntfy), then
+waits up to 20 minutes. Snorre opens the link, presses Approve, logs in to the
+Premier League in the new tab, lands on a blank 404 page, copies its address and
+pastes it into the same broker page. The box collects the token on its next poll.
+The keepalive job does this by itself when it finds the grant dead, and the
+gameweek loop's "innloggingen er død" alarm starts it too — so by the time a human
+reads the alarm the link is already on the phone. **Never start two logins at
+once** (the keepalive lock guards the scheduled one).
+
+Legacy phone login (no broker): `source setup.sh --login` — the box prints a link
++ QR, you paste the 404 page's address back into the terminal.
 
 ### Why the flow looks like this
 
 - The FPL OAuth client has the **device-code grant disabled**, so RFC 8628 is not an option.
-- The client only accepts redirect URIs under `https://fantasy.premierleague.com/*`, so the box cannot host its own callback. That is why the code has to be pasted back by hand.
+- The client only accepts redirect URIs under `https://fantasy.premierleague.com/*`, so nobody can host the callback — not this box, not the broker. That is why the code has to be pasted back by hand; the broker's `authcode-paste` mechanism is exactly that paste, on the one approve page the fleet already uses for LinkedIn and hygglo.
 - The redirect target is `/static/oauth-callback`, which the FPL CDN serves as a plain nginx 404 with no JavaScript. The SPA never boots there, so nothing consumes or strips the `?code=` before it can be copied. Redirecting to `/` would hand the code to the FPL app itself.
-- The token endpoint accepts the FPL client as a **public client with no secret**, so the box can complete the exchange alone.
-
-### Recovering a dead grant without a live agent
-
-`scripts/auth-portal.mjs` serves the paste-back step as a page on the tailnet at
-`http://fpl-auth.beast.go`. Start login, log in on the phone, paste the address of
-the blank 404 page, done.
-
-It exists because the previous route was a Beeper chat, which the box can only read
-through an MCP tool — meaning an agent session had to stay alive for the whole
-30-minute PKCE window to catch the paste. On 2026-08-29 one did not, and the box
-ran on a dead grant for a day. The page needs no live agent and no chat.
-
-The portal owns no auth logic: it shells out to `mobile-auth.ts` under the same
-`flock` the keepalive job takes, so there is exactly one holder of the rotating
-refresh-token chain and a login can never interleave with a scheduled refresh.
-Announce it with `--identity whois` so Caddy injects a Tailscale-verified identity;
-it refuses any request without one. Set `FPL_AUTH_ALLOW` to pin it to a single
-login (the page shows you yours).
+- The token endpoint accepts the FPL client as a **public client with no secret**, so the broker (or the box, in legacy mode) can complete the exchange alone.
+- Until 2026-09-17 this repo carried its own paste-back page (`scripts/auth-portal.mjs`
+  at `fpl-auth.beast.go`, plus a keeper job and an announce). The broker's approve
+  page replaced it — one page for every provider, and the rotating refresh token
+  left the box. See it-management `journal/2026-09-17-fpl-through-the-broker.md`.
 
 Legacy fallbacks still exist but store your password on the box and need Chromium: `source setup.sh --password` (headless) and `source setup.sh --interactive` (needs a display).
 

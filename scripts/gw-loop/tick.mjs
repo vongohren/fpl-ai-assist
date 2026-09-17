@@ -43,7 +43,7 @@
 // =============================================================================
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 
 const REPO = process.env.FPL_LOOP_REPO || "/workspace/fpl-ai-assist";
 const STATE_DIR = process.env.FPL_LOOP_STATE || "/workspace/.spawn/fpl-gw-loop";
@@ -551,11 +551,29 @@ function authAlert(state, gw, T, force = false) {
   log(gw, "auth-dead", `my-team 401, T-${T.toFixed(1)}h`);
   if (last < 6 && !force) return; // one buzz per six hours, not one per tick
   state.auth = { ...state.auth, alerted: nowIso() };
+  // The fix is a login through the oauth-broker, and the BOX has to start it:
+  // `auth-keepalive.sh --login` runs `oauth-token login fpl --force`, which
+  // prints + ntfy-sends the broker's approve link and waits (20 min) for the
+  // human. Detached, so the tick never blocks on a phone; the link arrives as
+  // its own notification right after this one. (Until 2026-09-17 this pointed
+  // at fpl-auth.beast.go, the box's own paste-back page; the broker's approve
+  // page is that page now.)
+  const keepalive = path.join(REPO, "scripts", "auth-keepalive.sh");
+  if (DRY) {
+    console.log(`DRY ${keepalive} --login (detached)`);
+  } else {
+    try {
+      const child = spawn("nohup", [keepalive, "--login"], { cwd: REPO, detached: true, stdio: "ignore" });
+      child.unref();
+    } catch (e) {
+      log(gw, "auth-login-spawn-failed", String(e?.message || e));
+    }
+  }
   ntfy({
     title: "FPL: innloggingen er død",
     prio: T < 24 ? "urgent" : "high",
-    click: "http://fpl-auth.beast.go",
-    msg: `my-team svarer 401 og GW${gw}-fristen er om ${Math.round(T)}t. Logg inn på nytt via fpl-auth.beast.go, så fortsetter loopen av seg selv.`,
+    click: "https://oauth.go.vongohren.me/device",
+    msg: `my-team svarer 401 og GW${gw}-fristen er om ${Math.round(T)}t. Godkjenn lenken i neste varsel (oauth-broker), logg inn hos Premier League og lim inn 404-adressen på samme side — så fortsetter loopen av seg selv.`,
   });
 }
 

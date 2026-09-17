@@ -3,13 +3,19 @@
 # Run with: source setup.sh (to load env vars into current shell)
 # Or just: ./setup.sh (env vars won't be loaded into current shell)
 #
-# Behavior (default = mobile-assisted OAuth, no password stored on this box):
-#   - If a refresh token is stored, refreshes silently. No browser, no phone.
-#   - Otherwise starts the one-off phone login: the box prints a link + QR code,
-#     you log in on your phone, then paste the resulting URL back.
+# Behavior (default = through the oauth-broker when this box has one, else
+# mobile-assisted OAuth; no password is ever stored on this box):
+#   - Broker (a spawn box with `oauth-token`): refreshes the access token through
+#     the broker on beast, which holds the FPL refresh token. No phone. If there
+#     is no grant yet, `--login` starts one: the broker's approve link is printed
+#     and buzzed to the phone; you approve, log in, paste the 404 page's address
+#     into that same broker page.
+#   - Legacy (no broker): if a refresh token is stored in ~/.fpl/secrets.env,
+#     refreshes silently; otherwise the one-off phone login (link + QR, paste
+#     the resulting URL back into the terminal).
 #
 # Flags:
-#   --login              force a fresh phone login (e.g. refresh token revoked)
+#   --login              force a fresh login (e.g. refresh token revoked)
 #   --password           legacy: stored email/password + headless browser
 #   --interactive, -i    legacy: headful browser on THIS machine (needs a display)
 #
@@ -73,9 +79,16 @@ elif [ "$MODE" = "password" ]; then
     npm --prefix "$SERVER_DIR" run save-credentials
     npm --prefix "$SERVER_DIR" run refresh-token
   fi
+elif [ "$MODE" = "login" ] && command -v oauth-token > /dev/null 2>&1; then
+  # Broker: a fresh login through the oauth-broker (the link goes to the phone).
+  "$SERVER_DIR/../scripts/auth-keepalive.sh" --login
 elif [ "$MODE" = "login" ]; then
   # Force a fresh phone login even if a refresh token is stored.
   npm --prefix "$SERVER_DIR" run auth
+elif command -v oauth-token > /dev/null 2>&1 && ! oauth-token status fpl 2>/dev/null | grep -q "(no grant)"; then
+  # Broker happy path: the access token is refreshed through the broker on
+  # beast; nothing rotating lives on this box.
+  "$SERVER_DIR/../scripts/auth-keepalive.sh"
 elif grep -q "FPL_REFRESH_TOKEN" "$FPL_SECRETS_FILE" 2>/dev/null; then
   # Default happy path: silent refresh, no browser and no phone needed.
   npm --prefix "$SERVER_DIR" run auth:refresh
