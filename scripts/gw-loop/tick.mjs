@@ -7,7 +7,7 @@
 // three moments where judgement is needed:
 //
 //   FORWARD    T-72h before the next deadline .... research + proposal   (agent)
-//   WAITING    proposal exists, deadline coming .. nudges, watches the team (this)
+//   WAITING    proposal exists, deadline coming .. watches the team, one buzz (this)
 //   LOCK       deadline passed ..................... record what was done  (agent)
 //   BACKWARD   FPL finalised the gameweek ......... outcome + learnings    (agent)
 //
@@ -55,13 +55,13 @@ const BRIEFS = process.env.FPL_LOOP_BRIEFS || path.join(import.meta.dirname, "br
 const API = "https://fantasy.premierleague.com/api";
 
 const RESEARCH_LEAD_H = Number(process.env.FPL_LOOP_LEAD_H || 72);
-// Nudge thresholds (hours before deadline) while the proposal is unanswered.
-const NUDGES = [
-  { h: 48, prio: "default" },
-  { h: 24, prio: "default" },
-  { h: 6, prio: "high" },
-  { h: 2, prio: "urgent" },
-];
+// ONE buzz per gameweek, on the first tick inside this many hours of the
+// deadline, whatever the team looks like. It replaced the T-48/24/6/2h "ingen
+// endringer sett" ladder on 2026-09-17: four buzzes that said nothing new.
+const DEADLINE_BUZZ_H = Number(process.env.FPL_LOOP_DEADLINE_BUZZ_H || 10);
+// Where a buzz lands the human when there is no conversation to point at yet:
+// the console itself, where a new one is one tap away.
+const CONSOLE = (process.env.ACP_CONSOLE_URL || "https://acp.go.vongohren.me").replace(/\/$/, "");
 const RESPAWN_AFTER_H = 6; // an agent that has not produced in this long is presumed dead
 const MAX_ATTEMPTS = 3;
 
@@ -157,6 +157,16 @@ function acpSpawn(title, prompt) {
   if (!id) return (r.stdout || "").trim().split("\n")[0];
   const link = spawnSync(ACP, ["link", id], { encoding: "utf8" });
   return link.status === 0 && link.stdout.trim() ? link.stdout.trim() : id;
+}
+
+// The URL behind a buzz's click: the GW's analysis conversation when there is
+// one (fw.conversation is already the link from acpSpawn; older state or a
+// failed `acp link` leaves a bare id, resolved here), else the console root.
+function convLink(conv) {
+  if (!conv || conv === "dry") return CONSOLE + "/";
+  if (/^https?:\/\//.test(conv)) return conv;
+  const r = spawnSync(ACP, ["link", conv], { encoding: "utf8" });
+  return r.status === 0 && r.stdout.trim() ? r.stdout.trim() : CONSOLE + "/";
 }
 
 function renderBrief(name, vars) {
@@ -389,13 +399,15 @@ async function main() {
   }
   const gw = next.id;
   const T = hoursTo(next);
-  const fw = (state.forward[gw] ||= { phase: "idle", attempts: 0, nudged: {} });
+  const fw = (state.forward[gw] ||= { phase: "idle", attempts: 0 });
 
   if (T > RESEARCH_LEAD_H) {
     log(gw, "idle", `T-${T.toFixed(1)}h`);
     saveState(state);
     return;
   }
+
+  deadlineBuzz(fw, gw, T, next);
 
   if (fw.phase === "idle") {
     // Forward reads backward: do not research GW N on top of an unwritten GW N-1.
@@ -418,7 +430,7 @@ async function main() {
       saveState(state);
       return;
     }
-    state.auth = { ok: nowIso() };
+    authOk(state);
     const baseline = teamShape(team.body);
     if (!DRY) fs.writeFileSync(path.join(STATE_DIR, "snapshots", `gw${gw}-team.json`), JSON.stringify({ taken_at: nowIso(), ...baseline, raw: team.body }, null, 2));
     const brief = renderBrief("research", {
@@ -460,7 +472,7 @@ async function main() {
         if (!DRY) fs.renameSync(proposalPath, proposalPath + `.error-${Date.now()}`);
         fw.phase = "idle";
         log(gw, "research-aborted", proposal.error);
-        if (proposal.error === "auth") authAlert(state, gw, T, true);
+        if (proposal.error === "auth") authAlert(state, gw, T);
         saveState(state);
         return;
       }
@@ -508,7 +520,7 @@ async function main() {
       saveState(state);
       return;
     }
-    state.auth = { ok: nowIso() };
+    authOk(state);
     const cmp = compareToProposal(teamShape(team.body), fw.baseline, proposal);
     if (cmp.status !== fw.last_status) {
       log(gw, "team-status", `${fw.last_status || "-"} -> ${cmp.status} (${cmp.ok}/${cmp.total})`);
@@ -524,21 +536,6 @@ async function main() {
         });
       }
     }
-    if (cmp.status === "pending") {
-      for (const n of NUDGES) {
-        if (T <= n.h && !fw.nudged[n.h]) {
-          fw.nudged[n.h] = nowIso();
-          ntfy({
-            title: `FPL GW${gw}: ${T < 3 ? Math.round(T * 60) + " min" : Math.round(T) + "t"} til frist, ingen endringer sett`,
-            prio: n.prio,
-            click: proposal.pr_url,
-            msg: proposal.summary || "Forslaget ligger i PR-en.",
-          });
-          log(gw, "nudged", `T-${n.h}h`);
-          break;
-        }
-      }
-    }
     saveState(state);
     return;
   }
@@ -546,11 +543,38 @@ async function main() {
   saveState(state);
 }
 
-function authAlert(state, gw, T, force = false) {
-  const last = state.auth?.alerted ? (Date.now() - new Date(state.auth.alerted).getTime()) / 36e5 : Infinity;
+// The one deadline buzz per gameweek, in whatever phase the tick finds the GW.
+// Latched in state (fw.deadline_buzzed) so it never repeats; the click lands
+// in this GW's analysis conversation. The team status is the last one the
+// proposed-phase watch saw, so the line can say whether he has acted.
+function deadlineBuzz(fw, gw, T, next) {
+  if (T > DEADLINE_BUZZ_H || fw.deadline_buzzed) return;
+  fw.deadline_buzzed = nowIso();
+  const team = {
+    pending: "ingen endringer sett siden forslaget",
+    "matched-by-default": "forslaget var å rulle, laget står",
+    matched: "laget matcher forslaget",
+    partial: "delvis gjort, se forslaget",
+    diverged: "laget er endret, men ikke som foreslått",
+  }[fw.last_status];
+  const line = fw.phase === "proposed" ? (team ? `Laget: ${team}.` : "Forslaget ligger i PR-en.") : "Forslaget er ikke klart ennå.";
+  ntfy({
+    title: `FPL GW${gw}: ${T < 3 ? Math.round(T * 60) + " min" : Math.round(T) + "t"} til frist`,
+    prio: "high",
+    click: convLink(fw.conversation),
+    msg: `Frist ${fmtOslo(next.deadline_time)}. ${line}${fw.pr_url ? ` ${fw.pr_url}` : ""}`,
+  });
+  log(gw, "deadline-buzzed", `T-${T.toFixed(1)}h ${fw.phase} ${fw.last_status || "-"}`);
+}
+
+// ONE buzz (and one login start) per dead login. The marker lives in state
+// until my-team answers 200 again (authOk clears it). A 6h cooldown fired four
+// times for a single dead login on 2026-09-16/17 (22:08, 03:07, 16:10, ...);
+// the keepalive job owns the retries, the phone only needs to hear it once.
+function authAlert(state, gw, T) {
   log(gw, "auth-dead", `my-team 401, T-${T.toFixed(1)}h`);
-  if (last < 6 && !force) return; // one buzz per six hours, not one per tick
-  state.auth = { ...state.auth, alerted: nowIso() };
+  if (state.auth?.login_dead_buzzed) return;
+  state.auth = { ...state.auth, login_dead_buzzed: nowIso() };
   // The fix is a login through the oauth-broker, and the BOX has to start it:
   // `auth-keepalive.sh --login` runs `oauth-token login fpl --force`, which
   // prints + ntfy-sends the broker's approve link and waits (20 min) for the
@@ -575,6 +599,11 @@ function authAlert(state, gw, T, force = false) {
     click: "https://oauth.go.vongohren.me/device",
     msg: `my-team svarer 401 og GW${gw}-fristen er om ${Math.round(T)}t. Godkjenn lenken i neste varsel (oauth-broker), logg inn hos Premier League og lim inn 404-adressen på samme side — så fortsetter loopen av seg selv.`,
   });
+}
+
+// my-team answered 200: the login is alive, so the next dead one buzzes again.
+function authOk(state) {
+  state.auth = { ok: nowIso() };
 }
 
 function fmtOslo(iso) {

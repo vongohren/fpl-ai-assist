@@ -53,7 +53,7 @@ Legacy fallbacks still exist but store your password on the box and need Chromiu
 ## The gameweek loop
 
 `scripts/gw-loop/` is the hourly job (`fpl-gw-loop`) that runs the season: research and
-a proposal PR at T-72h before each deadline, nudges on the phone until the team changes,
+a proposal PR at T-72h before each deadline, one phone buzz at T-10h,
 a Decision record when the deadline passes, and the post-mortem when FPL finalises. It
 never makes transfers. If you are woken by it, the prompt names a rendered brief under
 `/workspace/.spawn/fpl-gw-loop/briefs/`; read that and nothing else first. Details and

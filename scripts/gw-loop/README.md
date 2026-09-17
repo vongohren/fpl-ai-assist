@@ -3,7 +3,7 @@
 One hourly job, `fpl-gw-loop`, runs `tick.sh`. The tick is deterministic (no LLM): it
 reads the public FPL API, works out which phase every gameweek is in, and wakes an
 agent only at the three points where judgement is needed. The rest of the hour it
-watches the team and nudges the human.
+watches the team; the phone hears from it once per event, never on a timer.
 
 ```
             T-72h                    deadline              FPL finalises
@@ -11,13 +11,13 @@ watches the team and nudges the human.
   idle ──► researching ──► proposed ──► locked ────────────► post-mortem ──► (feeds next research)
            (agent)         (tick:       (agent: record        (agent: Outcome + Learnings)
            proposal +      watch team,  what was done
-           PR + JSON)      nudge)       vs proposed)
+           PR + JSON)      T-10h buzz)  vs proposed)
 ```
 
 | Phase | Trigger (tick decides) | Who acts | Output |
 |---|---|---|---|
 | **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | `gw<N>.md` with a `## Proposal`, PR `gw<N>`, `proposals/gw<N>.json` |
-| **proposed** | `proposals/gw<N>.json` exists | tick | ntfy with the summary + PR link; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged`; nudges at T-48h, T-24h, T-6h (high), T-2h (urgent) while still `pending` |
+| **proposed** | `proposals/gw<N>.json` exists | tick | ntfy with the summary + PR link; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` |
 | **lock** | deadline passed, picks public | agent, `briefs/lock.md` | `## Decision` under the Proposal, ledger row, flags re-aimed at the real decision, README line |
 | **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, flag outcomes, ledger, Learnings; PR `gw<N>-outcome` |
 
@@ -39,10 +39,10 @@ outright. If that policy changes later, it changes in the brief, not in `tick.mj
 | research spawned | "FPL GW5: research i gang", link to the agent conversation |
 | proposal landed | "FPL GW5: forslag klart" (high), summary, click opens the PR |
 | team changed | "ser at du har gjort noe (partial)", lists what is still open |
-| still pending | T-48h, T-24h (default), T-6h (high), T-2h (urgent) |
+| deadline ≤ 10h | "FPL GW5: 10t til frist" (high), ONCE per gameweek in whatever phase the GW is in; says whether the team matches, click opens the GW's analysis conversation (the console root if there is none yet). Replaced the T-48/24/6/2h "ingen endringer sett" ladder on 2026-09-17 |
 | deadline passed | "FPL GW5 låst: matched", captain, transfers, chip |
 | gameweek finalised | "FPL GW5 ferdig: 75 poeng (snitt 69)" |
-| `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; at most one per 6h |
+| `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; ONCE per dead login (`auth.login_dead_buzzed` in state, cleared when `my-team` answers 200 again). Was one per 6h until 2026-09-17, which fired four times for one dead login |
 | an agent produced nothing in 6h, three times | "sitter fast" (high) |
 
 Agents themselves are told **not** to message the human; every buzz comes from the
@@ -53,7 +53,7 @@ tick, so there is exactly one voice.
 `/workspace/.spawn/fpl-gw-loop/` (durable across respawn, not in git):
 
 ```
-state.json              phases per GW, attempts, nudges sent, baseline team snapshot
+state.json              phases per GW, attempts, deadline buzz sent, baseline team snapshot, auth marker
 events.jsonl            one line per decision the tick took (grep this first)
 briefs/gw5-research.md  the rendered brief the agent was told to read
 snapshots/gw5-team.json my-team at research time = the "pending" baseline
@@ -87,7 +87,8 @@ Re-running a phase by hand: delete the GW's entry from `state.json` (and the mat
 rejects a proposal, remove `proposals/gw<N>.json` and set `forward.<N>.phase` to `idle`.
 
 Env overrides, all optional: `FPL_LOOP_REPO`, `FPL_LOOP_STATE`, `FPL_LOOP_BRIEFS`,
-`FPL_LOOP_LEAD_H` (default 72), `FPL_LOOP_NTFY`, `FPL_LOOP_ACP`, plus `FPL_MANAGER_ID`
+`FPL_LOOP_LEAD_H` (default 72), `FPL_LOOP_DEADLINE_BUZZ_H` (default 10), `FPL_LOOP_NTFY`,
+`FPL_LOOP_ACP`, `ACP_CONSOLE_URL`, plus `FPL_MANAGER_ID`
 and `FPL_X_API_AUTH` (default: read from `~/.fpl/secrets.env`, the file the keepalive
 job rotates).
 
