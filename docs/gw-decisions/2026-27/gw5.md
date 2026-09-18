@@ -2,7 +2,7 @@
 
 **Deadline:** Friday 2026-09-18 17:30 UTC
 **Fixtures:** Fri-Sun (Sep 18-20), single GW, no DGW/BGW. **Followed by a three-week international break (GW6 is Oct 10).**
-**Date of analysis:** 2026-09-16 (proposal; the Decision section is written at lock)
+**Date of analysis:** 2026-09-16 (proposal), 2026-09-17 (Thursday recheck), **2026-09-18 (Decision, written at lock)**
 
 ---
 
@@ -369,6 +369,104 @@ required to open with a wildcard draft and argue against it.
 
 ---
 
+## Decision
+
+**The proposal was executed in full. One transfer, no hit, no chip.** Status from the
+loop's own comparison: **`matched`, 5 of 5 checks** (transfers, captain, vice, XI, chip).
+
+Verified after the deadline against the public `entry/5047923/event/5/picks/` endpoint,
+which is the truth the loop's snapshot is checked against — and re-checked element by
+element against `get_my_squad`. The two agree on all fifteen ids, the captain flag, the
+vice flag and the bench order.
+
+### Transfer
+
+| OUT | £ | IN | £ |
+|---|---|---|---|
+| Georginio (BHA, FWD) | 5.4 | **Barry** (EVE, FWD) | 5.6 |
+
+Cost: **0**. API confirmation: `event_transfers: 1`, `event_transfers_cost: 0`,
+`active_chip: null`, `bank: 11`, `value: 998`. Read the way [GW4](gw4.md) had to learn
+to read this object: `value` is squad **plus** bank, so £99.8m is £98.7m of squad and
+£1.1m banked — exactly the projected state. The `make_transfers` response again
+returned `cost: 4`, again describing the *next* transfer rather than this one, and
+again it was not a hit. Second gameweek running that this field has had to be
+disbelieved, and the reason GW4 wrote it down.
+
+Prices have drifted up since the proposal was written — `now_cost` for Calafiori 5.7 →
+5.8, Hall 5.1 → 5.2, João Pedro 7.6 → 7.8. The table below shows **purchase** prices,
+which is why João Pedro reads £7.5m there: bought at 7.5, sells at 7.6, listed at 7.8.
+
+**Captain: Gibbs-White** (element 480, `multiplier: 2`). **Vice: B.Fernandes** (426).
+Second armband change in two weeks, and the first of the season onto a player under 15%
+owned.
+
+### Starting XI (4-4-2)
+
+| Pos | Player | Team | £m | GW5 | FDR |
+|---|---|---|---|---|---|
+| GK | Raya | ARS | 6.0 | BHA (a) | 3 |
+| DEF | Gabriel | ARS | 8.0 | BHA (a) | 3 |
+| DEF | Calafiori | ARS | 5.7 | BHA (a) | 3 |
+| DEF | Guéhi | MCI | 6.0 | SUN (H) | 2 |
+| DEF | Hall | NEW | 5.1 | HUL (H) | 2 |
+| MID | **B.Fernandes (V)** | MUN | 12.0 | FUL (a) | 3 |
+| MID | Mbeumo | MUN | 7.9 | FUL (a) | 3 |
+| MID | Semenyo | MCI | 8.4 | SUN (H) | 2 |
+| MID | **Gibbs-White (C)** | NFO | 8.0 | COV (H) | 2 |
+| FWD | João Pedro *(75% doubt)* | CHE | 7.5 | BRE (a) | 3 |
+| FWD | **Barry** | EVE | 5.6 | IPS (H) | 2 |
+
+Fixtures and FDR read off the live `fixtures/?event=5` endpoint. Noted for the
+post-mortem, and a repeat of GW4 adjustment #6: `get_my_squad`'s `next_fixture` block
+was still serving **GW4** fixtures at lock time, so it is not a source for this table.
+
+**Bench, in order:** Dubravka (GK, TOT h AVL) → **Mitchell** (CRY a LEE) → Gomez (BHA h
+ARS) → Obi (MUN a FUL). With a 4-4-2 on the pitch, a João Pedro absence autosubs
+Mitchell in for a legal 5-4-1 without anyone having to react to a lineup that lands
+ninety minutes after the deadline.
+
+**Final state:** £98.7m squad value, **£1.1m ITB**, 0 FT. ARS×3, MUN×3, MCI×2, NEW×1,
+NFO×1, CHE×1, EVE×1, TOT×1, CRY×1, BHA×1. All four chips available, all expiring GW19.
+
+### Proposal vs decision
+
+**Nothing deviated.** Every line of the proposal — the transfer, the 4-4-2, the armband,
+the vice, the bench order, no chip — is what the account shows. There is no dissent to
+quote: PR [#39](https://github.com/vongohren/fpl-ai-assist/pull/39) (proposal) and
+[#40](https://github.com/vongohren/fpl-ai-assist/pull/40) (Thursday recheck) both merged
+with no comments and no reviews, and no commit message argues against any part of it.
+
+What *is* recorded is the opposite of dissent. In the research conversation
+([c576](https://acp.go.vongohren.me/?c=c576)) Snorre answered the standing offer with
+**"Execute"**, then **"We ready? 😊"**, then **"Go please!"**, and the moves were made
+from that session rather than by hand in the app: transfer first, then the lineup saved
+at **14:10 UTC**, three hours and twenty minutes before the deadline. The loop's tick
+saw the team flip `pending → matched (5/5)` at 15:10 UTC. So GW5 is the first week of
+the season with **no human override anywhere in it** — whatever the post-mortem finds is
+attributable to the model alone, with nothing to separate out. That cuts both ways, and
+it is the cleanest test the process has had.
+
+Two process notes worth carrying, neither of which changed the team:
+
+- **The first execution attempt was refused.** The auto-mode permission classifier
+  blocked `make_transfers` as a destructive account action, and the session declined to
+  route around it with a raw API call. It went through later from a session where the
+  call could be approved. The standing policy is unchanged: the loop proposes, and only
+  an explicit "execute" from Snorre, in a session that can prompt him, moves the account.
+- **The team was final at 14:10 UTC, before Friday's pressers were done.** Arsenal,
+  Brighton, Everton, City and United all spoke on Friday; the proposal's Thursday recheck
+  explicitly had no word yet on Barry, on Haaland's EFL Cup minutes or on Shaw. Nothing
+  known at 14:10 argued for a change, but the team was locked against Thursday's
+  information, not Friday's. Watch flag below.
+
+The Thursday contingency (proposal step 6: swap João Pedro for Mitchell if Alonso ruled
+him out) **did not trigger** — Alonso ruled nobody out, with the fitness test set for
+after Friday training, which is after our deadline. The bench order carries that branch
+by design, exactly as it was built to.
+
+---
+
 ## Accepted risks
 
 - **Haaland at home to Sunderland, unowned, 72.5% owned, the field's captain.** The
@@ -397,7 +495,11 @@ required to open with a wildcard draft and argue against it.
 | 2 | B.Fernandes | 23 (46) | Haaland | 13 (26) | **+20** | +20 |
 | 3 | B.Fernandes | 2 (4) | Haaland | 9 (18) | **-14** | **+6** |
 | 4 | João Pedro | 12 (24) | Haaland *(MUN away, FDR 4)* | 9 (18) | **+6** | **+12** |
-| 5 | **Gibbs-White** *(proposed)* | | Haaland *(SUN home, FDR 2)* | | | |
+| 5 | **Gibbs-White** | | Haaland *(SUN home, FDR 2)* | | | |
+
+Confirmed captain: **Gibbs-White**, `multiplier: 2` on the locked picks. The field's
+captain is **Haaland** — `most_captained: 411` and `most_selected: 411` on the live
+bootstrap, 73.2% owned — at home to Sunderland.
 
 Second armband change in two weeks, and the first onto a sub-15%-owned player. Note for
 the post-mortem: the field's captain is in his easiest fixture of the season, so the
@@ -408,14 +510,24 @@ note said the reverse.
 
 ## Watch flags for GW5
 
-- [ ] **João Pedro.** Did he play, and for how long? If he missed, did the Mitchell
-      autosub fire cleanly into 5-4-1? If he played a cameo and banked 1, that is the
-      uncovered risk landing.
+These test the decision that was made. Since it is identical to the proposal, every
+proposal-time flag survives unchanged in substance; the three added at the bottom exist
+because **there were no deviations to measure the human against**, which is itself the
+thing worth measuring this week.
+
+- [ ] **João Pedro, and the autosub.** Did he play, and for how long? The Thursday
+      contingency never fired (Alonso ruled nobody out), so the whole branch rests on
+      the bench order: if he missed, did Mitchell autosub cleanly into 5-4-1? If he
+      played a cameo and banked 1, that is the uncovered risk landing — and it is the
+      one outcome the 4-4-2 was explicitly unable to cover.
 - [ ] **The armband, second week off B.Fernandes.** Gibbs-White (x2) against
       B.Fernandes (x2) and against Haaland (x2). Three numbers, not one.
 - [ ] **Barry over Wissa.** Straight comparison. And did Barry's xGI convert, or is the
       "due" profile still due?
-- [ ] **Hall kept over Bogle.** Priced at -2. What was the actual gap?
+- [ ] **Hall kept over Bogle.** Priced at -2 on Tuesday, **re-priced at about -3 after
+      the Newcastle pressers** (González, Dedić, Burn, Joelinton and Ramsey all out).
+      What was the actual gap, and did the NEW clean sheet the price assumed away
+      actually fail?
 - [ ] **Delap and Igor Jesus.** Did the minutes gate call it right, i.e. did only one of
       them start against Coventry?
 - [ ] **Calvert-Lewin filter cost.** Priced at -1 against Barry. Actual?
@@ -425,6 +537,26 @@ note said the reverse.
 - [ ] **Wildcard decision point moved to GW6.** After the break: how many of the new
       fifteen would have been injured on internationals? That is the evidence for or
       against the timing call.
+- [ ] **The zero-deviation week.** *(new at lock)* First gameweek of the season executed
+      exactly as proposed, with no human override anywhere in it. The score is therefore
+      an unmixed measurement of the model. Price it against the **zero-transfer
+      alternative** written into the proposal (roll the FT, 5-4-1 with Mitchell at
+      left-back, Georginio the only autosub, estimated -2 to -3): was the Georginio →
+      Barry transfer worth making, or was the rolled FT into a GW6 wildcard decision the
+      better line? That comparison is the whole point of having written the alternative
+      down.
+- [ ] **Locked at 14:10 UTC, on Thursday's information.** *(new at lock)* The team was
+      final three hours and twenty minutes before the deadline, and Arsenal, Brighton,
+      Everton, City and United all held their pressers on Friday — the recheck had no
+      word yet on Barry, on Haaland's EFL Cup minutes or on Shaw. Did anything in those
+      pressers have changed the XI, the armband or the bench order? If yes, executing on
+      "go" the moment it is given has a measurable cost, and the loop's nudge should sit
+      later in the day.
+- [ ] **The transfer was executed by the agent, not in the app.** *(new at lock)* First
+      time this season. The account state came out correct on every field, but check the
+      finalised entry history for anything the `save_team` / `make_transfers` round trip
+      got wrong that the post-deadline read did not catch — in particular
+      `event_transfers_cost`, which the API's own `cost: 4` field again misdescribed.
 
 ---
 
@@ -460,7 +592,7 @@ note said the reverse.
 
 ### Flag outcomes
 
-- [ ] João Pedro:
+- [ ] João Pedro, and the autosub:
 - [ ] The armband, second week off B.Fernandes:
 - [ ] Barry over Wissa:
 - [ ] Hall kept over Bogle:
@@ -469,6 +601,9 @@ note said the reverse.
 - [ ] ARS×3 at Brighton:
 - [ ] Mitchell benched:
 - [ ] Wildcard decision point moved to GW6:
+- [ ] The zero-deviation week (vs the zero-transfer alternative):
+- [ ] Locked at 14:10 UTC, on Thursday's information:
+- [ ] The transfer was executed by the agent, not in the app:
 
 ---
 
