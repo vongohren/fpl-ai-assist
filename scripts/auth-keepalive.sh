@@ -33,7 +33,8 @@
 # So this does NOT promise the login never dies. It promises we find out within
 # one interval instead of twelve hours before a deadline, which is the part that
 # actually cost us a gameweek — and, in broker mode, that the link to fix it is
-# already on the phone when we do.
+# already on the phone when we do. "Find out" means an agent is woken in the
+# ACP plane (console-visible, title `life-fpl-auth <date>`), see alert().
 # =============================================================================
 set -uo pipefail
 
@@ -121,15 +122,31 @@ PY
 }
 
 alert() {
-  local msg="$1"
+  local msg="$1" prompt dispatch
   echo "$msg" >&2
-  # brain-send delivers a prompt to a Claude session on this box; absent off-box.
-  if command -v brain-send >/dev/null 2>&1; then
-    if broker_mode || command -v oauth-token >/dev/null 2>&1; then
-      brain-send "FPL auth needs you: $msg Run 'scripts/auth-keepalive.sh --login' in /workspace/fpl-ai-assist — it prints the broker's approve link (and buzzes the phone); Snorre approves, logs in to the Premier League in the new tab and pastes the 404 page's address into that same page. Until then every authenticated FPL tool returns stale data." >/dev/null 2>&1 || true
-    else
-      brain-send "FPL auth needs you: $msg Run 'npx tsx fpl-mcp-server/scripts/mobile-auth.ts --start' in /workspace/fpl-ai-assist, send Snorre the URL, then finish with --finish '<pasted-url>'. Until then every authenticated FPL tool returns stale data." >/dev/null 2>&1 || true
+  if broker_mode || command -v oauth-token >/dev/null 2>&1; then
+    prompt="FPL auth needs you: $msg Run 'scripts/auth-keepalive.sh --login' in /workspace/fpl-ai-assist — it prints the broker's approve link (and buzzes the phone); Snorre approves, logs in to the Premier League in the new tab and pastes the 404 page's address into that same page. Put the link first in your reply. A code lives 20 min and this job re-alerts every 30 min into THIS conversation, so: if the job's own login poller is still running (ps -eo cmd | grep 'oauth-token login'), do not start a second one; and between 23:00 and 06:30 Oslo do not issue a code at all — it expires unseen and only buzzes the phone. Until the grant is back every authenticated FPL tool returns stale data."
+  else
+    prompt="FPL auth needs you: $msg Run 'npx tsx fpl-mcp-server/scripts/mobile-auth.ts --start' in /workspace/fpl-ai-assist, send Snorre the URL, then finish with --finish '<pasted-url>'. Until then every authenticated FPL tool returns stale data."
+  fi
+  # Wake an agent in the ACP plane, where the console can see it. NOT
+  # brain-send: with no -s it opens the job's dated TMUX session via tclaw —
+  # detached, invisible on a phone, and revived after the 02:00 respawn as a
+  # Claude that never logged in. On 2026-09-19/20 that is exactly where 18
+  # of these alerts went: the agent issued seven approve codes into a pane
+  # nobody was watching. --daily folds every fire of one day into ONE
+  # conversation, so a bad night is one row in the console, not 18.
+  for dispatch in "${ACP_DISPATCH:-}" /workspace/.spawn/acp-dispatch "$(command -v acp-dispatch 2>/dev/null)"; do
+    [ -n "$dispatch" ] && [ -x "$dispatch" ] || continue
+    if "$dispatch" --title life-fpl-auth --daily --tag fpl --tag needs-you --cwd "$HERE" -- "$prompt" >/dev/null 2>&1; then
+      return 0
     fi
+    echo "auth-keepalive: acp-dispatch failed ($dispatch) — falling back to ntfy" >&2
+    break
+  done
+  # Off the fleet (or the hub refused): the phone is what is left.
+  if command -v ntfy-send >/dev/null 2>&1; then
+    ntfy-send "FPL auth needs you: $msg" >/dev/null 2>&1 || true
   fi
 }
 
