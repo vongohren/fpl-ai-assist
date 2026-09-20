@@ -63,7 +63,7 @@ needed once it arrives that way.
 ## Keeping the login alive
 
 ```bash
-scripts/auth-keepalive.sh            # refresh (through the broker if there is one); alert if the grant is dead
+scripts/auth-keepalive.sh            # refresh (through the broker if there is one); wake an ACP agent if the grant is dead
 scripts/auth-keepalive.sh --status   # report token state, change nothing
 scripts/auth-keepalive.sh --login    # start a fresh login (broker: the link goes to the phone)
 ```
