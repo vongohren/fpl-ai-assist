@@ -35,6 +35,18 @@ section:
    constraints the next research run will read, so make them operational (a rule, a
    threshold, a player to sell), not a mood.
 5. Update the GW{{GW}} line in `docs/gw-decisions/README.md` with the outcome.
+6. **Build the outcome page**, after the doc is written and committed (it reads the
+   `### Flag outcomes` block from the doc), from inside the worktree:
+
+   ```
+   node scripts/gw-loop/outcome-page.mjs --gw {{GW}} --publish
+   ```
+
+   It is deterministic and renders the same view every gameweek (hero, mini-leagues,
+   who scored it, points vs average, rank, armband ledger, flags, table view). Do
+   **not** hand-build a page, add sections or restyle it; if the view needs a new
+   section, that is a change to `outcome-page.mjs` in the same PR, not a one-off. It
+   prints the artifact URL (`https://artifacts.go.vongohren.me/life/fpl-gw{{GW}}-outcome`).
 
 Get the numbers from the API, not from memory: `bootstrap-static/`,
 `event/{{GW}}/live/`, `entry/{{ENTRY}}/event/{{GW}}/picks/`, `entry/{{ENTRY}}/history/`.
@@ -52,5 +64,6 @@ not message the human; the loop already sent the "finalised" notification. The n
 research run (GW{{GW}}+1, at T-72h) will read your Learnings, so the loop waits for
 this PR to merge before it starts; if the deadline is inside 24h it goes ahead without.
 
-Your final message is your report: net points against the average, the rank move, the
-one flag that mattered most, and the PR link.
+Your final message is the visual, not a report: the artifact URL on its own line, then
+one line (net points against the average, the rank move) and the PR link. Nothing else;
+the page carries the rest, and the doc carries the reasoning.

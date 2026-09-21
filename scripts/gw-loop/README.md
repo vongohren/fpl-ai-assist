@@ -19,7 +19,7 @@ watches the team; the phone hears from it once per event, never on a timer.
 | **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | `gw<N>.md` with a `## Proposal`, PR `gw<N>`, `proposals/gw<N>.json` |
 | **proposed** | `proposals/gw<N>.json` exists | tick | ntfy with the summary + PR link; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` |
 | **lock** | deadline passed, picks public | agent, `briefs/lock.md` | `## Decision` under the Proposal, ledger row, flags re-aimed at the real decision, README line |
-| **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, flag outcomes, ledger, Learnings; PR `gw<N>-outcome` |
+| **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, flag outcomes, ledger, Learnings; PR `gw<N>-outcome`; **the outcome page** (`outcome-page.mjs --publish`, one fixed view at `artifacts.go.vongohren.me/life/fpl-gw<N>-outcome`) |
 
 The forward run reads the backward run: research for GW N waits for GW N-1's Outcome to
 land on `origin/main` (up to the 24h mark), and the brief tells the agent to treat the
@@ -42,6 +42,7 @@ outright. If that policy changes later, it changes in the brief, not in `tick.mj
 | deadline ≤ 10h | "FPL GW5: 10t til frist" (high), ONCE per gameweek in whatever phase the GW is in; says whether the team matches, click opens the GW's analysis conversation (the console root if there is none yet). Replaced the T-48/24/6/2h "ingen endringer sett" ladder on 2026-09-17 |
 | deadline passed | "FPL GW5 låst: matched", captain, transfers, chip |
 | gameweek finalised | "FPL GW5 ferdig: 75 poeng (snitt 69)" |
+| post-mortem PR open | "FPL GW5: post-mortem klar", ONCE, click opens the outcome page (the visual is the deliverable; the PR link is in the text) |
 | `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; ONCE per dead login (`auth.login_dead_buzzed` in state, cleared when `my-team` answers 200 again). Was one per 6h until 2026-09-17, which fired four times for one dead login |
 | an agent produced nothing in 6h, three times | "sitter fast" (high) |
 
@@ -64,6 +65,26 @@ locks/gw5.json          proposal vs actual picks, written by the tick after the 
 Every agent spawn is latched into `state.json` **before** `acp spawn` runs, so a crash
 mid-dispatch costs one wake-up and never loops. An agent that produces nothing in 6h is
 presumed dead and re-spawned, at most 3 times, then the human is buzzed.
+
+## The outcome page
+
+`outcome-page.mjs` is the visual a post-mortem ends with, and it is deterministic on
+purpose: the same sections in the same order every gameweek, so the human reads a
+familiar page and never a fresh design. Hero (net points vs average, rank move, GW rank,
+season total, bench), mini-leagues (every classic league of type `x`, us highlighted),
+who scored it (all 15 picks, captain doubled, bench not counted), points vs average and
+overall rank over the season, the armband ledger (rebuilt from the API: the pick carrying
+the multiplier vs `most_captained`), the flags (parsed from `### Flag outcomes` in
+`gw<N>.md`, so run it after the doc is written), and a table view. Phone-first, dark
+mode, tooltips, self-contained.
+
+```bash
+node scripts/gw-loop/outcome-page.mjs --gw 5              # writes /tmp/fpl-gw5-outcome.html, prints the path
+node scripts/gw-loop/outcome-page.mjs --gw 5 --publish    # publishes fpl-gw5-outcome, prints the URL
+```
+
+A new section is a change to this script (and a note here), never a one-off in a
+post-mortem session.
 
 ## Operating it
 
@@ -88,7 +109,7 @@ rejects a proposal, remove `proposals/gw<N>.json` and set `forward.<N>.phase` to
 
 Env overrides, all optional: `FPL_LOOP_REPO`, `FPL_LOOP_STATE`, `FPL_LOOP_BRIEFS`,
 `FPL_LOOP_LEAD_H` (default 72), `FPL_LOOP_DEADLINE_BUZZ_H` (default 10), `FPL_LOOP_NTFY`,
-`FPL_LOOP_ACP`, `ACP_CONSOLE_URL`, plus `FPL_MANAGER_ID`
+`FPL_LOOP_ACP`, `ACP_CONSOLE_URL`, `FPL_LOOP_ARTIFACTS`, plus `FPL_MANAGER_ID`
 and `FPL_X_API_AUTH` (default: read from `~/.fpl/secrets.env`, the file the keepalive
 job rotates).
 
