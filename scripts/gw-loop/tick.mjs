@@ -62,6 +62,8 @@ const DEADLINE_BUZZ_H = Number(process.env.FPL_LOOP_DEADLINE_BUZZ_H || 10);
 // Where a buzz lands the human when there is no conversation to point at yet:
 // the console itself, where a new one is one tap away.
 const CONSOLE = (process.env.ACP_CONSOLE_URL || "https://acp.go.vongohren.me").replace(/\/$/, "");
+// Where outcome-page.mjs publishes (artifact shelf, this box's owner slug).
+const ARTIFACTS = (process.env.FPL_LOOP_ARTIFACTS || "https://artifacts.go.vongohren.me/life").replace(/\/$/, "");
 const RESPAWN_AFTER_H = 6; // an agent that has not produced in this long is presumed dead
 const MAX_ATTEMPTS = 3;
 
@@ -305,6 +307,13 @@ async function main() {
     const prUrl = openPrForBranch(`gw${gw}-outcome`);
     if (prUrl) {
       log(gw, "postmortem-pr-open", prUrl);
+      // The page is the deliverable (briefs/postmortem.md step 6); the phone
+      // gets its link ONCE, the first tick that sees the PR. The slug is fixed
+      // by outcome-page.mjs, so the URL is known without asking the agent.
+      if (!pm.page_buzzed) {
+        pm.page_buzzed = nowIso();
+        ntfy({ title: `FPL GW${gw}: post-mortem klar`, click: `${ARTIFACTS}/fpl-gw${gw}-outcome`, msg: `${pm.points != null ? `${pm.points} poeng (snitt ${pm.avg}). ` : ""}Trykk for siden. PR: ${prUrl}` });
+      }
       continue;
     }
     if (pm.spawned_at && (now - new Date(pm.spawned_at).getTime()) / 36e5 < RESPAWN_AFTER_H) continue;
@@ -345,6 +354,8 @@ async function main() {
     });
     pm.attempts += 1;
     pm.spawned_at = nowIso();
+    pm.points = picks.entry_history?.points;
+    pm.avg = ev.average_entry_score;
     saveState(state); // latch BEFORE dispatch
     const conv = acpSpawn(`FPL GW${gw} post-mortem`, `FPL GW${gw} is finalised. Read ${brief} and follow it exactly.`);
     pm.conversation = conv;
