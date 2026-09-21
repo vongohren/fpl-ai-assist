@@ -495,7 +495,7 @@ by design, exactly as it was built to.
 | 2 | B.Fernandes | 23 (46) | Haaland | 13 (26) | **+20** | +20 |
 | 3 | B.Fernandes | 2 (4) | Haaland | 9 (18) | **-14** | **+6** |
 | 4 | João Pedro | 12 (24) | Haaland *(MUN away, FDR 4)* | 9 (18) | **+6** | **+12** |
-| 5 | **Gibbs-White** | | Haaland *(SUN home, FDR 2)* | | | |
+| 5 | **Gibbs-White** | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
 
 Confirmed captain: **Gibbs-White**, `multiplier: 2` on the locked picks. The field's
 captain is **Haaland** — `most_captained: 411` and `most_selected: 411` on the live
@@ -562,48 +562,137 @@ thing worth measuring this week.
 
 ## Outcome
 
-*To be filled in after GW5 finalises. Respect the finalisation gate from GW1:*
-*`events[4].finished = true`, `data_checked = true`, and `automatic_subs` populated.*
-*Per GW4 adjustment #6, check the live `bootstrap-static` endpoint, not `get_fixtures.is_finished`.*
+**Actual points: 58** (bench 8, no hit) · **GW average: 48** · **Highest score: 126**
+**Overall rank: 2,376,841** (up from 3,200,152, **+823,311 places**)
+**GW rank:** 2,124,288 · **Season total: 324**
+**Most captained in the game:** Haaland (6 pts)
 
-**Actual points:**
-**Overall rank:**
-**GW rank:**
-**Season total:**
-**Most captained in the game:**
+Finalisation gate confirmed before writing, on the live `bootstrap-static` endpoint per
+GW4 adjustment #6: `events[4].finished = true`, `data_checked = true`, and
+`automatic_subs` populated (one entry: Mitchell in, João Pedro out). `entry/5047923/history/`
+agrees on every field: `points: 58`, `total_points: 324`, `event_transfers: 1`,
+`event_transfers_cost: 0`, `points_on_bench: 8`, `bank: 11`, `value: 998`.
 
 | Player | Min | Pts | Notes |
 |---|---|---|---|
-| Raya | | | |
-| Gabriel | | | |
-| Calafiori | | | |
-| Guéhi | | | |
-| Hall | | | |
-| B.Fernandes (V) | | | |
-| Mbeumo | | | |
-| Semenyo | | | |
-| Gibbs-White (C) | | | |
-| João Pedro | | | |
-| Barry | | | |
-| *Bench: Dubravka* | | | |
-| *Bench: Mitchell* | | | |
-| *Bench: Gomez* | | | |
-| *Bench: Obi* | | | |
+| Raya | 90 | **1** | **Conceded 3**, -1. 2 saves, 1.31 xGC. BHA 3-0 ARS |
+| Gabriel | 90 | **1** | Conceded 3, -1. **DC 9, missed the threshold by one.** 0.14 xA |
+| Calafiori | 90 | **1** | Conceded 3, -1. DC 5, bps -3 |
+| Guéhi | 90 | 4 | Assist (3), **conceded 3**, -1. MCI 5-3 SUN, 3.57 xGC. DC 4 |
+| **Hall** | 90 | **13** | **Goal** (0.19 xG) + **3 bonus** + **DC 10 banked** (exactly the threshold, +2). Conceded 1. NEW 2-1 HUL |
+| B.Fernandes (V) | 90 | 2 | Appearance only. 0.47 xGI. FUL 1-1 MUN |
+| Mbeumo | 90 | 2 | Appearance only. 0.52 xGI, no return |
+| **Semenyo** | 90 | **17** | **2 goals + assist + 2 bonus from 0.33 xGI.** Joint top scorer in the whole game. MCI 5-3 SUN |
+| **Gibbs-White (C)** | 90 | **2 x2 = 4** | **Appearance only.** 0.00 xG, 0.40 xA. **NFO 0-1 COV**: Coventry's first goal and first win of the season, at the City Ground |
+| João Pedro | **0** | 0 | **Did not play.** Still `d`, 75%, news unchanged since 2026-09-16. Autosubbed out. BRE 3-0 CHE |
+| **Barry** | 90 | 6 | **Goal from 0.52 xG.** EVE 1-0 IPS. Started, 90 minutes |
+| *Bench: Dubravka* | 0 | 0 | |
+| *Bench: Mitchell* | 90 | **7** | **AUTOSUB IN** for João Pedro. **Clean sheet** + 1 bonus, DC 8. LEE 0-0 CRY |
+| *Bench: Gomez* | 85 | **8** | Assist + clean sheet + **DC 13 banked** (+2). BHA 3-0 ARS. All 8 bench points |
+| *Bench: Obi* | 0 | 0 | Loaned to Willem II, status `u`. Permanently zero |
+
+**Autosub fired: Mitchell in for João Pedro**, exactly the branch the 4-4-2 with a
+defender at first bench was built to carry. The formation on the pitch was 5-4-1, the
+one it was designed to fall into, and nobody reacted to a lineup that landed ninety
+minutes after the deadline. Bench 8, all Gomez, the most bench points of the season.
+
+XI total **58**, bench **8**, no transfer cost. Beat the GW average by **10** and gained
+**823,311 places**, the largest rank move of the season, in the lowest-scoring week of
+the season (average 48). It was carried by Semenyo 17, Hall 13, Mitchell 7 and Barry 6:
+**43 of 58 from four slots**, two of which (Hall, Mitchell) were named as problems in
+the proposal. The captain and the ARS×3 block returned **7 from four slots**.
 
 ### Flag outcomes
 
-- [ ] João Pedro, and the autosub:
-- [ ] The armband, second week off B.Fernandes:
-- [ ] Barry over Wissa:
-- [ ] Hall kept over Bogle:
-- [ ] Delap and Igor Jesus:
-- [ ] Calvert-Lewin filter cost:
-- [ ] ARS×3 at Brighton:
-- [ ] Mitchell benched:
-- [ ] Wildcard decision point moved to GW6:
-- [ ] The zero-deviation week (vs the zero-transfer alternative):
-- [ ] Locked at 14:10 UTC, on Thursday's information:
-- [ ] The transfer was executed by the agent, not in the app:
+- [x] **João Pedro, and the autosub: HE DID NOT PLAY, AND THE BRANCH WORKED EXACTLY AS
+      BUILT.** 0 minutes, status still `d` 75% with the news text unchanged since
+      Wednesday; Chelsea lost 3-0 at Brentford with Welbeck up front. Mitchell autosubbed
+      into 5-4-1 for **7** (clean sheet, 1 bonus). The uncovered risk (a cameo banking 1)
+      did not land. This is the first autosub of the season that was *designed* rather
+      than suffered (GW1's cost 4; GW3's happened to pay 15). Ownership note for GW6:
+      he has fallen from 75.4% to **66.4%** during the week.
+- [x] **The armband, second week off B.Fernandes: BLANK. 0 AGAINST THE INCUMBENT, -8
+      AGAINST THE FIELD, -30 AGAINST OUR OWN XI.** Three numbers, as asked: Gibbs-White
+      2 (4), B.Fernandes 2 (4), Haaland 6 (12). Coventry, 0 scored and 9 conceded in
+      four, scored once (Dasilva) and won at the City Ground; Forest's xG was low enough
+      that Gibbs-White finished with 0.00 xG and 0.40 xA. The fourth number is the one
+      that hurts: **Semenyo 17 (34)** was in our XI, a candidate the model rejected on
+      0.29 xGI/90 and 0.06 xGI in the derby, and returned 17 from 0.33 xGI. That is not
+      a number any model finds. The pick was made on the opponent's four-game results,
+      and those results turned out to be a small sample: see adjustments.
+- [x] **Barry over Wissa: YES, +6.** Barry 6 (goal, 0.52 xG); **Wissa 0** (90 minutes,
+      0.85 xGI, **missed a penalty**, -2). Barry's xGI converted on the first attempt;
+      Wissa's was the higher underlying number and it went the other way. The
+      higher-variance pick was the right one this week, and the reason it was made
+      (xGI/90 more than double, opponent conceding five times as many) held: Ipswich
+      conceded, Hull conceded two, but Wissa was the one who missed.
+- [x] **Hall kept over Bogle: RIGHT ANSWER, WRONG MECHANISM, +8.** Hall **13** (goal,
+      3 bonus, DC 10 banked), Bogle 5 (clean sheet, yellow, subbed at 66). The price was
+      set at -3 on the assumption that the NEW clean sheet the hold depended on would
+      fail after the injury list, and **it did fail**: Newcastle conceded. Hall scored
+      anyway, from 0.19 xG, and banked the DC threshold exactly. His series is now **11,
+      13, 6, 6, 10**, rolling mean 9.2, still under 10. The "next transfer candidate"
+      named twice in a row has just returned 13. See adjustment #2.
+- [x] **Delap and Igor Jesus: YES, THE MINUTES GATE CALLED IT.** Delap started and
+      played 90 (1 point, yellow); Igor Jesus came off the bench for 31 (1 point).
+      Exactly one of them started, as the two-starts-in-four record said. Both blanked
+      in the 0-1, so the Scout's "Forest triple-up" returned 1 + 1 + 4 (Gibbs-White x2)
+      from three slots. The gate was right and the fixture read behind the triple-up was
+      wrong for everyone who made it.
+- [x] **Calvert-Lewin filter cost: NONE, THE FILTER GAINED +4.** Priced at -1 against
+      Barry. Actual: Calvert-Lewin 2 (LEE 0-0 CRY, 0.52 xGI, no goal), Barry 6. And
+      Mitchell's clean sheet in the same fixture is the other side of the hedge holding.
+      Second week in a row the hedging rule removed the candidate with the best fixture
+      on paper; first week it cost nothing. Written down per adjustment #5.
+- [x] **ARS×3 at Brighton: THE ACCEPTED RISK LANDED IN FULL. NO CLEAN SHEET, CONCEDED
+      3, 3 POINTS FROM £19.7M.** BHA 3-0 ARS. Raya 1, Gabriel 1, Calafiori 1, every one
+      a -1 for goals conceded. Gabriel's DC 9 missed the threshold by one. On the other
+      side: Groß 14, Kostoulas 10, De Cuyper 6, and **our own Gomez 8 on the bench**.
+      "Brighton have scored 13 in four" was the read, and it was right. Two data points
+      for the block now: 29 in GW4, 3 in GW5, 32 across six slot-weeks, 5.3 per slot,
+      which is about an XI average. Positive concentration and negative concentration
+      are the same bet; the block has now shown both faces.
+- [x] **Mitchell benched: NO, PALACE DID NOT CONCEDE, AND IT DID NOT MATTER.** LEE 0-0
+      CRY. "Palace have conceded 11 in four, at Leeds who scored four" was the read, and
+      Palace kept a clean sheet away from home. Wrong prediction, zero cost: the autosub
+      brought him in for 7. Against Barry (the player he was benched for): Barry 6,
+      Mitchell 7, -1 on the ordering, and both played. The only ordering cost in the
+      week was Mitchell ahead of Gomez (7 v 8, -1), which was the minutes-and-correlation
+      call and stands.
+- [x] **Wildcard decision point moved to GW6: UNTESTED, THE BREAK IS NOW.** GW6 deadline
+      is 2026-10-10 10:00 UTC. The evidence this flag asks for (how many of a fresh
+      fifteen would have come back injured) does not exist until the break ends; the
+      GW6 research run resolves it. What is known today: João Pedro is still `d` with a
+      knee, the news field unchanged since 09-16, and the GW6 fixtures are ARS v LEE
+      (H, FDR 2), MCI at LIV (FDR 4), MUN v TOT (H, 3), NEW at COV (2), NFO at CRY (3,
+      Gibbs-White against Mitchell), EVE at HUL (2, discount stays), CHE v BOU (3).
+- [x] **The zero-deviation week (vs the zero-transfer alternative): THE TRANSFER WAS
+      WORTH +5, ABOUT DOUBLE THE ESTIMATE.** The written-down alternative was: roll the
+      FT, 5-4-1 with Mitchell at left-back, bench Dubravka, Gomez, Georginio, Obi. Run it
+      against the actual results: João Pedro misses, Gomez cannot autosub (six
+      defenders), so **Georginio** (14 minutes, 1 point) comes in: Raya 1 + Gabriel 1 +
+      Calafiori 1 + Guéhi 4 + Hall 13 + Mitchell 7 + B.Fernandes 2 + Mbeumo 2 +
+      Semenyo 17 + Gibbs-White 4 + Georginio 1 = **53**. Actual 58. The estimate was
+      "about 2 to 3", the actual gap is **5**, because the branch the transfer was
+      insuring against (João Pedro absent) is the one that happened, and Barry scored
+      in it. The unmixed measurement of the model, with no human override to separate
+      out: +10 against the average, +823,311 places, on a week where its captain and
+      its biggest block both blanked.
+- [x] **Locked at 14:10 UTC, on Thursday's information: NO MEASURABLE COST.** The three
+      open questions at lock were Barry, Haaland's EFL Cup minutes and Shaw. Barry
+      started and played 90. Haaland played 90 (irrelevant to our XI). Shaw is not in
+      the squad. Every one of our ten fit starters played 90 minutes, so nothing a Friday
+      presser could have said would have changed a name in the XI; the only actionable
+      Friday fact was João Pedro's non-appearance, which landed after the deadline and
+      which the bench order handled for exactly the points a manual swap would have
+      given (Mitchell 7 either way). The loop's nudge can stay where it is.
+- [x] **The transfer was executed by the agent, not in the app: YES, THE FINALISED
+      HISTORY IS CLEAN.** `entry/5047923/history/` for GW5: `event_transfers: 1`,
+      `event_transfers_cost: 0`, `bank: 11`, `value: 998`, `total_points: 324` (266 +
+      58), `chips: []`. Every field matches the post-deadline read, and the
+      `make_transfers` response's `cost: 4` was, for the second week running, a
+      description of the *next* transfer and not a hit. Nothing for the round trip to
+      answer for.
 
 ---
 
@@ -611,10 +700,143 @@ thing worth measuring this week.
 
 ### What we got right
 
+- **The bench did the branching, and it was the right branch.** João Pedro did not
+  play. Mitchell autosubbed into 5-4-1 for 7 without anyone touching the team after
+  14:10 UTC. The whole GW5 analysis was built around one structural fact ("the bench
+  cannot cover the captain-tier forward") and the transfer that fixed it was worth
+  **+5** against the written-down alternative, double the estimate.
+- **Barry over Wissa, +6.** The higher-variance, lower-owned pick on xGI and the
+  opponent's results, over the safer, more-owned pick with the better run. Barry
+  scored from 0.52 xG; Wissa missed a penalty. Fifth consecutive week the minutes-first
+  transfer produced a positive.
+- **The minutes gate on the buy list (GW4 adjustment #2) called Forest's striker
+  rotation exactly:** one of Delap and Igor Jesus started, and the one who did returned
+  1. The community's "Forest triple-up" was a trap the audit walked past.
+- **The hedging filter cost nothing and gained 4.** Calvert-Lewin 2 against Barry 6,
+  with Mitchell's clean sheet on the other side of the same fixture.
+- **Hall held, +8 against Bogle**, though see below: the reason was wrong.
+- **Beat the average by 10 and gained 823,311 places**, the largest move of the
+  season, in the lowest-scoring week of the season. And the process was unmixed: no
+  human override anywhere, so this is the model's number.
+
 ### What we got wrong
+
+- **The captain returned 2, and the read behind him was a small sample.** Coventry (0
+  scored, 9 conceded in four) scored and won at the City Ground. The captaincy model
+  picked the *fixture* over the *player*: Gibbs-White's 0.65 xGI/90 was the fourth-best
+  in the shortlist, and he was chosen because his opponent's four-game results
+  "confirmed the FDR rather than undercut it". Four games is not a confirmation. The
+  same table said Palace would concede at Leeds (0-0) and Sunderland would be a clean
+  sheet (5-3). Three of the seven fixture reads in it were wrong on the day.
+- **The ARS×3 block returned 3 points from £19.7m, and the log said it would if Brighton
+  scored.** This is not a process error, it was the stated accepted risk. But it is the
+  second gameweek (GW3 ARS v CHE, GW5 BHA v ARS) where the block has been keyed to a
+  fixture the log itself called bad, and both times the block was held because moving
+  three players is a wildcard's job. That is the wildcard argument, restated by the
+  points.
+- **Hall was priced at -3 and returned +8 against the alternative.** The mechanism the
+  price assumed (a NEW clean sheet) failed as predicted, and Hall scored anyway. Two
+  weeks in a row the log has named him the next sale, and this week he was the
+  second-highest scorer in the squad. The DC series (11, 13, 6, 6, 10) still says what
+  it said; the *points* series (3, 11, 4, 0, 13) says a different thing. The sale rule
+  was written on one series and should have been reading two.
+- **Semenyo 17 was in the XI and the armband was one slot away.** Nothing in the model
+  finds 17 from 0.33 xGI, and this is not a mistake to correct. It is a reminder that
+  the armband decides the week and the model's edge on it is small: GW4 +20, GW5 0
+  against the incumbent.
+- **Georginio played 14 minutes.** The "unused in a 5-0" bench forward got on the pitch
+  in a 3-0, which is the one small thing the proposal's "dead slot" reading got wrong,
+  and it would have cost us nothing had we kept him (1 point). Noted for accuracy, not
+  for action.
 
 ### Gut calibration
 
+**The week was won on structure, not on picks.** Of the four decisions the proposal
+argued hardest (transfer, XI shape, bench order, captain), three resolved positively and
+the one that decides most weeks, the captain, blanked. The score still beat the average
+by 10 because the structural decisions (Barry in, Mitchell first bench, 4-4-2 falling
+into 5-4-1) were worth +5 against the alternative and the two biggest returns (Semenyo
+17, Hall 13) came from slots nobody was arguing about. The captaincy model is 1 for 2
+against the incumbent; the transfer-and-bench process is 5 for 5 across the season.
+
+**Is the armband ledger evidence for the build now?** Less than it was, and honestly so.
+**+4 cumulative** over five weeks (0, +20, -14, +6, -8), and this week's -8 came with
+Haaland in his easiest fixture of the season and returning a modest 6, exactly the
+overstatement the pre-deadline note warned about in reverse. The build is still
+"level with more variance" on the armband. What has changed since GW3 is that the
+variance is now chosen on a model rather than on autopilot, and the model's two
+outings have been +20 and 0 against the default. That is not proof. It is the same
+position as after GW4 with one more data point that neither confirms nor refutes it.
+
+**Separate process from outcome, both directions.** Ten flags resolved for the process,
+one untested (wildcard timing, by construction), one against (the captain read). The
+biggest single return was 17 from 0.33 xGI and the biggest single failure was a
+promoted side scoring its first goal of the season against our captain. Neither is
+skill. The rank gain is real, and about half of it is variance going our way for once.
+
+**The Haaland cost this week was -8 on the armband, not the 20 to 26 the proposal
+feared.** He scored once in a 5-3. The most expensive week of the season for the
+Haaland-less build was cheaper than priced.
+
 ### Adjustments for next time
 
+1. **GW6 opens with a wildcard draft by default, and argues against it** (carried from
+   the GW5 chip call, now with more evidence). The list, updated after GW5: ARS×3 has
+   shown both faces (29, 3) and is keyed to a single clean sheet; João Pedro is still
+   `d` with news unchanged since 09-16 and has lost 9 points of ownership; Obi is a
+   permanent zero; MUN×3 returned 4 from £24.4m for the second week running (B.Fernandes
+   2, Mbeumo 2, Obi 0); the field's captain remains unowned. Against: the GW5 core
+   worked, £1.1m ITB, 1 FT, and Hall and Semenyo just returned 30 between them.
+2. **Hall is not sold on the DC series alone.** The rule from GW3 ("rolling DC mean
+   under 10 is a red flag") was written for a defender whose points come from DC; Hall's
+   came from a goal and 3 bonus. New rule: a player flagged for sale who then returns
+   10+ in the flagged week is re-argued on **both** the DC series and the points/xGI
+   series, and is only sold if both say so or the wildcard replaces him. Hall's GW6 is
+   NEW at Coventry, FDR 2, and after this week Coventry have scored and won.
+3. **The four-game opponent-results table is a tiebreak, not a primary.** It shifts a
+   fixture by at most one FDR notch and never overrides the player's own xGI/90. Three
+   of its seven reads were wrong this week (Coventry, Palace, Sunderland). Concretely
+   for the captaincy: the shortlist is ranked on the player's xGI/90 first, and the
+   opponent's results break ties between candidates within 0.1 of each other. Under
+   that rule GW5's captain would have been B.Fernandes (0.85), who also returned 2, so
+   this is a rule for the process, not a claim it would have saved the week.
+4. **Keep the captaincy model and run it from scratch for GW6.** Record: +20, 0 against
+   the incumbent. One blank is not a redesign; three in a row would be. Do not default
+   to Semenyo because he hauled once, which is the GW3 autopilot with a new name.
+5. **The doubtful-starter rule is now a standing rule, not a GW5 special.** A player
+   whose lineup lands after the deadline stays in the XI only if the first bench player
+   yields a legal formation and has a nailed 90 in a fixture we are not hedged against.
+   GW5 proved the pattern; it should not have to be re-argued.
+6. **Check `news_added` before trusting a status.** João Pedro's 75% has carried the
+   same timestamp (2026-09-16) through the whole gameweek and into the break. A `d`
+   with a stale timestamp is a "no information" flag, not a 75%. The GW6 research run
+   reads the timestamp first and treats him as a sale candidate under the wildcard if
+   it has not moved.
+7. **The bench has a live asset, and the BB note is wrong by one.** Gomez: 85 minutes,
+   assist, clean sheet, DC 13, 8 points from the bench, 24 for the season across bench
+   and XI. GW4's "three dead slots and one Gomez" is still the shape, but the one Gomez
+   is a starter-quality defender being held behind ARS×3. The wildcard draft should
+   count him as a keep, not as bench filler.
+8. **The lock-timing flag is closed, with no change to the loop.** Executing on "go"
+   at 14:10 UTC cost nothing measurable. Do not move the nudge later on the strength of
+   a hypothesis the week did not support.
+
 ### Chip planning notes
+
+- **No chip played. All four still available**, all expiring **GW19**: 13 gameweeks of
+  runway after the break.
+- **Wildcard: GW6 is the decision point, and the draft is the default.** The three-week
+  break makes GW6 the cheapest wildcard of the first half: every international injury is
+  known before the deadline (2026-10-10 10:00 UTC), and João Pedro's knee will either
+  have a new timestamp or it will not. The GW6 evaluation opens with a fifteen and
+  argues against it on adjustment #1's list. If the draft keeps fewer than ten of the
+  current fifteen, play it. If it keeps eleven or more, the wildcard is not worth the
+  hit-free transfers it replaces, and the FT (2 by then) does the work.
+- **Bench Boost: still dead, by less.** Gomez is real (8 this week). Dubravka has 0
+  minutes in five, Obi cannot play. Two of four slots are structurally zero and it takes
+  two transfers to make the chip playable. Only a wildcard makes it so; if the wildcard
+  is played at GW6, the BB is the first chip the new squad should be built to use.
+- **Triple Captain:** the field's TC spot was Haaland at home to Sunderland, and he
+  returned 6 in a 5-3. The community's TC week paid 18 for a chip. Holding was right.
+  GW6 has MCI at Liverpool, so there is no TC case for anyone next week either.
+- **Free Hit:** no DGW/BGW in sight.
