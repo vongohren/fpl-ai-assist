@@ -192,6 +192,23 @@ Then add a one-line entry under the current season's heading in
 `docs/gw-decisions/README.md`. If the season has no heading yet (first log of a
 new campaign), add one and mark it `(current)`, moving the marker off the old season.
 
+### Step 11 — Build the proposal page (REQUIRED when there is a proposal)
+
+The human decides on a page, not on prose: "I don't know where they're playing, and I
+don't know their form, stats or points" is the failure this step exists for. Write the
+proposal in the loop's JSON shape (`scripts/gw-loop/briefs/research.md`, "Proposal JSON
+schema", including `notes` with a sourced "why" per player and the head-to-heads) to a
+scratch file, then:
+
+```bash
+node scripts/gw-loop/proposal-page.mjs --gw <NN> --proposal <scratch.json> --session "$(acp link)" --publish
+```
+
+It prints `https://artifacts.go.vongohren.me/life/fpl-gw<NN>-proposal`. Lead the reply
+with that link. The page is one fixed view (pitch, transfers, kept, a card per player
+with last five matches, next six fixtures, matchup, sources, calculated points under a
+"calculated, not predicted" warning, feedback buttons); do not restyle it in a session.
+
 ## Chip windows — there are TWO of each chip
 
 Since 2025/26 the season is split in half and you get a full set of chips per half:
