@@ -2,7 +2,8 @@
 
 **Deadline:** Saturday 2026-10-10 10:00 UTC
 **Fixtures:** Sat-Mon (Oct 10-12), single GW, no DGW/BGW. First gameweek after a three-week international break.
-**Date of analysis:** 2026-10-07 (proposal)
+**Date of analysis:** 2026-10-07 (proposal; Guéhi claim corrected the same day)
+**Proposal page:** https://artifacts.go.vongohren.me/life/fpl-gw6-proposal
 
 ---
 
@@ -67,13 +68,13 @@ Live `bootstrap-static`, read 2026-10-07 10:10 UTC (not the MCP cache, GW4 adjus
 |---|---|---|---|
 | **João Pedro** | `d` 75% | **2026-09-16** (unchanged) | Knee oedema, "up to four weeks", seeing a specialist; Chelsea expect him back **later in October**, no decision for Bournemouth. 64.7% owned (down from 75.4%) |
 | **Semenyo** | `d` 75% | 2026-09-24 (**new**) | Ankle knock in the 5-3 v Sunderland; withdrew from Ghana duty to heal. "Precautionary", but a doubt for **Liverpool away** |
-| **Guéhi** | `a` | none | **Withdrew from the England squad**, reason not reported. API clean. Unresolved |
+| Guéhi | `a` | none | *Corrected 2026-10-07:* the "withdrew from England" line came from a November 2025 story. He [stayed with England](https://sports.yahoo.com/articles/man-city-star-withdraws-england-134104853.html) and played the Czech Republic; O'Reilly was the City player sent home. Fit. The sale stands on role risk (used in midfield) and the model |
 | **B.Fernandes** | `a` | none | Missed one Portugal game with "pain for three matches", then played 89 minutes v Denmark with **two assists**. Treated as fit |
 | Obi | `u` | 09-14 | On loan at Willem II. Permanent zero |
 | Dubravka | `a` | none | 0 minutes in five. Structural filler |
 
-Two squad players flagged, one unexplained England withdrawal, one permanent zero, one
-bench GK who has never played. That is five of fifteen slots carrying a question.
+Two squad players flagged, one permanent zero, one bench GK who has never played. That is
+four of fifteen slots carrying a question.
 
 ### Team quality, underlying (5 games)
 
@@ -152,7 +153,7 @@ xPts per fixture = P(start) × [ 2 (appearance)
 P(CS)       = exp(−λ_against)
 attack_mult = opponent xGA factor × (1.1 home / 0.9 away)
 P(DC)       = 0.5 + 1.5 × (DC90 / threshold − 1), clamped to [0.03, 0.8]
-P(start)    = minutes / 450, × flag; João Pedro 0.25 (GW6) / 0.55 (GW7), Semenyo 0.70, Guéhi 0.85 (GW6)
+P(start)    = minutes / 450, × flag; João Pedro 0.25 (GW6) / 0.55 (GW7), Semenyo 0.70 (Guéhi's 0.85 was based on the wrong withdrawal story; at 1.0 his GW6-11 is 21.5 instead of 21.1, still a sale)
 ```
 
 Summed over GW6-11, then a mixed-integer optimiser picks the best 15, XI and captain under
@@ -442,8 +443,6 @@ is the first thing the GW7 evaluation should argue.
   concentration. United have no clean sheet in five, but United's defence is not in the
   squad.
 - **João Pedro sold at 64.7% owned** before his return. He comes back later in October.
-- **Guéhi's England withdrawal is unexplained.** He is sold, so it only matters if he plays
-  and scores at Anfield.
 - **£0.3m ITB.** A price rise on Haaland (90k transfers in this round) or Thiago (71k)
   before the moves are made can make the draft unaffordable. Fallback in the checklist.
 - **The hedging rule cost 2.9 points** over six weeks by removing Silva and Muharemović,
@@ -483,7 +482,7 @@ construction.
 - [ ] **Thiago over Calvert-Lewin.** Straight comparison, priced at -1.9.
 - [ ] **Groß and Rogers, not owned.** 29.8% and 40.8%. What did they score?
 - [ ] **João Pedro.** Did he play against Bournemouth? The 25% read against the API's 75%.
-- [ ] **Semenyo and Guéhi at Anfield.** Did the sold doubts play, and what did they score?
+- [ ] **Semenyo and Guéhi at Anfield.** Did the sold players play, and what did they score?
 - [ ] **Hall on the bench, Gomez last.** Did either outscore a starter?
 
 ---
