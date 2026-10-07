@@ -16,7 +16,7 @@ watches the team; the phone hears from it once per event, never on a timer.
 
 | Phase | Trigger (tick decides) | Who acts | Output |
 |---|---|---|---|
-| **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | `gw<N>.md` with a `## Proposal`, PR `gw<N>`, `proposals/gw<N>.json` |
+| **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | `gw<N>.md` with a `## Proposal`, PR `gw<N>`, **the proposal page** (`proposal-page.mjs --publish`, `artifacts.go.vongohren.me/life/fpl-gw<N>-proposal`), `proposals/gw<N>.json` |
 | **proposed** | `proposals/gw<N>.json` exists | tick | ntfy with the summary + PR link; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` |
 | **lock** | deadline passed, picks public | agent, `briefs/lock.md` | `## Decision` under the Proposal, ledger row, flags re-aimed at the real decision, README line |
 | **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, flag outcomes, ledger, Learnings; PR `gw<N>-outcome`; **the outcome page** (`outcome-page.mjs --publish`, one fixed view at `artifacts.go.vongohren.me/life/fpl-gw<N>-outcome`) |
@@ -37,7 +37,7 @@ outright. If that policy changes later, it changes in the brief, not in `tick.mj
 | When | Message |
 |---|---|
 | research spawned | "FPL GW5: research i gang", link to the agent conversation |
-| proposal landed | "FPL GW5: forslag klart" (high), summary, click opens the PR |
+| proposal landed | "FPL GW5: forslag klart" (high), summary, click opens the proposal page (the PR if the JSON has no `page_url`) |
 | team changed | "ser at du har gjort noe (partial)", lists what is still open |
 | deadline ≤ 10h | "FPL GW5: 10t til frist" (high), ONCE per gameweek in whatever phase the GW is in; says whether the team matches, click opens the GW's analysis conversation (the console root if there is none yet). Replaced the T-48/24/6/2h "ingen endringer sett" ladder on 2026-09-17 |
 | deadline passed | "FPL GW5 låst: matched", captain, transfers, chip |
@@ -65,6 +65,34 @@ locks/gw5.json          proposal vs actual picks, written by the tick after the 
 Every agent spawn is latched into `state.json` **before** `acp spawn` runs, so a crash
 mid-dispatch costs one wake-up and never loops. An agent that produces nothing in 6h is
 presumed dead and re-spawned, at most 3 times, then the human is buzzed.
+
+## The proposal page
+
+`proposal-page.mjs` is the visual a research run ends with, the forward twin of the
+outcome page and deterministic for the same reason. It reads the proposal JSON
+(`proposals/gw<N>.json`, or `--proposal <file>`), the live FPL API and the research
+agent's sourced `notes`, and renders, always in this order: the "calculated, not
+predicted" warning; the call (chip, transfers, captain, calculated XI against the
+best XI of the current squad, the zero-transfer line); the pitch (XI by position,
+bench below, new vs kept, this week's opponent coloured by difficulty); transfers out
+→ in side by side and who is kept; one card per proposed player (season numbers,
+last five matches with scores, next six fixtures, both teams' form, head-to-head,
+sourced "why", news, calculated points, feedback buttons); the same cards for the
+players sold; the feedback box (the reactions as text to copy into the session,
+since a shelf page cannot send anything back); how the calculation works; a table
+view.
+
+The calculated points are the GW6 research model in JavaScript: xG/xA per 90 shrunk
+halfway to the positional mean, team strength from underlying xG for and against
+(shrunk halfway to the league mean), Poisson clean sheets, DC-threshold odds, times
+the chance of starting (minutes × FPL flag, or the agent's `avail` override). They
+are labelled `calc` everywhere they appear.
+
+```bash
+node scripts/gw-loop/proposal-page.mjs --gw 6                     # writes /tmp/fpl-gw6-proposal.html
+node scripts/gw-loop/proposal-page.mjs --gw 6 --publish           # publishes fpl-gw6-proposal, prints the URL
+node scripts/gw-loop/proposal-page.mjs --gw 6 --notes notes.json  # notes from a file instead of the JSON
+```
 
 ## The outcome page
 

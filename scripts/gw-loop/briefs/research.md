@@ -18,6 +18,11 @@ a human. Deadline: **{{DEADLINE}}** (about {{HOURS_LEFT}}h away). Season folder:
    after the PR is open, so `pr_url` is real.
 3. A PR from branch `gw{{GW}}` with the doc, plus the GW{{GW}} line in
    `docs/gw-decisions/README.md` (mark it as a proposal; the lock phase rewrites it).
+4. **The proposal page**, the thing the human actually decides on: one fixed view
+   (pitch, transfers out → in, kept, a card per player with points, last five matches,
+   next six fixtures, matchup and head-to-head, sourced "why", calculated points under
+   a "calculated, not predicted" warning, and feedback buttons). Built by
+   `scripts/gw-loop/proposal-page.mjs`, never by hand. See "The page" below.
 
 ## How
 
@@ -46,6 +51,26 @@ these loop-specific rules layered on top:
   points, so the human can decline without re-deriving anything.
 - Fill the GW{{GW}} row of the **armband ledger** with the proposal (captain chosen,
   field's captain) and leave the points columns empty.
+
+## The page
+
+The human reads the page, not the doc. The doc is still the record the next run reads.
+
+1. While researching, collect **sourced notes** for every player in the proposed
+   fifteen and every player sold, plus the head-to-head for each GW{{GW}} fixture those
+   players are in. Every takeaway needs a real URL you saw; no source, no takeaway.
+   They go in the JSON's `notes` key (shape below). If you set a player's chance of
+   starting from the news instead of the API flag (a stale `news_added`, say), put it
+   in `avail` so the page's calculated points match your doc.
+2. Write the JSON to a scratch path first, render and look at it:
+   `node {{REPO}}/scripts/gw-loop/proposal-page.mjs --gw {{GW}} --proposal <scratch.json> --session "$(acp link)"`
+   prints a file path. Then publish with `--publish` added; it prints the stable URL
+   (`artifacts.go.vongohren.me/life/fpl-gw{{GW}}-proposal`).
+3. Put that URL in `page_url` and the session link in `session_url`, then write the
+   final `{{PROPOSAL_JSON}}`. The loop's "forslag klart" buzz opens the page.
+
+Do not restyle or add sections in a session. A new section is a change to
+`proposal-page.mjs` and its README entry, made on a branch.
 
 ## What you must NOT do
 
@@ -79,12 +104,28 @@ Element ids are FPL `element` ids from the API, not names. Names are for the rea
   "xi": [1, 4, 8, 204, 388, 330, 426, 427, 397, 480, 165],
   "bench": [497, 127, 125, 441],
   "zero_transfer_alternative": "one line",
-  "must_react_by": "{{DEADLINE}}"
+  "must_react_by": "{{DEADLINE}}",
+  "bank_after": 0.3,
+  "page_url": "https://artifacts.go.vongohren.me/life/fpl-gw{{GW}}-proposal",
+  "session_url": "<acp link of this session>",
+  "notes": {
+    "h2h": { "MUN-TOT": { "text": "last meetings, dates and scores", "url": "https://..." } },
+    "players": {
+      "426": {
+        "why": [{ "text": "one sourced takeaway, ~25 words", "source": "Fantasy Football Scout", "url": "https://..." }],
+        "news": { "text": "current fitness news", "url": "https://..." },
+        "avail": { "{{GW}}": 0.25 }
+      }
+    }
+  }
 }
 ```
+
+`h2h` keys are `HOME-AWAY` short names of the GW{{GW}} fixture. `why`, `news` and
+`avail` are each optional per player; `avail` maps gameweek to chance of starting.
 
 `chip` is `null`, `"wildcard"`, `"freehit"`, `"bboost"` or `"3xc"` (the API names).
 If the proposal is to roll the transfer, `transfers` is `[]` and `hit` is 0.
 
-Your final message is your report: what you proposed, the PR link, and the one thing
-the human most needs to decide.
+Your final message is your report: the page URL first, then what you proposed, the
+PR link, and the one thing the human most needs to decide.

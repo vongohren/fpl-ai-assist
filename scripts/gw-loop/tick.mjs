@@ -490,12 +490,13 @@ async function main() {
       fw.phase = "proposed";
       fw.proposed_at = nowIso();
       fw.pr_url = proposal.pr_url || null;
+      fw.page_url = proposal.page_url || null;
       log(gw, "proposed", proposal.summary || "");
       ntfy({
         title: `FPL GW${gw}: forslag klart`,
         prio: "high",
-        click: proposal.pr_url,
-        msg: `${proposal.summary || "Se PR."} Frist ${fmtOslo(next.deadline_time)}. Gjør byttene i appen, så ser jeg det.`,
+        click: proposal.page_url || proposal.pr_url,
+        msg: `${proposal.summary || "Se PR."} Frist ${fmtOslo(next.deadline_time)}. ${proposal.page_url ? "Trykk for siden. " : ""}Gjør byttene i appen, så ser jeg det.`,
       });
       saveState(state);
       return;
@@ -569,11 +570,12 @@ function deadlineBuzz(fw, gw, T, next) {
     diverged: "laget er endret, men ikke som foreslått",
   }[fw.last_status];
   const line = fw.phase === "proposed" ? (team ? `Laget: ${team}.` : "Forslaget ligger i PR-en.") : "Forslaget er ikke klart ennå.";
+  const where = fw.page_url || fw.pr_url;
   ntfy({
     title: `FPL GW${gw}: ${T < 3 ? Math.round(T * 60) + " min" : Math.round(T) + "t"} til frist`,
     prio: "high",
     click: convLink(fw.conversation),
-    msg: `Frist ${fmtOslo(next.deadline_time)}. ${line}${fw.pr_url ? ` ${fw.pr_url}` : ""}`,
+    msg: `Frist ${fmtOslo(next.deadline_time)}. ${line}${where ? ` ${where}` : ""}`,
   });
   log(gw, "deadline-buzzed", `T-${T.toFixed(1)}h ${fw.phase} ${fw.last_status || "-"}`);
 }
