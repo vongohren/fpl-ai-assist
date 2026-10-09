@@ -2,7 +2,7 @@
 
 **Deadline:** Saturday 2026-10-10 10:00 UTC
 **Fixtures:** Sat-Mon (Oct 10-12), single GW, no DGW/BGW. First gameweek after a three-week international break.
-**Date of analysis:** 2026-10-07 (proposal; Guéhi claim corrected the same day)
+**Date of analysis:** 2026-10-07 (proposal; Guéhi claim corrected the same day). **Revised to version B and executed 2026-10-09**, see the top of the Proposal.
 **Proposal page:** https://artifacts.go.vongohren.me/life/fpl-gw6-proposal
 
 ---
@@ -339,7 +339,45 @@ nothing to branch on.
 
 ## Proposal
 
-### Do this in the app
+### Revised 2026-10-09: version B, executed
+
+Snorre read the proposal page and pushed back on two things: the draft sold too many
+players who had just delivered (the eight sold had 202 points between them, the eight
+bought 190), and B.Fernandes had scored 2, 2, 2, 2 since his GW2 haul. Both are fair
+against the model, which rates on xG, xA and DC and ignores points scored.
+
+Re-solved with his agreements fixed (Thiago, Haaland, Branthwaite, Mbeumo, Barry, Hall,
+Gomez) and Gabriel, Guéhi and Gibbs-White kept. With Haaland bought, the money for those
+three has to come from B.Fernandes: keeping all of them alongside B.Fernandes is
+infeasible. Same model, Guéhi at 1.0:
+
+| | GW6 XI calc | GW6-11 calc (page) | New players |
+|---|---|---|---|
+| A (below) | 59.1 | 349.7 | 8 |
+| **B** | **57.4** | **344.1** | **6** |
+
+B is 1.7 lower in GW6 and 5.6 lower over six weeks, and buys two fewer players; at the
+4-points-per-new-player friction used for the wildcard case, the two come out even. B
+adds two clashes A did not have: Gibbs-White v Raya and Gabriel (NFO v ARS, GW7), and
+Barry v Gabriel (EVE v ARS, GW8; Barry v Raya was already in A). Semenyo goes in both:
+75% doubt, Anfield, and keeping him means selling Raya. Captain Haaland: GW6 is a coin
+flip on the model (B.Fernandes 5.5 v Haaland 5.1, moot once B.Fernandes is sold) and
+over six weeks Haaland leads.
+
+**Executed from this session at 11:36 UTC on Snorre's "Execute plan B please"**, the
+wildcard sent with the transfers in one request: `transfers.made` 0, wildcard
+`active` for GW6, no hit. Prices were unchanged since the page was built.
+
+- **Six transfers:** Calafiori → Thomas, Mitchell → Branthwaite, Semenyo → Janelt,
+  B.Fernandes → Le Fée, João Pedro → Haaland, Obi → Thiago. Bank £0.2m.
+- **3-4-3:** Raya; Thomas, Branthwaite, Gabriel; Mbeumo, Janelt, Le Fée, Gibbs-White;
+  Haaland, Thiago, Barry.
+- **Captain Haaland, vice Mbeumo.** Bench: Dubravka, Hall, Guéhi, Gomez.
+
+Version A, as proposed on 2026-10-07, follows unchanged so the post-mortem can score
+both.
+
+### Do this in the app (version A, superseded)
 
 1. **Play the Wildcard** (Transfers → Wildcard). Do this first, then make the moves: no
    points are deducted on a wildcard.
@@ -459,7 +497,7 @@ is the first thing the GW7 evaluation should argue.
 | 3 | B.Fernandes | 2 (4) | Haaland | 9 (18) | **-14** | **+6** |
 | 4 | João Pedro | 12 (24) | Haaland *(MUN away, FDR 4)* | 9 (18) | **+6** | **+12** |
 | 5 | Gibbs-White | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
-| 6 | **B.Fernandes** *(proposed)* | | Haaland *(LIV away, FDR 4; polls split with B.Fernandes)* | | | |
+| 6 | **Haaland** *(B; A proposed B.Fernandes)* | | Haaland *(LIV away, FDR 4; polls split with B.Fernandes)* | | | |
 
 First week of the season in which **we own the field's captain**, so the swing column
 measures only the armband, not the ownership. If `most_captained` after the deadline is
@@ -470,6 +508,10 @@ construction.
 
 ## Watch flags for GW6
 
+- [ ] **B against A.** Score version A (8 moves, captain B.Fernandes) against B as
+      played, GW6 and running to GW11. Calc says A +1.7 in GW6, +5.6 over six weeks,
+      even after friction. Did keeping the scorers pay?
+- [ ] **B.Fernandes sold.** His GW6-11 points against Le Fée's.
 - [ ] **The wildcard against the zero-transfer alternative.** Score the written-down
       alternative (4-5-1 above, Mitchell first bench, captain B.Fernandes) against the
       actual results. Estimated: -7 to -8 in GW6. The six-week number (+44 on the model,
@@ -477,7 +519,7 @@ construction.
 - [ ] **Haaland's first week.** Points at Anfield, and minutes after the Norway sub.
 - [ ] **The armband.** B.Fernandes (x2) against Mbeumo (x2) and Haaland (x2). Was
       overriding adjustment #3's literal reading right?
-- [ ] **The DC defenders.** Murillo, Thomas, Branthwaite, Ajer: how many cleared the DC
+- [ ] **The DC defenders.** Thomas and Branthwaite (B), Murillo and Ajer (A only): how many cleared the DC
       threshold, and how many clean sheets? Against Tarkowski, Gvardiol, De Cuyper.
 - [ ] **Thiago over Calvert-Lewin.** Straight comparison, priced at -1.9.
 - [ ] **Groß and Rogers, not owned.** 29.8% and 40.8%. What did they score?
