@@ -2,7 +2,7 @@
 
 **Deadline:** Saturday 2026-10-10 10:00 UTC
 **Fixtures:** Sat-Mon (Oct 10-12), single GW, no DGW/BGW. First gameweek after a three-week international break.
-**Date of analysis:** 2026-10-07 (proposal; Guéhi claim corrected the same day). **Revised to version B and executed 2026-10-09**, see the top of the Proposal.
+**Date of analysis:** 2026-10-07 (proposal; Guéhi claim corrected the same day). **Revised to version B and executed 2026-10-09**, see the top of the Proposal. **Locked 2026-10-10: B as played, 5 of 5 matched**, see Decision.
 **Proposal page:** https://artifacts.go.vongohren.me/life/fpl-gw6-proposal
 
 ---
@@ -466,6 +466,76 @@ is the first thing the GW7 evaluation should argue.
 
 ---
 
+## Decision
+
+**Wildcard, 6 transfers, no hit. Version B, exactly as revised.**
+
+| OUT | £ (sell) | IN | £ |
+|---|---|---|---|
+| Calafiori (ARS, DEF) | 5.8 | **Thomas** (COV, DEF) | 4.0 |
+| Mitchell (CRY, DEF) | 4.5 | **Branthwaite** (EVE, DEF) | 5.5 |
+| Semenyo (MCI, MID) | 8.4 | **Janelt** (BRE, MID) | 5.0 |
+| B.Fernandes (MUN, MID) | 11.9 | **Le Fée** (SUN, MID) | 5.7 |
+| João Pedro (CHE, FWD) | 7.6 | **Haaland** (MCI, FWD) | 15.6 |
+| Obi (MUN, FWD) | 4.5 | **Thiago** (BRE, FWD) | 7.8 |
+| | **42.7** | | **43.6** |
+
+All six stamped 2026-10-09 11:36:56 UTC in `entry/5047923/transfers/`. Confirmed after the
+deadline on the public `entry/5047923/event/6/picks/` and on `get_my_squad`
+(authenticated, not stale): `active_chip: wildcard`, `event_transfers: 0`,
+`event_transfers_cost: 0`, `bank: 2` (£0.2m). Every id matches the lock snapshot.
+
+**Captain: Haaland** (MCI at LIV, FDR 4). **Vice: Mbeumo** (MUN v TOT, FDR 2).
+**Chip: Wildcard.**
+
+### Starting XI (3-4-3)
+| Pos | Player | Team | £m | GW6 | FDR |
+|---|---|---|---|---|---|
+| GK | Raya | ARS | 6.1 | LEE (H) | 3 |
+| DEF | **Thomas** | COV | 4.0 | NEW (H) | 3 |
+| DEF | **Branthwaite** | EVE | 5.5 | HUL (a) | 2 |
+| DEF | Gabriel | ARS | 8.0 | LEE (H) | 3 |
+| MID | **Mbeumo (V)** | MUN | 7.9 | TOT (H) | 2 |
+| MID | **Janelt** | BRE | 5.0 | AVL (a) | 3 |
+| MID | **Le Fée** | SUN | 5.7 | BHA (H) | 3 |
+| MID | Gibbs-White | NFO | 8.0 | CRY (a) | 3 |
+| FWD | **Haaland (C)** | MCI | 15.6 | LIV (a) | 4 |
+| FWD | **Thiago** | BRE | 7.8 | AVL (a) | 3 |
+| FWD | Barry | EVE | 5.7 | HUL (a) | 2 |
+
+**Bench:** Dubravka (GK, TOT at MUN) → **Hall** (DEF, NEW at COV, FDR 2) → **Guéhi** (DEF,
+MCI at LIV, FDR 4) → Gomez (MID, BHA at SUN, FDR 3). Two defenders first, so any absence in
+the back three autosubs legally; every outfield bench player is `a` with 433+ minutes.
+
+**Final state:** £99.6m squad at current prices, **£0.2m ITB**. ARS×2, EVE×2, BRE×2,
+MCI×2, one each of COV, MUN, SUN, NFO, TOT, NEW, BHA. Chips left: BB, TC, FH (first half,
+expire GW19). `free_transfers` reads 1 after the deadline; GW7 should open with 2, confirm
+then.
+
+### Proposal vs decision
+
+**Against the proposal as it stood at the deadline (version B): matched, 5 of 5**
+(transfers, captain, vice, XI, chip), bench order identical too. B was executed from the
+research session on Snorre's explicit instruction, quoted from
+[c1747](https://acp.go.vongohren.me/?c=c1747): *"So you just go for B and you can make the
+transfers because you have the capabilities. I want you to set the whole team up and make
+sure the wildcard is triggered before the transfer so we don't get any hits please.
+Execute plan B please"*.
+
+**Against version A as first proposed on 2026-10-07: partly followed.** Four of A's eight
+moves were made as written (Calafiori → Thomas, Semenyo → Janelt, João Pedro → Haaland,
+Obi → Thiago), Branthwaite and Le Fée came in for different players (Mitchell and
+B.Fernandes, not Guéhi and Gibbs-White), and Gabriel → Murillo and Mitchell → Ajer were
+not made. The armband went to **Haaland, not B.Fernandes**, vice **Mbeumo, not Haaland**,
+and the bench is Hall and Guéhi where A had Ajer and Hall. The reason is Snorre's feedback
+on the proposal page, as the research session summarised it (his own words are not in the
+session transcript): A sold too many players who were scoring (the eight out had 202
+points, the eight in 190), and B.Fernandes had scored 2, 2, 2, 2 since his GW2 haul. Both
+are points-scored arguments the model does not read. B is 1.7 lower in GW6 and 5.6 lower
+over GW6-11 on the model, even with A after 4 points of friction per new player.
+
+---
+
 ## Accepted risks
 
 - **Haaland's first week is Anfield**, the worst fixture of his next six. He is bought
@@ -497,35 +567,45 @@ is the first thing the GW7 evaluation should argue.
 | 3 | B.Fernandes | 2 (4) | Haaland | 9 (18) | **-14** | **+6** |
 | 4 | João Pedro | 12 (24) | Haaland *(MUN away, FDR 4)* | 9 (18) | **+6** | **+12** |
 | 5 | Gibbs-White | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
-| 6 | **Haaland** *(B; A proposed B.Fernandes)* | | Haaland *(LIV away, FDR 4; polls split with B.Fernandes)* | | | |
+| 6 | **Haaland** *(LIV away, FDR 4; A proposed B.Fernandes)* | | Haaland *(`most_captained` 411 after the deadline)* | | **0** *(same player)* | **+4** |
 
-First week of the season in which **we own the field's captain**, so the swing column
-measures only the armband, not the ownership. If `most_captained` after the deadline is
-B.Fernandes (426) rather than Haaland (411), the ledger records a zero-swing week by
-construction.
+First week of the season in which **we own the field's captain, and captain him**.
+`bootstrap-static` confirms `most_captained: 411` after the deadline, so GW6 is a
+zero-swing week by construction. The armband call that the ledger cannot see is Haaland
+against B.Fernandes (sold) and Mbeumo; that one is scored in the watch flags.
 
 ---
 
 ## Watch flags for GW6
 
-- [ ] **B against A.** Score version A (8 moves, captain B.Fernandes) against B as
-      played, GW6 and running to GW11. Calc says A +1.7 in GW6, +5.6 over six weeks,
+- [ ] **B against A (the human's call against the model's).** Score version A (8 moves,
+      XI with Murillo and B.Fernandes, captain B.Fernandes, bench Ajer first) against B
+      as played, GW6 and running to GW11. Calc says A +1.7 in GW6, +5.6 over six weeks,
       even after friction. Did keeping the scorers pay?
-- [ ] **B.Fernandes sold.** His GW6-11 points against Le Fée's.
+- [ ] **B.Fernandes sold, Gibbs-White kept** (A did the opposite). Their GW6-11 points
+      side by side.
+- [ ] **Gabriel kept over Murillo.** GW6-11 points; A priced Gabriel at 25.6 against
+      Murillo's 27.3.
+- [ ] **Guéhi kept over Ajer.** Guéhi sits third on the bench at Anfield; Ajer would have
+      been first bench at Villa. Points, and whether either would have come on.
 - [ ] **The wildcard against the zero-transfer alternative.** Score the written-down
       alternative (4-5-1 above, Mitchell first bench, captain B.Fernandes) against the
       actual results. Estimated: -7 to -8 in GW6. The six-week number (+44 on the model,
       +12 after friction) is the one that matters; carry a running total to GW11.
 - [ ] **Haaland's first week.** Points at Anfield, and minutes after the Norway sub.
-- [ ] **The armband.** B.Fernandes (x2) against Mbeumo (x2) and Haaland (x2). Was
-      overriding adjustment #3's literal reading right?
+- [ ] **The armband: Haaland (C) against B.Fernandes (A's captain, sold) and Mbeumo (V).**
+      Haaland (x2) against each of them (x2). The model had B.Fernandes 5.5 v Haaland 5.1
+      for GW6; the decision captained the six-week leader.
 - [ ] **The DC defenders.** Thomas and Branthwaite (B), Murillo and Ajer (A only): how many cleared the DC
       threshold, and how many clean sheets? Against Tarkowski, Gvardiol, De Cuyper.
 - [ ] **Thiago over Calvert-Lewin.** Straight comparison, priced at -1.9.
 - [ ] **Groß and Rogers, not owned.** 29.8% and 40.8%. What did they score?
 - [ ] **João Pedro.** Did he play against Bournemouth? The 25% read against the API's 75%.
-- [ ] **Semenyo and Guéhi at Anfield.** Did the sold players play, and what did they score?
-- [ ] **Hall on the bench, Gomez last.** Did either outscore a starter?
+- [ ] **Semenyo at Anfield (sold).** Did he play, and what did he score?
+- [ ] **The bench: Hall, Guéhi, Gomez.** Did any of them outscore a starter, and did an
+      autosub fire?
+- [ ] **B's extra clashes.** Gibbs-White v Raya and Gabriel (NFO v ARS, GW7) and Barry v
+      Gabriel (EVE v ARS, GW8): what each one cost or saved, for the GW7 and GW8 logs.
 
 ---
 
@@ -544,23 +624,27 @@ construction.
 | Player | Min | Pts | Notes |
 |---|---|---|---|
 | Raya | | | |
-| Murillo | | | |
 | Thomas | | | |
 | Branthwaite | | | |
-| Mbeumo | | | |
-| B.Fernandes (C) | | | |
+| Gabriel | | | |
+| Mbeumo (V) | | | |
 | Janelt | | | |
 | Le Fée | | | |
-| Haaland (V) | | | |
+| Gibbs-White | | | |
+| Haaland (C) | | | |
 | Thiago | | | |
 | Barry | | | |
 | *Bench: Dubravka* | | | |
-| *Bench: Ajer* | | | |
 | *Bench: Hall* | | | |
+| *Bench: Guéhi* | | | |
 | *Bench: Gomez* | | | |
 
 ### Flag outcomes
 
+- [ ] B against A:
+- [ ] B.Fernandes sold, Gibbs-White kept:
+- [ ] Gabriel kept over Murillo:
+- [ ] Guéhi kept over Ajer:
 - [ ] The wildcard against the zero-transfer alternative:
 - [ ] Haaland's first week:
 - [ ] The armband:
@@ -568,8 +652,9 @@ construction.
 - [ ] Thiago over Calvert-Lewin:
 - [ ] Groß and Rogers, not owned:
 - [ ] João Pedro:
-- [ ] Semenyo and Guéhi at Anfield:
-- [ ] Hall on the bench, Gomez last:
+- [ ] Semenyo at Anfield:
+- [ ] The bench:
+- [ ] B's extra clashes:
 
 ---
 
