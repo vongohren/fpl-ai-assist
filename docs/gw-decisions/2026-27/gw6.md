@@ -883,6 +883,19 @@ had a bad week, it has had an average week in a week the template was good.
    **+3** (model said +44), B.Fernandes against Gibbs-White **+1**, Gabriel against
    Murillo **0**. And score B's clashes: Gibbs-White v Raya and Gabriel in GW7 (NFO v
    ARS), Barry v Raya and Gabriel in GW8 (ARS v EVE).
+8. **GW7 steer from Snorre (2026-10-13): "I would consider a hit if that helps us get both
+   João Pedro and Haaland."** Haaland is already owned. Forwards are full (Haaland,
+   Thiago, Barry), so João Pedro has to replace one of them. The GW7 research run prices
+   both versions against each other on its model:
+   - **Free:** Thiago → João Pedro (£7.8m for £7.8m, bank stays £0.2m). This is the default.
+   - **-4 hit:** Barry → João Pedro (+ £2.2m) funded by Gabriel → Calafiori (frees
+     £2.0m), so Thiago stays. Only worth it if the hit version wins **by more than 4 points
+     over GW7 alone**, because Gabriel → Calafiori is free in GW8. A gain spread over six
+     weeks does not pay for a hit when the same move costs nothing next week.
+   - Either way, João Pedro is **at Everton in GW7**, against Branthwaite (and Barry, if
+     kept). Under the hedging rule, that is a clash to price or to resolve on the bench.
+   - Free transfers read **1** after GW6, not the 2 the Decision expected. Use the live
+     `budget.free_transfers`.
 
 ### Chip planning notes
 
