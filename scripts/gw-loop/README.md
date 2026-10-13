@@ -80,7 +80,10 @@ last five matches with scores, next six fixtures, both teams' form, head-to-head
 sourced "why", news, calculated points, feedback buttons); the same cards for the
 players sold; the feedback box (the reactions as text to copy into the session,
 since a shelf page cannot send anything back); how the calculation works; a table
-view.
+view. It wears the house brand through `brand.mjs`, the same way as the outcome
+page: readout rows instead of stat tiles, rows that open instead of cards, the pitch
+on the brand's own green (`--plate-gran-soft`) and FPL difficulty on the brand's
+diverging pair (tram blue easy, oker hard).
 
 The calculated points are the GW6 research model in JavaScript: xG/xA per 90 shrunk
 halfway to the positional mean, team strength from underlying xG for and against
