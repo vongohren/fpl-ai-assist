@@ -24,8 +24,12 @@ section:
    autosub). All eleven starters and all four bench slots. State whether an autosub
    fired.
 2. **`### Flag outcomes`**: resolve **every** watch flag, one bullet each, ticked,
-   with a verdict in caps first (`YES`, `NO`, `UNTESTED`, `RIGHT ANSWER, WRONG
-   MECHANISM`, ...) and then the numbers. If the lock phase added deviation flags
+   with **the read in brackets first** and then a verdict in caps (`YES`, `NO`,
+   `UNTESTED`, `RIGHT ANSWER, WRONG MECHANISM`, ...) and then the numbers:
+   `- [x] (+6) **Flag: VERDICT.** ...`. The read is the flag's effect on our points:
+   `(+N)` paid us, `(-N)` cost us, `(=)` level, `(?)` untested or still running; N is
+   optional. The outcome page groups and colours the flags by it, so a flag without
+   one renders as "unmarked" and the human cannot tell whether it went for or against. If the lock phase added deviation flags
    (human overrode the proposal), price each one: what the proposal would have
    returned against what the decision returned.
 3. **Armband ledger**: fill the GW{{GW}} row (our captain's points and x2, the field's
