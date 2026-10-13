@@ -656,9 +656,54 @@ owned and we did not returned **55 between them**: João Pedro 12 (69.4% owned, 
 the wildcard), De Cuyper 15 (34.9%), Cherki 10 (31.3%), Calafiori 9 (52.2%, sold),
 Rogers 9 (44.8%). Two of those five were ours on Friday.
 
+### Where the points went (added 2026-10-13, after Snorre asked why)
+
+The top 50 of the overall league averaged **85** this week (44 of them with no chip), the
+nplol rivals **71**, the Schrödingers Glass rivals **60**. Team TH scored 89 and
+Overtenningsklubben 88 with no chip and no hit. Read against the top 50's effective
+ownership (share who fielded him, captain twice), times his points:
+
+| Player | Club | Pts | Top-50 EO | Ours | Gap | Mini-league rivals who had him |
+|---|---|---|---|---|---|---|
+| De Cuyper | BHA | 15 | 94% | 0 | **-14.1** | 6 of 17 |
+| João Pedro | CHE | 12 | 116% | 0 *(sold)* | **-13.9** | 10 of 17 |
+| Calafiori | ARS | 9 | 94% | 0 *(sold)* | -8.5 | 15 of 17 |
+| Rogers | CHE | 9 | 86% | 0 | -7.7 | 11 of 17 |
+| Palmer | CHE | 8 | 84% | 0 | -6.7 | 7 of 17 |
+| Groß | BHA | 6 | 94% | 0 | -5.6 | 10 of 17 |
+| Verbruggen | BHA | 9 | 42% | 0 | -3.8 | 4 of 17 |
+| Mbeumo | MUN | 8 | 24% | 1 | +6.1 | 3 of 17 |
+| Barry | EVE | 6 | 16% | 1 | +5.0 | 2 of 17 |
+| Haaland | MCI | 6 | 126% | 2 | +4.4 | 17 of 17 |
+
+**By club: Chelsea -28, Brighton -24.** The top 50 fielded 2.3 Chelsea and 2.4 Brighton
+players a team; we fielded **none of either** (Gomez, our one Brighton player, was on the
+bench). CHE 5-1 BOU and SUN 0-2 BHA were the two results of the week, and the whole of
+the gap to the elite is in those two fixtures plus Calafiori.
+
+**Where the read went wrong, in order of cost:**
+
+1. **The stale-flag rule removed two of the three Chelsea template players.** João Pedro
+   (`d` 75%, news from 09-16) was read as 25% and sold; Palmer (`d` 75%, news from 09-21)
+   failed the gate "on status" in the community cross-check. Both played: 12 and 8. The
+   rule (GW5 adjustment #6) was written after one week and applied to two players it was
+   never tested on.
+2. **Rogers was listed and never priced.** 40.8% owned, CHE at home to Bournemouth,
+   named under "template players we will not own" and given no number.
+3. **The model read Brighton's defence as bad** (1.73 xGA a game, the worst in our table) and so never looked at De Cuyper and Groß. They are not clean-sheet picks: De
+   Cuyper scored and took 3 bonus, Groß assisted. Our model rates players through their
+   team's defence first; the field picked them on their own attacking returns.
+4. **Calafiori was sold** to fund the wildcard (52% owned, 9 points).
+
+**Would doing nothing have saved it? No.** The written-down roll scores **46**: the old
+squad had no Chelsea starter either (João Pedro was benched on the same stale-flag read)
+and the same one benched Brighton player. The wildcard did not lose the week; the read
+that both squads shared did. Mini-league rivals who made no move at all scored 62 to 89
+because they already owned the template.
+
 ### Flag outcomes
 
-- [x] **B against A: YES, B +6, ALL OF IT FROM THE ARMBAND.** Version A as written
+- [x] (+6) **B against A: YES, B +6, ALL OF IT FROM THE ARMBAND.** Version A as written
       (Murillo for Gabriel, B.Fernandes (C) for Gibbs-White, Haaland vice, bench Ajer
       first) scores **43**: Raya 3, Murillo 2, Thomas 4, Branthwaite 3, Mbeumo 8,
       B.Fernandes 1 x2, Janelt 3, Le Fée 2, Haaland 6, Thiago 4, Barry 6; no autosub
@@ -667,20 +712,20 @@ Rogers 9 (44.8%). Two of those five were ours on Friday.
       Murillo 0, bench 11 against 11 and never used. **The kept scorers returned 2, 2 and
       a benched 6**; keeping them did not pay this week, the captain did. Running total
       to GW11: **B +6**.
-- [x] **B.Fernandes sold, Gibbs-White kept: YES, +1.** Gibbs-White 2 (0.45 xA, CRY 3-1
+- [x] (+1) **B.Fernandes sold, Gibbs-White kept: YES, +1.** Gibbs-White 2 (0.45 xA, CRY 3-1
       NFO), B.Fernandes **1** (0.16 xGI, 90 minutes, conceded 1). His series since the
       GW2 haul is now 2, 2, 2, 2, 1: Snorre's points-scored read held for a fifth week.
       Running: **+1**.
-- [x] **Gabriel kept over Murillo: LEVEL, 0.** Gabriel 2 (DC 5, conceded 1), Murillo 2
+- [x] (=) **Gabriel kept over Murillo: LEVEL, 0.** Gabriel 2 (DC 5, conceded 1), Murillo 2
       (**DC 10 banked**, conceded 3 at Palace, -1). Same score by opposite routes:
       Murillo did the DC work the model priced him on and lost it to the goals against.
       Running: **0**.
-- [x] **Guéhi kept over Ajer: NEITHER CAME ON, BOTH SCORED 6.** Guéhi 6 (clean sheet at
+- [x] (=) **Guéhi kept over Ajer: NEITHER CAME ON, BOTH SCORED 6.** Guéhi 6 (clean sheet at
       Anfield, the fixture he was benched for); Ajer 6 (goal from 0.19 xG, DC 9, missed
       the threshold by one). Every starter in both versions played, so neither bench
       slot counted. The cost that matters is inside B: **Guéhi 6 on the bench against
       Gabriel 2 in the XI, -4.**
-- [x] **The wildcard against the zero-transfer alternative: YES, +3, LESS THAN HALF THE
+- [x] (+3) **The wildcard against the zero-transfer alternative: YES, +3, LESS THAN HALF THE
       ESTIMATE.** The written-down roll (4-5-1: Raya; Gabriel, Calafiori, Guéhi, Hall;
       B.Fernandes (C), Mbeumo, Gibbs-White, Gomez, Semenyo; Barry) scores **46**: 3 + 2
       + 9 + 6 + 0 + 1x2 + 8 + 2 + 5 + 3 + 6, every starter played, João Pedro's 12 on
@@ -691,43 +736,43 @@ Rogers 9 (44.8%). Two of those five were ours on Friday.
       wildcard's edge this week was **the armband** (Haaland's second 6 against
       B.Fernandes's second 1), **not the players**. Running total to
       GW11: **+3** against the model's +44.
-- [x] **Haaland's first week: YES, A GOAL AT ANFIELD, 6.** 79 minutes (subbed with City
+- [x] (+) **Haaland's first week: YES, A GOAL AT ANFIELD, 6.** 79 minutes (subbed with City
       3-0 up, no sign of the Norway "exhaustion"), goal from 0.40 xG, no bonus on bps
       30. LIV 0-3 MCI. The worst fixture of his six returned the field's average
       captain score, which is all owning him was meant to guarantee.
-- [x] **The armband: HAALAND WAS RIGHT, +10 AGAINST THE MODEL'S PICK, -4 AGAINST THE
+- [x] (+10) **The armband: HAALAND WAS RIGHT, +10 AGAINST THE MODEL'S PICK, -4 AGAINST THE
       VICE.** Haaland 6 (12), B.Fernandes 1 (2), Mbeumo 8 (16). The model had
       B.Fernandes 5.5 v Haaland 5.1; the decision captained the six-week leader and the
       field's captain, and it was worth **+10** over A's armband. Mbeumo, the best in
       the XI, would have been +4 more; nobody's model finds that from a 0.4 gap.
-- [x] **The DC defenders: 3 OF 4 BANKED DC, 0 CLEAN SHEETS, 15 POINTS FROM 4 SLOTS.**
+- [x] (=) **The DC defenders: 3 OF 4 BANKED DC, 0 CLEAN SHEETS, 15 POINTS FROM 4 SLOTS.**
       Thomas DC 22 (4 pts), Branthwaite DC 10 (3), Murillo DC 10 (2), Ajer DC 9, missed
       by one, but scored (6). Every one conceded. Comparators: Tarkowski DC 17, 3 pts;
       Gvardiol 24 minutes, 4 (assist); **De Cuyper 15** (goal, clean sheet, 3 bonus,
       DC 3). The DC mechanism worked exactly as modelled (+2 a slot, banked three times
       in four) and was worth less than one clean sheet anywhere else.
-- [x] **Thiago over Calvert-Lewin: YES, +2.** Thiago 4 (assist, yellow, 0.07 xG),
+- [x] (+2) **Thiago over Calvert-Lewin: YES, +2.** Thiago 4 (assist, yellow, 0.07 xG),
       Calvert-Lewin 2 (0.00 xGI). Priced at -1.9. Thiago's underperformance continues
       (0.07 xG in a 2-2), so the regression case is still a case and not a result.
-- [x] **Groß and Rogers, not owned: THEY SCORED 15 BETWEEN THEM.** Groß 6 (assist,
+- [x] (-) **Groß and Rogers, not owned: THEY SCORED 15 BETWEEN THEM.** Groß 6 (assist,
       clean sheet, DC 10 short of the MID threshold), now **39.1%** owned; Rogers 9
       (goal, DC 13 banked), **44.8%**. At field ownership, about -6.4 against us on the
       two. Not the week's biggest template cost: see João Pedro.
-- [x] **João Pedro: THE API WAS RIGHT AND OUR READ WAS WRONG. HE PLAYED 71 AND SCORED
+- [x] (-12) **João Pedro: THE API WAS RIGHT AND OUR READ WAS WRONG. HE PLAYED 71 AND SCORED
       12.** Two goals from 0.60 xG and 2 bonus in CHE 5-1 BOU, at **69.4%** owned. The
       flag read `d` 75% with a three-week-old `news_added`; the research run read the
       stale timestamp as "about 25%" (GW5 adjustment #6) and sold him on it. Now `a`
       100%. At field ownership that is about **-8.3** relative to the field, the
       single most expensive call of the week, and it was a rule we wrote ourselves.
-- [x] **Semenyo at Anfield (sold): PLAYED 90, 3 POINTS.** Clean sheet (+1) and 0.31 xA,
+- [x] (=) **Semenyo at Anfield (sold): PLAYED 90, 3 POINTS.** Clean sheet (+1) and 0.31 xA,
       no return. Janelt, his replacement, also 3. **Level.**
-- [x] **The bench: YES, TWO OF THEM OUTSCORED SIX STARTERS, AND NO AUTOSUB FIRED.**
+- [x] (-7) **The bench: YES, TWO OF THEM OUTSCORED SIX STARTERS, AND NO AUTOSUB FIRED.**
       Guéhi 6 and Gomez 5 on the bench against Gabriel, Le Fée and Gibbs-White on 2 and
       Raya, Branthwaite and Janelt on 3. The best legal XI from the same fifteen
       (Guéhi for Gabriel, Gomez for Le Fée) scores **56**, +7. The ordering itself
       (Hall first) cost nothing because it was never used; Hall's 0 was the one score
       it would have brought on.
-- [x] **B's extra clashes: UNTESTED, THEY ARE GW7 AND GW8.** Gibbs-White against Raya
+- [x] (?) **B's extra clashes: UNTESTED, THEY ARE GW7 AND GW8.** Gibbs-White against Raya
       and Gabriel (NFO v ARS, GW7) and Barry against Raya and Gabriel (EVE v ARS, GW8)
       have not been played. Carried to those logs. The only GW6 clash (MUN v Dubravka)
       cost nothing: Dubravka did not play.
@@ -764,10 +809,12 @@ Rogers 9 (44.8%). Two of those five were ours on Friday.
   timestamp and wrong about what to do with it. No information is not a low
   probability. It is the API's number with a wider error bar, and for a 65%+ owned
   player the error bar cuts against selling.
-- **The template, unpriced.** The proposal listed the players we would not own (João
-  Pedro, Calafiori, Rogers, Groß, Cherki, De Cuyper) and did not put a number on them.
-  They returned 55 between them and are the whole of the -9 against the average. The
-  wildcard was argued against the roll and against A, never against the field.
+- **The template, unpriced, and two fixtures missed whole.** The proposal listed the
+  players we would not own (João Pedro, Calafiori, Rogers, Groß, Cherki, De Cuyper) and
+  did not put a number on them. Against the top 50 the gap is **Chelsea -28 and Brighton
+  -24**: we fielded none of either club in the two results of the week, and the stale-flag
+  rule removed Palmer as well as João Pedro. The wildcard was argued against the roll and
+  against A, never against the field. See *Where the points went* above.
 - **The fixture-benched defender kept the clean sheet.** Guéhi was put third on the
   bench for being at Anfield (FDR 4) and kept a clean sheet there; Gabriel started at
   home to Leeds and returned 2 on DC 5. Gomez (DC 19, clean sheet) sat behind Le Fée and
@@ -810,9 +857,12 @@ had a bad week, it has had an average week in a week the template was good.
    API's percentage**, flagged as unconfirmed, and checked against the club's latest
    presser. A player owned by **50%+** is **never sold on a stale flag alone**: only on
    fresh negative news (a new `news_added` or a presser ruling him out).
-2. **Price the template.** Every proposal lists the players owned by **30%+** that we
-   will not own, with their GW xPts and `ownership × xPts`, and sums it next to the
-   model's gain. A move that sells a 50%+ owned player has to beat that number, not
+2. **Price the template, against the top 50 as well as the whole game.** Every proposal
+   lists the players owned by **30%+** (or fielded by **60%+ of the overall top 50**,
+   the outcome page's method) that we will not own, with their GW xPts and
+   `ownership × xPts`, and sums it next to the model's gain. **And by club:** a team the
+   top 50 fields two or more of a side, in a home fixture against a bottom-half defence,
+   gets at least one of ours or a written reason and a number. A move that sells a 50%+ owned player has to beat that number, not
    just the replacement's xPts. João Pedro (69.4%, `a` 100%, CHE at EVE in GW7, TOT at
    home in GW8) is the first thing the GW7 run argues, on this rule.
 3. **The XI is picked on model xPts including DC, not on FDR.** Guéhi and Gomez sat

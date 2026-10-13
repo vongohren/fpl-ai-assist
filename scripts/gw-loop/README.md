@@ -98,13 +98,19 @@ node scripts/gw-loop/proposal-page.mjs --gw 6 --notes notes.json  # notes from a
 
 `outcome-page.mjs` is the visual a post-mortem ends with, and it is deterministic on
 purpose: the same sections in the same order every gameweek, so the human reads a
-familiar page and never a fresh design. Hero (net points vs average, rank move, GW rank,
-season total, bench), mini-leagues (every classic league of type `x`, us highlighted),
-who scored it (all 15 picks, captain doubled, bench not counted), points vs average and
-overall rank over the season, the armband ledger (rebuilt from the API: the pick carrying
+familiar page and never a fresh design. It wears the house brand, read at build time from
+the brand skill's `starter.html` by `brand.mjs` (so a brand change lands without a PR
+here; `BRAND_DIR` overrides the path, and a missing brand skill is an error). Title and
+readout (net points vs average, rank move, GW rank, captain, bench, season), mini-leagues
+(every classic league of type `x`, us highlighted, with this week's score), **where the
+points went** (the overall top 50's effective ownership against our multiplier, times
+points, by player and by club), **bought against sold** (this week's transfers as FPL
+pairs them, and every transfer of the season with the points each side scored while we
+held the buy), who scored it (all 15 picks, captain doubled, bench not counted), points
+vs average and overall rank, the armband ledger (rebuilt from the API: the pick carrying
 the multiplier vs `most_captained`), the flags (parsed from `### Flag outcomes` in
-`gw<N>.md`, so run it after the doc is written), and a table view. Phone-first, dark
-mode, tooltips, self-contained.
+`gw<N>.md` and grouped by their `(+N)` / `(-N)` / `(=)` / `(?)` read, so run it after
+the doc is written), and a table view. Phone-first, dark mode, tooltips, self-contained.
 
 ```bash
 node scripts/gw-loop/outcome-page.mjs --gw 5              # writes /tmp/fpl-gw5-outcome.html, prints the path
