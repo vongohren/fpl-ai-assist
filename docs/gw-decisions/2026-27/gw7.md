@@ -443,6 +443,12 @@ Bench Boost waits for a playing reserve keeper; Free Hit is the emergency.
 - **Brighton's template is covered by Gomez only.** Groß and De Cuyper at home to the
   worst defence, both unowned: about 3.6 of field expectation between them.
 - **Dubravka:** a 0-minute reserve keeper, seventh week. Only matters if Raya misses.
+- **Janelt is on four yellow cards**: one more is a one-match ban
+  ([Scout](http://www.fantasyfootballscout.co.uk/2026/10/12/who-is-close-to-a-ban-or-suspended-in-fpl-gameweek-7-2)).
+  Not a reason to bench him; a reason the next FT plan keeps a midfielder spare.
+- **Guéhi, third on the bench, is a rotation risk** after City host PSG on 14 Oct
+  ([SI](https://www.si.com/soccer/man-city-predicted-lineup-vs-psg-champions-league-10-14-26)).
+  It only matters if he is needed as an autosub.
 
 ---
 
