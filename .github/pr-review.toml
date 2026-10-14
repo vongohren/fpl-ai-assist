@@ -1,0 +1,40 @@
+# pr-review policy for vongohren/fpl-ai-assist. The gate reads this file from the
+# DEFAULT branch only (a PR's own copy is never consulted), under the fleet floor in
+# it-management deployments/pr-review/floor.conf, which can only add "needs a human".
+# Schema + meaning: it-management deployments/pr-review/app/README.md.
+mode = "observe"          # observe: check + COMMENT review only; Snorre merges
+merge_method = "squash"   # fpl-ai-assist lands squash commits (#N)"
+settle_minutes = 5
+# No CI here. wait_for_ci holds only while a check has FAILED (pending never holds,
+# and pr-review's own check never counts), so with no checks it holds nothing: the
+# reviewer is this repo's only check. Kept true so CI is respected the day it exists.
+wait_for_ci = true
+max_rounds = 3
+max_changed_lines = 3000
+review_minutes = 25
+# The MCP tools that change the real FPL team and the client that POSTs them, every token
+# and password flow, the hourly gw-loop tick that spawns agents and buzzes the phone, the
+# briefs and the evaluate-gw skill that carry the never-transfer rule, and the MCP config.
+require_human = ["fpl-mcp-server/src/tools/make-transfers.ts", "fpl-mcp-server/src/tools/save-team.ts", "fpl-mcp-server/src/api/client.ts", "fpl-mcp-server/src/config/*", "fpl-mcp-server/scripts/*", "fpl-mcp-server/package-lock.json", "setup.sh", "scripts/auth-keepalive.sh", "scripts/set-brave-key.sh", "scripts/gw-loop/tick.sh", "scripts/gw-loop/tick.mjs", "scripts/gw-loop/briefs/*", ".claude/*", ".mcp.json"]
+context = ["CLAUDE.md", "README.md", "scripts/gw-loop/README.md", "docs/gw-decisions/README.md"]
+notes = """
+THIS REPO IS PUBLIC. Every finding, every review comment and every line of a PR is readable
+by anyone: a new secret, internal hostname, conversation link or private remark in a diff is
+a blocker here even where it would be fine in a private repo, and keep your own review text
+free of anything private.
+
+An FPL MCP server plus the hourly gameweek loop: jobctl on the life box runs
+scripts/gw-loop/tick.sh from /workspace/fpl-ai-assist at :07 every hour; it spawns research
+agents and is the only thing that buzzes the phone. Merging a docs/gw-decisions Outcome doc
+is itself a trigger: tick.mjs reads origin/main and unblocks the next research spawn.
+
+No CI and no tests; fpl-mcp-server has `npm run build` (tsc). Ask for evidence it builds.
+
+Be strict about:
+- It never makes transfers: no transfers, no captaincy, no chips. The proposal is a document;
+  the human acts. Anything that lets an agent call make_transfers or save_team unattended is
+  a blocker. If that policy changes, it changes in the brief, not in tick.mjs.
+- Every buzz comes from the tick (one voice); agents never message the human.
+- The tick is deterministic (no LLM) and records a spawn before it fires (latches).
+- Nothing rotating lives on the box; never two logins at once.
+"""
