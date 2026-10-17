@@ -2,7 +2,7 @@
 
 **Deadline:** Saturday 2026-10-17 10:00 UTC
 **Fixtures:** Sat-Mon (Oct 17-19), single GW, no DGW/BGW. All ten fixtures kick off after the deadline (first: EVE v CHE, 11:30 UTC).
-**Date of analysis:** 2026-10-14 (proposal, from the gameweek loop's research run)
+**Date of analysis:** 2026-10-14 (proposal, from the gameweek loop's research run). **Revised to the -4 and executed 2026-10-17 04:10 UTC**, see the top of the Proposal. **Locked 2026-10-17: the -4 as played, 5 of 5 matched**, see Decision.
 **Proposal page:** https://artifacts.go.vongohren.me/life/fpl-gw7-proposal
 
 ---
@@ -456,6 +456,89 @@ Bench Boost waits for a playing reserve keeper; Free Hit is the emergency.
 
 ---
 
+## Decision
+
+**Two transfers, -4. Triple Captain Haaland. The revised version, exactly as executed.**
+
+| OUT | £ (sell) | IN | £ | |
+|---|---|---|---|---|
+| Thiago (BRE, FWD) | 7.8 | **João Pedro** (CHE, FWD) | 7.8 | free transfer |
+| Branthwaite (EVE, DEF) | 5.5 | **Van Hecke** (TOT, DEF) | 4.9 | **-4** |
+| | **13.3** | | **12.7** | |
+
+Both stamped 2026-10-17 04:10:51 UTC in `entry/5047923/transfers/`, six hours before the
+deadline. Confirmed after the deadline on the public `entry/5047923/event/7/picks/` and on
+`get_my_squad` (authenticated, not stale): `active_chip: 3xc`, Haaland `multiplier: 3`,
+`event_transfers: 2`, `event_transfers_cost: 4`, `bank: 8` (£0.8m). Every id matches the
+lock snapshot.
+
+**Captain: Haaland, Triple Captain** (MCI v IPS, FDR 2). **Vice: Barry** (EVE v CHE, FDR 4).
+**Chip: Triple Captain.**
+
+### Starting XI (3-4-3)
+| Pos | Player | Team | £m | GW7 | FDR |
+|---|---|---|---|---|---|
+| GK | Raya | ARS | 6.1 | NFO (a) | 3 |
+| DEF | **Van Hecke** | TOT | 4.9 | COV (H) | 2 |
+| DEF | Thomas | COV | 4.0 | TOT (a) | 3 |
+| DEF | Hall | NEW | 5.3 | AVL (H) | 3 |
+| MID | Janelt | BRE | 5.0 | LIV (H) | 4 |
+| MID | Mbeumo | MUN | 7.8 | LEE (a) | 3 |
+| MID | Gomez | BHA | 5.0 | CRY (H) | 2 |
+| MID | **Le Fée** | SUN | 5.7 | BOU (a) | 3 |
+| FWD | **Haaland (C, TC)** | MCI | 15.7 | IPS (H) | 2 |
+| FWD | **Barry (V)** | EVE | 5.7 | CHE (H) | 4 |
+| FWD | **João Pedro** | CHE | 7.8 | EVE (a) | 3 |
+
+**Bench:** Dubravka (GK, TOT v COV, FDR 2) → Guéhi (DEF, MCI v IPS, FDR 2) → Gabriel (DEF,
+ARS at NFO, FDR 3) → **Gibbs-White** (MID, NFO v ARS, FDR 4, `d` 75% muscular). Two
+defenders first, so an absence anywhere in the XI autosubs legally; Gibbs-White last
+because he is the one flagged player in the fifteen.
+
+**Final state:** £98.9m squad + **£0.8m ITB** (£99.7m team value). ARS×2, MCI×2, TOT×2,
+one each of COV, NEW, BRE, MUN, BHA, SUN, EVE, CHE, NFO. Chips left: **BB, FH** (first
+half, expire GW19). `free_transfers` reads 1; GW8 opens with **1 FT**.
+
+**Branthwaite's flag has cleared.** At the lock read (11:11 UTC) he is back to `a`, news
+empty, `chance_of_playing_next_round` 100 (`this_round` still 75, `news_added` still
+2026-10-16 17:00). The API does not show when the flag lifted, so whether he was fit at the
+moment of the sale cannot be told from here. Gibbs-White is still `d` 75%.
+
+### Proposal vs decision
+
+**Against the proposal as it stood at the deadline (the revised -4): matched, 5 of 5**
+(transfers, captain, vice, XI, chip), bench order identical too. It was executed from the
+research session ([c2276](https://acp.go.vongohren.me/?c=c2276)) on Snorre's explicit
+instruction, quoted verbatim from the session transcript (it reads dictated):
+
+> *"Definitely hit. We need you out of the back end as a horrible sale. Just go for the
+> best approach. I don't have time to fix this. You can go and do the sales. You're
+> approved to do the sales yourself"* (00:08 UTC)
+
+The first attempt was blocked by the auto-mode permission classifier at 00:15 UTC; the
+transfers went through at 04:10 UTC on *"So the transfers now please!"*.
+
+**Against version A as first proposed on 2026-10-14: partly followed.** João Pedro in for
+Thiago, the Triple Captain on Haaland, vice Barry and the 3-4-3 shape were all done as
+written. Three things were not:
+
+1. **The -4.** A made one free transfer and wrote down that a hit failed its own test
+   (the -4 route it priced lost 1.2 before the hit). Snorre asked for the hit and a
+   defender out; the session picked **Branthwaite → Van Hecke** among moves that all
+   priced about **-3 net in GW7** (-3.20 for this one, -3.18 over GW7-12). The tiebreak
+   was Branthwaite's new `d` 75% (leg) and removing the João Pedro v Branthwaite clash.
+   This is the human's call against the model's: the model would not have paid 4.
+2. **Le Fée starts, Gibbs-White is benched last.** Not a human override: Gibbs-White went
+   `d` 75% (muscular) on 16 Oct, after the proposal, and Le Fée was A's first bench
+   outfielder, level with him on calc (4.2 each) before the flag.
+3. **Bench order** follows from 1 and 2: Dubravka, Guéhi, Gabriel, Gibbs-White, where A
+   had Dubravka, Le Fée, Guéhi, Gabriel. The bank is £0.8m, not £0.2m.
+
+What the model never priced: whether Branthwaite would have played. His flag cleared by the
+lock (above), so the -4 may have sold a fit player; the post-mortem scores it on points.
+
+---
+
 ## Accepted risks
 
 - **João Pedro is half a point worse than Thiago this week on the calc** (and on
@@ -491,7 +574,7 @@ Bench Boost waits for a playing reserve keeper; Free Hit is the emergency.
 | 4 | João Pedro | 12 (24) | Haaland *(MUN away, FDR 4)* | 9 (18) | **+6** | **+12** |
 | 5 | Gibbs-White | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
 | 6 | Haaland *(LIV away, FDR 4)* | 6 (12) | Haaland | 6 (12) | **0** *(same player)* | **+4** |
-| 7 | **Haaland (TC)** *(IPS home, FDR 2)* | | Haaland *(expected; confirm `most_captained` after the deadline)* | | | |
+| 7 | **Haaland (TC, x3)** *(IPS home, FDR 2)* | | Haaland *(expected; `most_captained` still null at the lock read, 11:11 UTC)* | | | |
 
 If the field's captain is Haaland again, the ledger's swing is the third multiplier
 alone: **+1x Haaland's points**. The ledger compares x2 against x2 by its own rule; the
@@ -502,24 +585,43 @@ cumulative stays comparable with GW1-6.
 
 ## Watch flags for GW7
 
+Rewritten at the lock to test the -4 as played. The first three flags are the deviations
+from version A: the human's call scored against the model's.
+
+- [ ] **The -4: Branthwaite → Van Hecke (deviation, Snorre's call).** Van Hecke's points
+      minus Branthwaite's, minus 4. The calc had it at -3.20 in GW7 and -3.18 over GW7-12;
+      run it to GW12. Branthwaite's flag had cleared by the lock: did he start, and did
+      the sale cost a fit player?
+- [ ] **Played XI against version A (deviation).** The played fifteen's GW7 total (after
+      the -4, with autosubs) against A's XI and bench as written (Branthwaite and
+      Gibbs-White starting, Le Fée first bench, no hit), same Triple Captain. One number:
+      what did the revision win or lose? Start a running total "-4 against A" next to
+      the GW6 ones.
+- [ ] **Le Fée over Gibbs-White (deviation, forced by the `d` 75%).** Points of each.
+      Did Gibbs-White play, and would he have come on as an autosub?
 - [ ] **João Pedro over Thiago.** Straight comparison, GW7 and running to GW12. The calc
       had Thiago +0.5 in GW7 and level over six. Did owning the template pay, or cost?
 - [ ] **The Triple Captain.** Haaland's points x3 against x2. And against the
       tie-weeks: what did he score in GW11 (FUL H), GW15 (CHE H) and GW16 (HUL H)?
-- [ ] **João Pedro v Branthwaite.** Did the clash bite (a João Pedro goal with a
-      Branthwaite clean sheet lost), and what did the pair return together?
-- [ ] **Gibbs-White v Raya** (NFO v ARS), carried from GW6's B. Points of each, and
-      whether one cost the other.
-- [ ] **The XI on calc (adjustment #3).** Gomez over Le Fée, Hall over Guéhi, Gabriel
-      last. Did the bench outscore the starters again, and did an autosub fire?
+- [ ] **The João Pedro v Branthwaite clash, removed by the sale.** Would it have bitten
+      (a João Pedro goal that cost a Branthwaite clean sheet)? That is part of what the
+      -4 bought.
+- [ ] **Van Hecke v Thomas** (TOT v COV, opposite defences in one game, both starting,
+      Dubravka on the bench in it too). New with the sale. Not a hedge under the rule,
+      but a goal either way costs one of them the clean sheet. What did the pair return?
+- [ ] **The XI on calc (adjustment #3).** Gomez and Le Fée in midfield, Hall over Guéhi,
+      Gabriel then Gibbs-White last. Did the bench outscore the starters again, and did
+      an autosub fire?
 - [ ] **Brighton, covered by Gomez.** Groß and De Cuyper at home to Palace, unowned:
       what did they score, and what did Gomez return?
 - [ ] **The template, priced at 9.9.** Sum the unowned template's actual points ×
       ownership against the calc.
 - [ ] **Hall's last week before the sale.** Points and DC, against Guéhi on the bench.
-- [ ] **João Pedro's price** at the time the move was made, and at the GW8 deadline.
+- [ ] **João Pedro's price:** bought at **£7.8m** (04:10 UTC on 17 Oct). Price at the
+      GW8 deadline.
 - [ ] **Running totals to GW11:** B against A (+6), wildcard against the roll (+3),
-      B.Fernandes against Gibbs-White (+1), Gabriel against Murillo (0). Add GW7.
+      B.Fernandes against Gibbs-White (+1), Gabriel against Murillo (0). Add GW7, and
+      open "-4 against A" from the second flag.
 
 ---
 
@@ -538,27 +640,32 @@ cumulative stays comparable with GW1-6.
 | Player | Min | Pts | Notes |
 |---|---|---|---|
 | Raya | | | |
-| Branthwaite | | | |
+| Van Hecke | | | |
 | Thomas | | | |
 | Hall | | | |
 | Janelt | | | |
 | Mbeumo | | | |
 | Gomez | | | |
-| Gibbs-White | | | |
+| Le Fée | | | |
 | Haaland (C, TC) | | | |
 | Barry (V) | | | |
 | João Pedro | | | |
 | *Bench: Dubravka* | | | |
-| *Bench: Le Fée* | | | |
 | *Bench: Guéhi* | | | |
 | *Bench: Gabriel* | | | |
+| *Bench: Gibbs-White* | | | |
+| *Sold: Branthwaite* | | | |
+| *Sold: Thiago* | | | |
 
 ### Flag outcomes
 
+- [ ] The -4, Branthwaite → Van Hecke:
+- [ ] Played XI against version A:
+- [ ] Le Fée over Gibbs-White:
 - [ ] João Pedro over Thiago:
 - [ ] The Triple Captain:
-- [ ] João Pedro v Branthwaite:
-- [ ] Gibbs-White v Raya:
+- [ ] The João Pedro v Branthwaite clash, removed:
+- [ ] Van Hecke v Thomas:
 - [ ] The XI on calc:
 - [ ] Brighton, covered by Gomez:
 - [ ] The template, priced at 9.9:
