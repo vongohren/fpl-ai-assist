@@ -360,7 +360,36 @@ follows the same numbers.
 
 ## Proposal
 
-### Do this in the app
+### Revised 2026-10-17: -4, executed
+
+Snorre read the proposal and asked for the hit (*"Definitely hit... we need [a defender]
+out of the back end... Just go for the best approach... You're approved to do the sales
+yourself"*). Overnight FPL flagged **Branthwaite (leg) and Gibbs-White (muscular) `d` 75%**
+(`news_added` 2026-10-16, fresh news, so GW6 adjustment #1 allows a sale). Re-solved on the
+same model with Thiago → João Pedro fixed, every second move charged -4 and the hedging
+rule applied:
+
+| Second move (-4) | GW7 net | GW7-12 net | Note |
+|---|---|---|---|
+| Gibbs-White → Groß | -3.05 | -2.55 | Template, but not the back line asked for |
+| **Branthwaite → Van Hecke** | **-3.20** | -3.18 | Sells the injured defender and removes the João Pedro v Branthwaite clash |
+| Hall → Van Hecke | -3.44 | -1.77 | Keeps an injured Branthwaite |
+| Branthwaite → Murillo | -3.45 | -1.25 | Better run, worse GW7 |
+
+Every hit is about -3 net this week on the calc; the choice between them is noise, so
+the tiebreak was the injury and the clash. **The first attempt (00:15 UTC) was blocked by
+the auto-mode permission classifier; executed at 04:10 UTC** from the same session on
+*"So the transfers now please!"*, prices unchanged. FPL confirmed: `made` 2, `cost` 4,
+bank £0.8m, `3xc` active on Haaland (multiplier 3).
+
+- **Transfers:** Thiago → João Pedro (FT), Branthwaite → Van Hecke (TOT, £4.9m, 540 min, -4).
+- **3-4-3:** Raya; Van Hecke, Thomas, Hall; Janelt, Mbeumo, Gomez, Le Fée; Haaland, Barry, João Pedro.
+- **Captain Haaland (Triple Captain), vice Barry.** Bench: Dubravka, Guéhi, Gabriel, Gibbs-White (75%).
+
+The version below (one free transfer, Branthwaite and Gibbs-White starting) is kept
+unchanged so the post-mortem can score the -4 against it.
+
+### Do this in the app (version A, superseded)
 
 1. **Transfer: Thiago → João Pedro** (1 FT, no hit). Do it **before Thursday night's
    price change** (around 01:30 UK): he is rising, and the bank covers him only up to
