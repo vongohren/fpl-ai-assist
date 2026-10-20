@@ -143,6 +143,64 @@ league mean) that the calculation uses. GW8 opponents in brackets.
 
 No DGW or BGW anywhere in GW8-19 on the current fixture list, and no unscheduled fixtures.
 
+### Squad prices
+
+*Added after the run, from the price rule merged in #62 (it landed at 20:07 UTC, after this
+proposal and after the transfer was executed at 19:44). Read 2026-10-20 ~20:30 UTC: bought and
+sell from `get_my_squad` / the `save_team` response, the rest from `bootstrap-static`. Rising
+or falling = net transfers past 2% of owners and at least 10k, else this round's price change.*
+
+| Player | Bought | Now | Sell | Round Δ | Net transfers (of owners) | Read |
+|---|---|---|---|---|---|---|
+| Raya | 6.0 | 6.1 | 6.0 | 0 | +45.7k (+0.9%) | flat |
+| Thomas | 4.0 | 4.0 | 4.0 | 0 | +11.6k (+1.1%) | flat |
+| Gabriel | 8.0 | 7.9 | 7.9 | 0 | -9.9k (-0.4%) | flat |
+| **Murillo** *(in)* | 5.5 | 5.5 | 5.5 | 0 | +2.4k (+1.0%) | flat |
+| Van Hecke | 4.9 | 4.9 | 4.9 | 0 | -6.2k (-0.8%) | flat |
+| Mbeumo | 8.0 | 7.8 | 7.8 | 0 | **+95.6k (+4.2%)** | **rising** |
+| Le Fée | 5.7 | 5.7 | 5.7 | 0 | -4.3k (-1.3%) | flat |
+| Gomez | 5.0 | 5.0 | 5.0 | 0 | **+26.3k (+6.2%)** | **rising** |
+| Haaland | 15.6 | 15.7 | 15.6 | 0 | +54.4k (+0.6%) | flat |
+| João Pedro | 7.8 | 7.9 | 7.8 | **+0.1** | +67.8k (+0.8%) | **rising** |
+| Barry | 5.6 | 5.7 | 5.6 | 0 | **-37.1k (-4.0%)** | **falling** |
+| Dubravka | 4.0 | 4.0 | 4.0 | 0 | -10.8k (-0.6%) | flat |
+| Hall | 5.1 | 5.3 | 5.2 | 0 | +11.7k (+0.5%) | flat |
+| Gibbs-White | 8.0 | 7.9 | 7.9 | **-0.1** | **-91.5k (-7.2%)** | **falling** |
+| Janelt | 5.0 | 5.0 | 5.0 | 0 | **-33.3k (-13.6%)** | **falling** |
+| *Guéhi (sold)* | 6.0 | 6.0 | 6.0 | 0 | -16.9k (-0.9%) | flat |
+
+**Rising:** Mbeumo, Gomez, João Pedro. **Falling:** Gibbs-White (already -£0.1 this round),
+Barry, Janelt. **Sell value £97.9m against £98.4m value**, plus £1.3m in the bank.
+
+**Which case this week is: a value move, not a necessary change.** One starter was: Janelt
+(`s`, in the XI as saved after GW7). On the letter that makes a change necessary, but GW7 #1
+resolves it with the bench, not a transfer, and the FT does not touch his slot. Nobody else
+qualifies (Haaland was `d` 75%, then `a`), no
+slot had three 0-minute weeks (Dubravka is the reserve keeper, not a slot we field), and GW7's
+adjustments named no sale (Hall was "a candidate on the calc", Janelt "benched, not sold").
+So the price rule applies to the FT:
+
+- **Guéhi → Murillo passes the rule:** both flat. Nothing falling was bought.
+- **But the tiebreak points the other way in GW8.** Calafiori is **rising** (+£0.1 this
+  round, +65.8k) and was within 0.5 calc of Murillo in GW8 (4.37 against 4.45; +0.81 against
+  +0.89 on the squad). Read on the gameweek alone, "the rising one wins" picks Calafiori. Read
+  on the six-week number the run ranked on, they are not close (+1.9 against +4.4 over
+  GW8-13, 2.5 apart), and Calafiori also adds a GW8 clash with Barry. This log reads the
+  tiebreak on the six-week number, and Murillo stays, but the rule should say which horizon
+  "within 0.5 calc" means. The Calafiori line in the watch flags now also scores the price:
+  his value at the GW9 deadline against Murillo's.
+- **Gibbs-White, the faller who is a sale candidate.** The rule says he goes before the drop.
+  This week that would be a **second transfer, so a -4** (the FT went to Murillo). GW7
+  adjustment #5 forbids it: Gibbs-White → Tavernier is +0.65 in GW8, nowhere near +4. What
+  waiting costs is price, not points: Gibbs-White sells at £7.9m now and probably £7.8m by
+  GW9; Tavernier (£6.2m, **+152.7k, +14.9%**, the week's biggest riser among our candidates)
+  may be £6.3-6.4m. Even then £1.3m + £7.8m covers him with £2.5m+ to spare. **Conclusion:
+  no change now.** Gibbs-White is the front-runner for the GW9 FT, and the GW9 run should
+  re-read his flag first (GW7 adjustment #3) and buy before Tavernier's next rise if the
+  move still prices.
+- **Barry (falling) and Janelt (falling, banned)** are not sale candidates this week. Barry's
+  drop is a £0.1 risk on a £5.6m sell. Janelt is back in GW9.
+
 ### Community (source: Brave via `get_community_trends` for transfers only, **WebSearch** for the rest)
 
 Brave answered **429** again: the transfers angle came back partial (ten names, two queries),
@@ -491,7 +549,8 @@ are; the lock should record the captain who actually carried the multiplier.
       Guéhi keep a clean sheet at Villa?
 - [ ] **Calafiori, the template defender we did not buy.** His points against Murillo's (the
       overruled-template line, the mirror of GW7's). Start a running total "Murillo against
-      Calafiori".
+      Calafiori". Also his price at the GW9 deadline against Murillo's: he was the rising one
+      (see Squad prices).
 - [ ] **The armband on a just-cleared Haaland.** Did he start, how long did he play, and what
       did the armband return against Mbeumo's points (0.18 behind on the calc)?
 - [ ] **The Thursday branch.** Was Haaland ruled out, and was the branch taken?
