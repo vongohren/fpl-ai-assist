@@ -1,4 +1,4 @@
-# GW8 Decision Log: MURILLO FOR GUÉHI, THE ARMBAND STAYS ON A 75% HAALAND
+# GW8 Decision Log: MURILLO FOR GUÉHI, HAALAND'S FLAG CLEARS AND THE ARMBAND STAYS
 
 **Deadline:** Friday 2026-10-23 17:30 UTC (19:30 Oslo)
 **Fixtures:** Fri-Sun (Oct 23-25), single GW, no DGW/BGW. First game IPS v NFO, Friday 19:00 UTC, 90 minutes after the deadline (Murillo and Gibbs-White play in it).
@@ -38,10 +38,13 @@
 2. **"Haaland is `d` 75%... read it at 75%, not lower and not higher... never sold on this
    flag... Read City's Thursday presser before the GW8 research run picks a captain; if he is
    ruled out, the armband goes on the model, and the vice must be a player who starts."**
-   *Applied, with one thing the run cannot do: the presser is Thursday 22 Oct, after this run
-   (Tuesday 20 Oct). So the captaincy below is argued at 75%, and the checklist carries the
-   Thursday branch: ruled out → captain Mbeumo, vice João Pedro. Not sold. The vice (Mbeumo)
-   starts and is `a`.*
+   *Applied, and overtaken by the API during this run: the flag **cleared to `a` 100% at about
+   18:30 UTC on 20 Oct** (read at 18:15 as `d` 75%, at 18:31 as `a` 100%, news text gone),
+   after he was left on the bench against AEK Athens. By GW6 adjustment #1 the API's number is
+   the number, so he is read at 100%. The presser is Thursday 22 Oct, after this run, so the
+   checklist still carries the Thursday branch: ruled out → captain Mbeumo, vice João Pedro.
+   Not sold. The vice (Mbeumo) starts and is `a`. The 75% case is kept below in case the flag
+   comes back.*
 3. **"Execute an injury-driven sale as late as the deadline allows, and re-read the flag
    first."** *Applied by not making one. The proposed transfer is not injury-driven: Guéhi is
    `a`. Gibbs-White (`d` 75%, muscular) → Tavernier priced level with the proposal over six
@@ -86,7 +89,7 @@ Live `bootstrap-static`, read 2026-10-20 18:15 UTC.
 | Player | Flag | News | Read |
 |---|---|---|---|
 | **Janelt** | `s` 0% | "Suspended until 31 Oct" (17 Oct) | Out for GW8, back for GW9. *Correction to GW7's log: a second yellow (90+2'), not a straight red* ([RotoWire](https://www.rotowire.com/soccer/headlines/vitaly-janelt-news-sees-red-after-double-booking)); same one-match ban |
-| **Haaland** | `d` 75% | "Unspecified injury" (19 Oct 13:00) | Left-foot knock in the last minutes v Ipswich. Maresca on 19 Oct: *"He can be available. We'll see... we have some doubts after Sunday's game"* ([Sports Mole](https://www.sportsmole.co.uk/football/man-city/injury-news/news/is-haaland-injured-maresca-delivers-big-update-on-man-city-goal-machine_607237.html)). Then **on the bench v AEK Athens on 20 Oct**, Samba leading the line ([City Xtra](https://cityxtra.co.uk/match-coverage/confirmed-line-ups-manchester-city-vs-aek-athens-uefa-champions-league)): rested, not ruled out. Whether he came on was not known when this was written. Read at 75% (#2) |
+| **Haaland** | ~~`d` 75%~~ **`a` 100% since ~18:30 UTC 20 Oct** | "Unspecified injury" (19 Oct 13:00), cleared | Left-foot knock in the last minutes v Ipswich. Maresca on 19 Oct: *"He can be available. We'll see... we have some doubts after Sunday's game"* ([Sports Mole](https://www.sportsmole.co.uk/football/man-city/injury-news/news/is-haaland-injured-maresca-delivers-big-update-on-man-city-goal-machine_607237.html)). Then **on the bench v AEK Athens on 20 Oct**, Samba leading the line ([City Xtra](https://cityxtra.co.uk/match-coverage/confirmed-line-ups-manchester-city-vs-aek-athens-uefa-champions-league)): rested, not ruled out. Whether he came on was not known when this was written. Read at 100%, the API's number (#2) |
 | **Gibbs-White** | `d` 75% | "Muscular injury" (16 Oct) | Did not play in GW7, as a precaution. His manager: *"I expect him being back for the Ipswich"* game ([Yahoo](https://sports.yahoo.com/articles/glasner-hopeful-gibbs-white-return-083124223.html)); Scout: should be fit, "keep" ([Scout](https://www.fantasyfootballscout.co.uk/2026/10/20/tavernier-bruno-isak-wissa-buy-keep-or-sell-in-gameweek-8)) |
 
 Everyone else `a`. Dubravka has played 0 minutes in seven. City also lost Semenyo long-term
@@ -184,7 +187,7 @@ xPts per fixture = P(start) × [ 2 + (xG90 × goal_value + xA90 × 3) × attack_
                  + saves (GK) + bonus ]
 xG90, xA90  shrunk halfway to the positional mean
 team xGF/xGA from underlying xG, shrunk halfway to the league mean
-P(start)    = minutes share × FPL flag; Haaland 0.74 (0.98 × 75%, adjustment #2);
+P(start)    = minutes share × FPL flag; Haaland 0.98 (flag cleared to 100%, adjustment #2);
               João Pedro 0.95 (avail 1.15 × his 0.83 minutes share, the GW7 reading:
               the share counts the GW5 game he missed injured; 90 minutes in GW7)
 ```
@@ -265,15 +268,16 @@ Spurs (1.33) are both top-half defences. We own two Arsenal and one Chelsea anyw
 
 | Candidate | GW8 | Attacking calc (per start) | Total calc (per start) | P(start) | Owned |
 |---|---|---|---|---|---|
-| **Haaland** | MCI at AVL | **2.58** | **5.22** | 0.74 | 76.7% |
+| **Haaland** | MCI at AVL | **2.58** | **5.22** | 0.98 | 76.7% |
 | Mbeumo | MUN v BOU | 2.16 | 4.95 | 1.00 | 20.3% |
 | João Pedro | CHE v TOT | 2.17 | 4.76 | 0.95 | 72.8% |
 | Le Fée | SUN v LEE | 1.83 | 4.58 | 0.97 | 2.9% |
 | Barry | EVE at ARS | 1.65 | 4.17 | 0.94 | 8.4% |
 
-The page's calc multiplies Haaland by his 75% and shows him at **3.85**, below Mbeumo. That
-is the right number for him as a player, and the wrong number for him as a captain: if he
-does not play, the armband passes to the vice. The armband's value is
+At his cleared flag Haaland is **5.13** on the page's calc, Mbeumo 4.95: Haaland by 0.18.
+This section was first written at 75%, where the page's calc showed him at 3.85, below
+Mbeumo. That is the right number for him as a player and the wrong one for him as a
+captain: if he does not play, the armband passes to the vice. The armband's value is
 
 ```
 P(plays) × Haaland per start + (1 − P(plays)) × vice
@@ -282,9 +286,9 @@ P(plays) × Haaland per start + (1 − P(plays)) × vice
 | P(Haaland plays) | C Haaland, V Mbeumo | C Haaland, V João Pedro | C Mbeumo |
 |---|---|---|---|
 | 0.50 | 5.03 | 4.82 | 4.95 |
-| **0.75** | **5.07** | 4.97 | 4.95 |
+| 0.75 | 5.07 | 4.97 | 4.95 |
 | 0.90 | 5.10 | 5.06 | 4.95 |
-| 1.00 | 5.12 | 5.12 | 4.95 |
+| **0.98 (now)** | **5.12** | 5.11 | 4.95 |
 
 **Captain Haaland, vice Mbeumo.** Because the vice is Mbeumo, the armband on Haaland is worth
 at least Mbeumo's number whether Haaland plays or misses the game outright; the only case it
@@ -295,17 +299,20 @@ distance (50 of the top 50 captained him in GW7; RotoWire's No. 1). Villa conced
 game and City create the most in the league. Not captaining him when he plays and scores is
 the one big loss on the board this week.
 
-The 75% is the risk and the doc does not hide it: a knock to the foot, a Champions League
-game on 20 Oct (AEK) between the injury and Villa, and Maresca's "we'll see". What the
-proposal does about it is the vice and the bench, not the armband: Mbeumo starts, is `a`, and
+The knock is still the risk even with the flag gone: a blow to the foot on 18 Oct, rested
+for AEK on 20 Oct, and Maresca's "we'll see" from the day before. What the proposal does
+about it is the vice and the bench, not the armband: Mbeumo starts, is `a`, and
 has the best fixture-level number in the squad after Haaland; Hall is first on the bench so a
 Haaland absence autosubs into a legal 5-3-2.
 
 **Vice: Mbeumo, not João Pedro.** Mbeumo 4.95 against João Pedro 4.76 per start (4.52 at
-his 0.95). If Haaland is ruled out before the deadline (the Thursday branch), the field will
-mostly move to João Pedro, and the gap (0.43) is under 0.5, so adjustment #5 would hand him
-the armband. That is the checklist's Thursday branch. If Haaland drops out after the deadline,
-the field's armbands go to a thousand different vices and the model's vice is the right one.
+his 0.95). If Haaland drops out after the deadline, the field's armbands go to a thousand
+different vices and the model's vice is the right one. **If he is ruled out before the
+deadline (the Thursday branch), two rules disagree:** GW6 #5 would hand the armband to João
+Pedro (the field will mostly move to him, and the gap is 0.43, under 0.5), while GW7 #2, newer
+and written for exactly this case, says "the armband goes on the model". The checklist
+follows GW7 #2: **Mbeumo captain, João Pedro vice.** The post-mortem scores the branch if it
+is taken.
 
 **Bournemouth are a harder fixture than the FDR 3 says** (1.16 xGA, second-best defence):
 the model already has it, which is why Mbeumo's per-start number is 4.95 and not higher.
@@ -325,7 +332,7 @@ João Pedro, Barry.
 | MID | Mbeumo | BOU (H) | 4.95 | | Vice. Best in the squad per start after Haaland |
 | MID | Le Fée | LEE (H) | 4.42 | | DC 12 banked in GW7; Leeds 1.39 xGA |
 | MID | Gomez | LIV (a) | 3.71 | | 8 last week. The weakest starter, see below |
-| FWD | **Haaland (C)** | AVL (a) | 3.85 | | 0.74 P(start); 5.22 per start |
+| FWD | **Haaland (C)** | AVL (a) | 5.13 | | Flag cleared 20 Oct; 5.22 per start |
 | FWD | João Pedro | TOT (H) | 4.52 | | Template, 50 of 50 top-50 teams |
 | FWD | Barry | ARS (a) | 3.92 | | Clash priced below |
 
@@ -399,12 +406,11 @@ Cost: **0 (1 FT)**. Bank £0.8m → **£1.3m**.
 | MID | Mbeumo **(V)** | MUN | 7.8 | BOU (H) | 4.95 |
 | MID | Le Fée | SUN | 5.7 | LEE (H) | 4.42 |
 | MID | Gomez | BHA | 5.0 | LIV (a) | 3.71 |
-| FWD | **Haaland (C)** | MCI | 15.7 | AVL (a) | 3.85 |
+| FWD | **Haaland (C)** | MCI | 15.7 | AVL (a) | 5.13 |
 | FWD | João Pedro | CHE | 7.9 | TOT (H) | 4.52 |
 | FWD | Barry | EVE | 5.7 | ARS (a) | 3.92 |
 
-**Calculated XI: 47.3 before the armband; 51.1 with the armband on the page's 75% Haaland;
-52.3 with the vice backstop counted** (5.07, above).
+**Calculated XI: 48.6 before the armband, 53.7 with it** (the roll: 52.8).
 
 **Bench:** Dubravka (GK) → Hall (DEF, `a`) → Gibbs-White (MID, `d` 75%) → Janelt (MID, banned).
 
@@ -418,13 +424,11 @@ Roll the FT (2 FTs in GW9), keep Guéhi. Same XI with **Hall in Murillo's slot**
 Thomas, Gabriel, Van Hecke, Hall), same captain and vice, bench Dubravka, Guéhi,
 Gibbs-White, Janelt.
 
-**Expected cost: 0.9 in GW8 and 4.4 over GW8-13** on the calc, like for like (Haaland
-captained both ways). Two FTs in GW9 buy flexibility for Janelt's return and a Bench Boost
-keeper, but nothing in the squad is broken enough to need two at once. **The page shows the
-roll 0.2 ahead (51.3 against 51.1) because its "keep" side picks its own captain (Mbeumo)
-while the proposal's armband is on Haaland at 75%.** With the same captain on both sides the
-transfer is +0.9. Over six weeks the page reads **+5.9** (321.3 against 315.4) because it
-scores one fixed best XI on the six-week sums; the +4.4 above re-picks the XI every week.
+**Expected cost: 0.9 in GW8 (52.8 against 53.7) and 4.4 over GW8-13** on the calc
+(322.5 against 326.9), Haaland captained both ways. Two FTs in GW9 buy flexibility for Janelt's return and a Bench Boost
+keeper, but nothing in the squad is broken enough to need two at once. Over six weeks the page reads **+5.9** (325.2 against
+319.3) because it scores one fixed best XI on the six-week sums; the +4.4 above re-picks the
+XI every week.
 
 ### Chip strategy
 **No chip.** BB and FH remain, both expiring **GW19**. Bench Boost waits for a playing reserve
@@ -440,8 +444,8 @@ keeper; Free Hit is the emergency.
 
 ## Accepted risks
 
-- **The captain is 75%.** A foot knock, a Champions League game in between, and Maresca's
-  "we'll see". The vice (Mbeumo) and Hall first on the bench are the cover; the Thursday
+- **The captain carried a 75% flag until the evening of 20 Oct.** A foot knock, rested for
+  AEK, and Maresca's "we'll see". The flag is clear now; it can come back before Friday. The vice (Mbeumo) and Hall first on the bench are the cover; the Thursday
   branch moves the armband if he is ruled out.
 - **Two same-game clashes in the XI:** Barry v Raya and Gabriel (EVE at ARS) and João Pedro v
   Van Hecke (CHE v TOT). Priced at 0.36 and 0.34 to remove; kept.
@@ -473,7 +477,7 @@ keeper; Free Hit is the emergency.
 | 5 | Gibbs-White | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
 | 6 | Haaland *(LIV away, FDR 4)* | 6 (12) | Haaland | 6 (12) | **0** *(same player)* | **+4** |
 | 7 | **Haaland (TC, x3)** *(IPS home, FDR 2)* | 13 (26) *(x3 = 39)* | Haaland | 13 (26) | **0** *(same player; the TC's third 13 is the chip, not the ledger)* | **+4** |
-| 8 | Haaland *(AVL away, FDR 3, `d` 75%)*, proposed | | Haaland *(expected)* | | | |
+| 8 | Haaland *(AVL away, FDR 3; `d` 75% cleared 20 Oct)*, proposed | | Haaland *(expected)* | | | |
 
 If Haaland does not play, the armband passes to Mbeumo and the field's to whoever their vices
 are; the lock should record the captain who actually carried the multiplier.
@@ -488,8 +492,8 @@ are; the lock should record the captain who actually carried the multiplier.
 - [ ] **Calafiori, the template defender we did not buy.** His points against Murillo's (the
       overruled-template line, the mirror of GW7's). Start a running total "Murillo against
       Calafiori".
-- [ ] **The armband on a 75% Haaland.** Did he start, how long did he play, and what did the
-      armband return against Mbeumo's points (the model's pick without the backstop)?
+- [ ] **The armband on a just-cleared Haaland.** Did he start, how long did he play, and what
+      did the armband return against Mbeumo's points (0.18 behind on the calc)?
 - [ ] **The Thursday branch.** Was Haaland ruled out, and was the branch taken?
 - [ ] **Barry v Raya and Gabriel (EVE at ARS).** What did the three return together, and did
       a Barry goal cost the clean sheet?
@@ -543,7 +547,7 @@ are; the lock should record the captain who actually carried the multiplier.
 
 - [ ] Guéhi → Murillo:
 - [ ] Calafiori, the template defender we did not buy:
-- [ ] The armband on a 75% Haaland:
+- [ ] The armband on a just-cleared Haaland:
 - [ ] The Thursday branch:
 - [ ] Barry v Raya and Gabriel:
 - [ ] João Pedro v Van Hecke:
