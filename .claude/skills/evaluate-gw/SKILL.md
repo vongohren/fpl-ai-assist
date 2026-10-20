@@ -149,7 +149,7 @@ For each dead-weight position, run `mcp__fpl__search_players`:
 If the user asks for "differentials", filter `selected_by < 10%` mentally when ranking.
 
 **Price rule, when Step 3b found no necessary change.** Drop every candidate whose price
-is falling. Between candidates within 0.5 xP of each other, the rising one wins. If no
+is falling. Between candidates within 0.5 calc of each other (the proposal page's calculated points, not `ep_next`), the rising one wins. If no
 rising or flat candidate beats the player he would replace, roll the transfer. An owned
 player who is falling and already a sale candidate goes before the drop. Never buy a
 falling player on a move nobody needed.
