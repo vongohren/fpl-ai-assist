@@ -90,6 +90,23 @@ From the squad, flag:
 - `form < 2` AND `ep_next < 3` (out of favour)
 - Any player whose team has FDR ≥ 4 next 3 GWs and form < 4
 
+### Step 3b — Squad prices
+
+For every player in the squad: `purchase_price` and `selling_price` (from
+`get_my_squad`), `now_cost`, this round's `cost_change_event` and net transfers
+(`transfers_in_event - transfers_out_event`, from `bootstrap-static`). Mark each one
+**rising**, **falling** or **flat**: net transfers past 2% of his owners (and at least
+10k managers) either way, else the sign of `cost_change_event`. This is the same read as
+the Prices section on the proposal page (`scripts/gw-loop/proposal-page.mjs`). It goes in
+the decision log as `### Squad prices` under Flags & Key Signals, with one line naming
+the risers, the fallers, and the sell value against the squad value.
+
+Then decide which case the week is:
+- **A necessary change**: a starter `i`, `s` or `d` ≤ 50%, a slot with 0 minutes for
+  three weeks, or a sale named in last week's adjustments. The model picks; price is a
+  tiebreak.
+- **No necessary change**: the transfer is a value move. Step 6 applies the price rule.
+
 ### Step 4 — Pull forward fixtures (parallel)
 
 For ALL teams represented in the squad PLUS any DGW/standout teams identified, run `mcp__fpl__get_fixture_difficulty` with `from_gw=<next GW>` and `gameweeks=6`.
@@ -130,6 +147,12 @@ For each dead-weight position, run `mcp__fpl__search_players`:
 - Constrain by `max_price` (selling price + bank)
 
 If the user asks for "differentials", filter `selected_by < 10%` mentally when ranking.
+
+**Price rule, when Step 3b found no necessary change.** Drop every candidate whose price
+is falling. Between candidates within 0.5 xP of each other, the rising one wins. If no
+rising or flat candidate beats the player he would replace, roll the transfer. An owned
+player who is falling and already a sale candidate goes before the drop. Never buy a
+falling player on a move nobody needed.
 
 **Hard rule — no intra-squad fixture hedging.** Before recommending any transfer IN, check that the candidate is NOT playing against a defender or GK already in the squad in the same GW (and vice versa: don't bring in a defender against an attacker you already own). Even if both players are in form, owning both sides of the same fixture cancels out — one player's points come at the direct expense of the other's clean sheet / save bonus / goal. Build for concentrated upside, not hedges. If a candidate triggers this conflict, drop them from the shortlist and surface the next option, OR flag the conflict explicitly and recommend resolving by also moving the conflicting squad player. Apply the same check in Step 7 (captain) and Step 8 (final recommendation).
 
