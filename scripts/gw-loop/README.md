@@ -75,7 +75,12 @@ agent's sourced `notes`, and renders, always in this order: the "calculated, not
 predicted" warning; the call (chip, transfers, captain, calculated XI against the
 best XI of the current squad, the zero-transfer line); the pitch (XI by position,
 bench below, new vs kept, this week's opponent coloured by difficulty); transfers out
-→ in side by side and who is kept; one card per proposed player (season numbers,
+→ in side by side and who is kept (each with a rising/falling price mark); **prices**
+(the fifteen we own plus the incoming players: now, sell, this round's price change,
+net transfers this round and rising/falling/flat, with bought and season change under
+the name and the squad's sell value against its value; bought and sell from the
+authenticated `my-team`, or derived from the public transfer history without a token);
+one card per proposed player (season numbers,
 last five matches with scores, next six fixtures, both teams' form, head-to-head,
 sourced "why", news, calculated points, feedback buttons); the same cards for the
 players sold; the feedback box (the reactions as text to copy into the session,

@@ -42,6 +42,24 @@ these loop-specific rules layered on top:
   fall back to `WebSearch` if Brave is unavailable and say which source you used.
   State effective ownership on the captain pick and on any template player we do not
   own. Cross-check every community claim against the API.
+- **Prices are part of the analysis.** Under `## Flags & Key Signals`, a
+  `### Squad prices` table: every player we own with bought / now / sell, this round's
+  price change (`cost_change_event`), net transfers this round (`transfers_in_event`
+  minus `transfers_out_event`) and whether he is **rising, falling or flat**, read the
+  way the page's Prices section reads it (net transfers past 2% of his owners and at
+  least 10k managers, else this round's price change). Then one line: who is rising,
+  who is falling, and the squad's sell value against its value. Bought and sell come
+  from `get_my_squad` (`purchase_price`, `selling_price`); the rest from
+  `bootstrap-static`.
+- **When no change is necessary, buy risers and skip fallers.** A change is necessary
+  when a starter is `i`, `s`, or `d` at 50% or lower for this gameweek, a slot has had 0
+  minutes for three weeks, or last week's adjustments name the sale. If none of those
+  hold, the free transfer is a value move: every candidate whose price is **falling** is
+  dropped from the shortlist, and between candidates within 0.5 calc of each other the
+  **rising** one wins. If no rising or flat candidate beats the player he replaces,
+  roll the transfer. A player we own who is falling and is already a sale candidate goes
+  before the drop, not after it. When a change is necessary the model picks, and price
+  is a tiebreak only. Say in the doc which case this week is.
 - **Propose the whole setup**: transfers (with hit, if any), captain and vice, the
   starting XI and formation, bench order on minutes certainty, chip call, and the
   accepted risks. The human should be able to open the FPL app and copy it in under

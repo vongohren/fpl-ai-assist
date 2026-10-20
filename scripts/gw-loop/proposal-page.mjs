@@ -12,6 +12,8 @@
 //   the call (chip, transfers, captain, calculated XI vs keeping the squad)
 //   the pitch (proposed XI by position, bench below; tap a shirt for its card)
 //   transfers (out -> in, side by side) and who is kept
+//   prices: bought / now / sell for the fifteen we own, this round's price move
+//     and net transfers for them and for the incoming players, rising or falling
 //   one card per proposed player: points, last five matches with scores, next
 //     six fixtures, this week's matchup + head-to-head, why (sourced), news,
 //     calculated points, feedback buttons
@@ -334,6 +336,80 @@ const transfersOut = (proposal.transfers || []).map((t) => ({ out: t.out, in: t.
 const priceOut = outs.reduce((s, id) => s + el[id].now_cost, 0) / 10;
 const priceIn = [...ins].reduce((s, id) => s + el[id].now_cost, 0) / 10;
 
+// ---- prices -------------------------------------------------------------------
+// Which way each price is going, read from this round's transfers (the API has no
+// forecast). Net transfers since the last deadline, as a share of the player's
+// current owners, is what moves FPL prices; past PRESSURE either way (and at least
+// MIN_NET managers) it reads as rising or falling, otherwise this round's price
+// change decides, otherwise flat. A signal, not a prediction.
+const PRESSURE = 0.02;
+const MIN_NET = 10000;
+function priceTrend(e) {
+  const owners = (Number(e.selected_by_percent) / 100) * (boot.total_players || 0);
+  const net = (e.transfers_in_event || 0) - (e.transfers_out_event || 0);
+  const share = owners > 0 ? net / owners : 0;
+  const trend =
+    Math.abs(net) >= MIN_NET && share >= PRESSURE ? "rising"
+    : Math.abs(net) >= MIN_NET && share <= -PRESSURE ? "falling"
+    : e.cost_change_event > 0 ? "rising"
+    : e.cost_change_event < 0 ? "falling"
+    : "flat";
+  return { now: e.now_cost / 10, round: e.cost_change_event / 10, season: e.cost_change_start / 10, net, share, trend };
+}
+// What we paid and what we would get back: the authenticated my-team has both;
+// without a token, derived from the public transfer history (last buy price, or
+// the season-start price for a player never transferred in) with FPL's rule that
+// a sale keeps half the rise, rounded down to £0.1m, and all of a fall.
+async function ownedPrices() {
+  const out = {};
+  const XAUTH = process.env.FPL_X_API_AUTH || secrets.FPL_X_API_AUTH;
+  if (ENTRY && XAUTH) {
+    try {
+      const res = await fetch(`${API}/my-team/${ENTRY}/?_cb=${Date.now()}`, {
+        headers: { "X-Api-Authorization": XAUTH, "User-Agent": "FPL-MCP-Server/1.0 (+https://fantasy.premierleague.com)", Origin: "https://fantasy.premierleague.com", Referer: "https://fantasy.premierleague.com/", "Cache-Control": "no-cache" },
+        signal: AbortSignal.timeout(25000),
+      });
+      if (res.ok) {
+        for (const pk of (await res.json()).picks || []) out[pk.element] = { bought: pk.purchase_price / 10, sell: pk.selling_price / 10, source: "my-team" };
+        if (Object.keys(out).length) return out;
+      }
+    } catch {
+      /* fall through to the public derivation */
+    }
+  }
+  let hist = [];
+  if (ENTRY) {
+    try {
+      hist = await fetchJson(`entry/${ENTRY}/transfers/`);
+    } catch {
+      /* no history: season-start prices */
+    }
+  }
+  for (const id of current) {
+    const e = el[id];
+    const buy = hist.filter((t) => t.element_in === id).sort((a, b) => b.time.localeCompare(a.time))[0];
+    const bought = buy ? buy.element_in_cost : e.now_cost - e.cost_change_start;
+    const sell = e.now_cost > bought ? bought + Math.floor((e.now_cost - bought) / 2) : e.now_cost;
+    out[id] = { bought: bought / 10, sell: sell / 10, source: "derived" };
+  }
+  return out;
+}
+const owned = await ownedPrices();
+const prices = {};
+for (const id of everyone) {
+  const o = current.includes(id) ? owned[id] || null : null;
+  prices[id] = { ...priceTrend(el[id]), bought: o?.bought ?? null, sell: o?.sell ?? null, source: o?.source ?? null };
+}
+const ownedIds = current.filter((id) => prices[id].sell != null);
+const priceSummary = {
+  value: current.reduce((s, id) => s + el[id].now_cost, 0) / 10,
+  sellValue: ownedIds.length === current.length ? Math.round(ownedIds.reduce((s, id) => s + prices[id].sell * 10, 0)) / 10 : null,
+  paid: ownedIds.length === current.length ? Math.round(ownedIds.reduce((s, id) => s + prices[id].bought * 10, 0)) / 10 : null,
+  source: ownedIds.length ? prices[ownedIds[0]].source : null,
+  pressure: PRESSURE,
+  minNet: MIN_NET,
+};
+
 const data = {
   gw: GW,
   season: SEASON,
@@ -366,6 +442,9 @@ const data = {
     keep6: keepXi6?.total ?? null,
   },
   players,
+  prices,
+  priceSummary,
+  current,
   horizon: HORIZON,
 };
 
@@ -418,6 +497,8 @@ h3{font-size:var(--step-0);font-family:var(--font-body);font-weight:700;margin:v
 .benchrow{display:flex;justify-content:space-evenly;gap:2px;margin-top:var(--space-2);padding:var(--space-3) 2px var(--space-2);background:var(--sunken);border:1px dashed var(--line-strong);border-radius:var(--radius)}
 .legend .sq{display:inline-block;width:12px;height:12px;border-radius:var(--radius);background:var(--surface);border:2px solid var(--line-strong);margin-right:6px;vertical-align:-1px}
 .legend .sq.in{border:3px solid var(--accent)}
+.tbl td.up{color:var(--ok)}
+.tbl td.dn{color:var(--fault)}
 /* role tags: in = tram blue, kept = quiet, out = struck */
 .tag{display:inline-block;font:700 var(--step--2)/1 var(--font-body);letter-spacing:.03em;border-radius:var(--radius);padding:3px 5px;vertical-align:2px;white-space:nowrap}
 .tag.in{background:var(--accent);color:var(--on-accent)}
@@ -507,6 +588,13 @@ ${brandSprite(["g-ok", "g-fault", "g-heal", "g-idle", "a-copy", "a-arrow-up-righ
   <div id="transfers"></div>
   <h3 id="kept-h">Kept</h3>
   <div class="chips" id="kept"></div>
+</section>
+
+<section id="prices">
+  <h2>Prices</h2>
+  <p class="cap" id="pr-lede"></p>
+  <div class="tablewrap"><table class="tbl" id="pr-tbl"></table></div>
+  <p class="small" id="pr-note"></p>
 </section>
 
 <section id="players-card">
@@ -611,7 +699,8 @@ function mini(id){
   const p=P[id];const b=h('button','pm');b.type='button';
   b.appendChild(roleTag(p));
   b.appendChild(h('b',null,p.name));
-  b.appendChild(h('span','m',p.team+' '+p.pos+' · £'+p.price+'m · '+p.own+'% owned'));
+  const pr=D.prices[id];
+  b.appendChild(h('span','m',p.team+' '+p.pos+' · £'+p.price+'m'+(pr&&pr.trend!=='flat'?' '+(pr.trend==='rising'?'↑ rising':'↓ falling'):'')+' · '+p.own+'% owned'));
   b.appendChild(h('span','num',p.total+' pts · form '+p.form+' · '+p.minutes+' min'));
   const c=h('span','m');c.appendChild(h('span','num',f1(p.calc.gw)));c.append(' this GW · ');c.appendChild(h('span','num',f1(p.calc.six)));c.append(' in '+D.horizon+' GWs ');c.appendChild(calcTag());b.appendChild(c);
   b.addEventListener('click',()=>openCard(id));
@@ -626,6 +715,33 @@ function mini(id){
   const kept=[...D.xi,...D.bench].filter(id=>P[id].role==='kept');
   document.getElementById('kept-h').textContent='Kept ('+kept.length+')';
   const k=document.getElementById('kept');kept.forEach(id=>{const c=h('button','chip',P[id].name+' · '+P[id].team);c.type='button';c.addEventListener('click',()=>openCard(id));k.appendChild(c);});
+})();
+
+// prices
+(function(){
+  const S=D.priceSummary;const t=document.getElementById('pr-tbl');
+  const m1=n=>n==null?'-':'£'+f1(n)+'m';const ch=n=>n?(n>0?'+':'')+f1(n):'0';
+  const word=w=>w==='rising'?chip('ok','up'):w==='falling'?chip('fault','down'):chip('idle','flat');
+  const k=n=>Math.abs(n)>=1000?(n>0?'+':'')+Math.round(n/1000)+'k':sign(n);
+  const ownedNow=D.current.filter(id=>P[id]);
+  const rising=ownedNow.filter(id=>D.prices[id].trend==='rising').map(id=>P[id].name);
+  const falling=ownedNow.filter(id=>D.prices[id].trend==='falling').map(id=>P[id].name);
+  let l='Squad value '+m1(S.value)+(S.sellValue!=null?', '+m1(S.sellValue)+' if sold today (paid '+m1(S.paid)+')':'')+'. ';
+  l+=(rising.length?'Rising: '+rising.join(', ')+'. ':'')+(falling.length?'Falling: '+falling.join(', ')+'. ':'')+(!rising.length&&!falling.length?'Nothing we own is moving this round.':'');
+  document.getElementById('pr-lede').textContent=l;
+  const head=['Player','Now','Sell','Round','Net','Trend'];
+  const tr=h('tr');head.forEach((c,i)=>tr.appendChild(h('th',i>0&&i<5?'n':null,c)));t.appendChild(tr);
+  const ins=D.transfers.map(x=>x.in);
+  const order=[...ownedNow.filter(id=>!D.outs.includes(id)),...D.outs,...ins];
+  const f=n=>n==null?'-':f1(n);
+  order.forEach(id=>{const p=P[id];const pr=D.prices[id];const r=h('tr');
+    const nm=h('td');nm.appendChild(h('b',null,p.name));if(p.role!=='kept')nm.append(' ',roleTag(p));
+    nm.appendChild(h('div','meta',p.team+' '+p.pos+(pr.bought!=null?' · bought '+f1(pr.bought):'')+' · season '+ch(pr.season)));r.appendChild(nm);
+    r.appendChild(h('td','n',f(pr.now)));r.appendChild(h('td','n',f(pr.sell)));
+    r.appendChild(h('td','n'+(pr.round>0?' up':pr.round<0?' dn':''),ch(pr.round)));
+    const nt=h('td','n',k(pr.net));nt.title=(pr.share*100).toFixed(1)+'% of owners';r.appendChild(nt);
+    const w=h('td');w.appendChild(word(pr.trend));r.appendChild(w);t.appendChild(r);});
+  document.getElementById('pr-note').textContent='Prices in £m. Round is the price change since the last deadline; net are transfers in minus out in the same window. A player reads rising or falling when net transfers pass '+Math.round(S.pressure*100)+'% of his owners (and at least '+Math.round(S.minNet/1000)+'k managers), otherwise by this round\'s price change. FPL publishes no forecast, so this is a signal, not a prediction. Sell is what FPL gives back: half the rise, rounded down, all of a fall'+(S.source==='derived'?' (derived from the public transfer history; no login token was available)':'')+'.';
 })();
 
 // feedback state
