@@ -55,9 +55,11 @@ these loop-specific rules layered on top:
   when a starter is `i`, `s`, or `d` at 50% or lower for this gameweek, a slot has had 0
   minutes for three weeks, or last week's adjustments name the sale. If none of those
   hold, the free transfer is a value move: every candidate whose price is **falling** is
-  dropped from the shortlist, and between candidates within 0.5 calc of each other the
-  **rising** one wins. If no rising or flat candidate beats the player he replaces,
-  roll the transfer. A player we own who is falling and is already a sale candidate goes
+  dropped from the shortlist, and between candidates within **1.5 calc of each other
+  over six weeks** (each player's "in 6 GWs" number on his card, not this week alone and
+  not the squad's "Next 6 GWs" total) the **rising** one wins. If no rising or flat
+  candidate beats the player he replaces on the same six-week number, roll the
+  transfer. A player we own who is falling and is already a sale candidate goes
   before the drop, not after it. When a change is necessary the model picks, and price
   is a tiebreak only. Say in the doc which case this week is.
 - **Propose the whole setup**: transfers (with hit, if any), captain and vice, the
