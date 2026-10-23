@@ -496,7 +496,71 @@ keeper; Free Hit is the emergency.
 
 ## Decision
 
-*Written by the lock phase from what was actually done.*
+**One free transfer, no hit. Captain Haaland. The proposal, exactly as written.**
+
+| OUT | £ (sell) | IN | £ | |
+|---|---|---|---|---|
+| Guéhi (MCI, DEF) | 6.0 | **Murillo** (NFO, DEF) | 5.5 | free transfer |
+
+Stamped 2026-10-20 19:44:08 UTC in `entry/5047923/transfers/` (`element_out_cost` 60,
+`element_in_cost` 55), three days before the deadline. Confirmed after the deadline on the
+public `entry/5047923/event/8/picks/` and on `get_my_squad` (authenticated, not stale):
+`active_chip: null`, Haaland `multiplier: 2`, Mbeumo `is_vice_captain`, `event_transfers: 1`,
+`event_transfers_cost: 0`, `bank: 13` (£1.3m). Every id matches the lock snapshot.
+
+**Captain: Haaland** (MCI at AVL, FDR 3). **Vice: Mbeumo** (MUN v BOU, FDR 3). **Chip: none.**
+
+### Starting XI (4-3-3)
+| Pos | Player | Team | £m | GW8 | FDR |
+|---|---|---|---|---|---|
+| GK | Raya | ARS | 6.1 | EVE (H) | 3 |
+| DEF | Thomas | COV | 4.0 | FUL (H) | 2 |
+| DEF | Gabriel | ARS | 7.9 | EVE (H) | 3 |
+| DEF | **Murillo** | NFO | 5.5 | IPS (a) | 2 |
+| DEF | Van Hecke | TOT | 4.9 | CHE (a) | 4 |
+| MID | Mbeumo **(V)** | MUN | 7.9 | BOU (H) | 3 |
+| MID | Le Fée | SUN | 5.7 | LEE (H) | 3 |
+| MID | Gomez | BHA | 5.0 | LIV (a) | 4 |
+| FWD | **Haaland (C)** | MCI | 15.7 | AVL (a) | 3 |
+| FWD | João Pedro | CHE | 7.9 | TOT (H) | 2 |
+| FWD | Barry | EVE | 5.7 | ARS (a) | 5 |
+
+**Bench:** Dubravka (GK, TOT at CHE, FDR 4) → Hall (DEF, NEW at CRY, FDR 3) → Gibbs-White
+(MID, NFO at IPS, FDR 2) → Janelt (MID, BRE at HUL, `s`, suspended until 31 Oct).
+
+**Final state:** £98.5m squad (sell value £98.0m) + **£1.3m ITB** (£99.8m team value; the
+proposal's £98.4m moved with Mbeumo's rise to £7.9m). ARS×2, TOT×2, NFO×2, one each of COV,
+NEW, BRE, MUN, BHA, SUN, MCI, EVE, CHE. Chips left: **BB, FH** (first half, expire GW19).
+`free_transfers` reads 1; GW9 opens with **1 FT**.
+
+**Flags at the lock read (18:10 UTC):** Haaland `a` 100 since the evening of 20 Oct, and
+Maresca called him fully fit on Thursday 22 Oct
+([beIN](https://www.beinsports.com/en-us/soccer/premier-league/articles/enzo-maresca-breathes-easier-erling-haaland-is-100-fit-to-face-aston-villa-2026-10-22)).
+The news watch read him ten times between 20 Oct and 16:46 UTC on deadline day, `a` 100 every
+time, and changed nothing. **Gibbs-White's `d` 75% has cleared** to `a` 100 as well. Janelt
+is the only flagged player in the fifteen.
+
+### Proposal vs decision
+
+**Matched, 5 of 5** (transfers, captain, vice, XI, chip), bench order identical too. Nothing
+was overridden. It was executed from the research session
+([c3154](https://acp.go.vongohren.me/?c=c3154)) on Snorre's explicit instruction, quoted
+verbatim from the session transcript:
+
+> *"FPL GW8 proposal feedback - Murillo (IN): agree"* (19:43:03 UTC, the proposal page's
+> feedback form)
+>
+> *"Just execute transfer and team layout"* (19:43:49 UTC)
+
+The transfer went through 19 seconds later. He then asked for the news to be watched "many
+times around that time to adjust", which became the Thursday and Friday news-watch jobs.
+
+**The Thursday branch was not taken**, because its condition never arose: Haaland was not
+ruled out. **The zero-transfer alternative** (roll, Guéhi kept, Hall in Murillo's slot) was
+not played; it is written down above and the first watch flag prices it.
+
+One thing the decision did not see: the price rule (#62) merged at 20:07 UTC, 23 minutes after
+the transfer. The Squad prices section above applies it after the fact and keeps Murillo.
 
 ---
 
@@ -535,16 +599,21 @@ keeper; Free Hit is the emergency.
 | 5 | Gibbs-White | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
 | 6 | Haaland *(LIV away, FDR 4)* | 6 (12) | Haaland | 6 (12) | **0** *(same player)* | **+4** |
 | 7 | **Haaland (TC, x3)** *(IPS home, FDR 2)* | 13 (26) *(x3 = 39)* | Haaland | 13 (26) | **0** *(same player; the TC's third 13 is the chip, not the ledger)* | **+4** |
-| 8 | Haaland *(AVL away, FDR 3; `d` 75% cleared 20 Oct)*, proposed | | Haaland *(expected)* | | | |
+| 8 | Haaland *(AVL away, FDR 3; `d` 75% cleared 20 Oct, "100%" at Thursday's presser)* | | Haaland *(expected; 77.5% owned, `most_captained` not yet published)* | | | |
 
-If Haaland does not play, the armband passes to Mbeumo and the field's to whoever their vices
-are; the lock should record the captain who actually carried the multiplier.
+Locked with Haaland carrying the x2 (public picks, `multiplier: 2`). If he does not play, the
+armband passes to Mbeumo by autosub; the post-mortem records whoever actually carried it. If
+the field's captain is Haaland again, this is a zero-swing week by construction.
 
 ---
 
 ## Watch flags for GW8
 
-- [ ] **Guéhi → Murillo (the model's FT).** Murillo's points minus Guéhi's, GW8 and running to
+Re-read at the lock. The decision matched the proposal 5 of 5, so there is no deviation to add
+a flag for, and every flag below already tests what was played. Two were settled before the
+first kickoff and are marked so; the post-mortem only fills in the rest.
+
+- [ ] **Guéhi → Murillo (the model's FT, played).** Murillo's points minus Guéhi's, GW8 and running to
       GW13. The calc had it at +0.9 in GW8 and +4.4 over six. Did Murillo bank DC, and did
       Guéhi keep a clean sheet at Villa?
 - [ ] **Calafiori, the template defender we did not buy.** His points against Murillo's (the
@@ -553,18 +622,24 @@ are; the lock should record the captain who actually carried the multiplier.
       (see Squad prices).
 - [ ] **The armband on a just-cleared Haaland.** Did he start, how long did he play, and what
       did the armband return against Mbeumo's points (0.18 behind on the calc)?
-- [ ] **The Thursday branch.** Was Haaland ruled out, and was the branch taken?
+- [x] **The Thursday branch.** Was Haaland ruled out, and was the branch taken? *Settled at
+      the lock: not ruled out (`a` 100, Maresca "100% fit" on 22 Oct), branch not taken, ten
+      news reads changed nothing. The post-mortem only adds whether he started.*
 - [ ] **Barry v Raya and Gabriel (EVE at ARS).** What did the three return together, and did
       a Barry goal cost the clean sheet?
 - [ ] **João Pedro v Van Hecke (CHE v TOT).** Same question.
 - [ ] **Van Hecke over Hall (adjustment #4, clean-sheet tiebreak).** Points of each. Third week
       of testing a last-defender rule: did the bench outscore the starter again?
 - [ ] **Gomez over Gibbs-White.** Did Gibbs-White's flag clear and did he play? Points of each.
+      *His flag had cleared to `a` 100 by the lock, so he sat third on the bench fit; he is
+      also the GW9 FT front-runner (Squad prices), so his GW8 points feed that call.*
 - [ ] **Janelt's banned week.** Zero by construction; does the bench (Hall, Gibbs-White)
       fire an autosub, and did leaving him unsold cost anything against the best midfield
       move (Gibbs-White → Tavernier, Tavernier's points)?
 - [ ] **The template, priced at 9.1.** Sum the unowned template's actual points × ownership.
-- [ ] **João Pedro's price:** £7.9m at research time (bought 7.8). Price at the GW8 deadline.
+- [x] **João Pedro's price:** £7.9m at research time (bought 7.8). Price at the GW8 deadline.
+      *Settled at the lock: **£7.9m** (sell £7.8m), no change this round. Calafiori £6.0m,
+      Murillo £5.5m, Gibbs-White £7.9m (no second drop), Tavernier £6.2m.*
 - [ ] **Running totals to GW11:** B against A (+6), wildcard against the roll (+31),
       B.Fernandes against Gibbs-White (0), Gabriel against Murillo (+6), -4 against A (-1),
       João Pedro against Thiago (-2), model's FT against the played FT (-4). Add GW8.
@@ -607,14 +682,14 @@ are; the lock should record the captain who actually carried the multiplier.
 - [ ] Guéhi → Murillo:
 - [ ] Calafiori, the template defender we did not buy:
 - [ ] The armband on a just-cleared Haaland:
-- [ ] The Thursday branch:
+- [x] The Thursday branch: not taken, Haaland not ruled out (settled at the lock; add whether he started).
 - [ ] Barry v Raya and Gabriel:
 - [ ] João Pedro v Van Hecke:
 - [ ] Van Hecke over Hall:
 - [ ] Gomez over Gibbs-White:
 - [ ] Janelt's banned week:
 - [ ] The template, priced at 9.1:
-- [ ] João Pedro's price:
+- [x] João Pedro's price: £7.9m at the deadline, unchanged (settled at the lock).
 - [ ] Running totals to GW11:
 
 ---
