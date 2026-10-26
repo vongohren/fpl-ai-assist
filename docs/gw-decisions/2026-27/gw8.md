@@ -599,7 +599,7 @@ the transfer. The Squad prices section above applies it after the fact and keeps
 | 5 | Gibbs-White | 2 (4) | Haaland *(SUN home, FDR 2)* | 6 (12) | **-8** | **+4** |
 | 6 | Haaland *(LIV away, FDR 4)* | 6 (12) | Haaland | 6 (12) | **0** *(same player)* | **+4** |
 | 7 | **Haaland (TC, x3)** *(IPS home, FDR 2)* | 13 (26) *(x3 = 39)* | Haaland | 13 (26) | **0** *(same player; the TC's third 13 is the chip, not the ledger)* | **+4** |
-| 8 | Haaland *(AVL away, FDR 3; `d` 75% cleared 20 Oct, "100%" at Thursday's presser)* | | Haaland *(expected; 77.5% owned, `most_captained` not yet published)* | | | |
+| 8 | Haaland *(AVL away, FDR 3; `d` 75% cleared 20 Oct, "100%" at Thursday's presser)* | 8 (16) | Haaland *(`most_captained`)* | 8 (16) | **0** *(same player)* | **+4** |
 
 Locked with Haaland carrying the x2 (public picks, `multiplier: 2`). If he does not play, the
 armband passes to Mbeumo by autosub; the post-mortem records whoever actually carried it. If
@@ -648,49 +648,120 @@ first kickoff and are marked so; the post-mortem only fills in the rest.
 
 ## Outcome
 
-*To be filled in after GW8 finalises. Respect the finalisation gate from GW1:*
-*`events[7].finished = true`, `data_checked = true`, and `automatic_subs` populated.*
-*Per GW4 adjustment #6, check the live `bootstrap-static` endpoint, not `get_fixtures.is_finished`.*
+**Actual points: 63** (gross 63, no hit, net 63; bench **2**) · **GW average: 45** · **Highest score: 120**
+**Overall rank: 1,573,483** (up from 2,467,338, **+893,855 places**)
+**GW rank:** 826,307 · **Season total: 514**
+**Most captained in the game:** Haaland (8 pts, x2 = 16), and ours
 
-**Actual points:**
-**Overall rank:**
-**GW rank:**
-**Season total:**
-**Most captained in the game:**
+Finalisation gate confirmed before writing, on the live `bootstrap-static` endpoint per
+GW4 adjustment #6: `events[7].finished = true`, `data_checked = true`, all ten GW8
+fixtures `finished`. `automatic_subs` on `entry/5047923/event/8/picks/` holds **one**:
+Hall (449) in for João Pedro (165). `entry/5047923/history/` agrees on every field:
+`points: 63`, `event_transfers: 1`, `event_transfers_cost: 0`, `total_points: 514`
+(451 + 63), `points_on_bench: 2`, `bank: 13`, `value: 998`, `active_chip: null`.
 
 | Player | Min | Pts | Notes |
 |---|---|---|---|
-| Raya | | | |
-| Thomas | | | |
-| Gabriel | | | |
-| Murillo | | | |
-| Van Hecke | | | |
-| Mbeumo (V) | | | |
-| Le Fée | | | |
-| Gomez | | | |
-| Haaland (C) | | | |
-| João Pedro | | | |
-| Barry | | | |
-| *Bench: Dubravka* | | | |
-| *Bench: Hall* | | | |
-| *Bench: Gibbs-White* | | | |
-| *Bench: Janelt* | | | |
-| *Sold: Guéhi* | | | |
+| Raya | 90 | 7 | **Clean sheet** (+4), 3 saves (+1). 0.63 xGC. ARS 2-0 EVE |
+| Thomas | 59 | 1 | Off at 59', appearance only. DC 4. COV 0-1 FUL. **Flagged `d` 75% (unspecified injury) on 24 Oct, after the game** |
+| **Gabriel** | 90 | **17** | **Goal from 0.54 xG** + **clean sheet** + **DC 14 banked** (+2) + **3 bonus** (bps 44). ARS 2-0 EVE |
+| **Murillo** | 90 | 1 | **DC 4, missed** (the floor he was bought for). Yellow (-1), conceded 1 from 0.46 xGC. 0.19 xG. IPS 1-1 NFO |
+| Van Hecke | 90 | 7 | **Clean sheet** + 1 bonus. DC 8, missed by two. CHE 0-2 TOT |
+| Mbeumo (V) | 90 | 2 | Appearance only. 0.26 xG. DC 3. MUN 0-3 BOU |
+| Le Fée | 78 | 3 | Clean sheet (+1). DC 3. 0.10 xG, 0.17 xA. SUN 0-0 LEE |
+| Gomez | 90 | 2 | Appearance only. DC 7, missed. 0.13 xG, 0.22 xA. LIV 2-0 BHA |
+| **Haaland (C)** | 90 | **8 x2 = 16** | **Goal from 0.40 xG** + 2 bonus (bps 35). Started and played 90 on the cleared flag. AVL 2-1 MCI |
+| João Pedro | 0 | 0 | **Did not play.** Knee injury in Friday's training ("some liquid", Alonso), ruled out of CHE v TOT ([SI](https://www.si.com/soccer/why-joao-pedro-not-playing-chelsea-vs-tottenham-10-24-26)). FPL flag `d` 75% added 24 Oct 16:30 UTC, after the deadline. **Autosubbed out** |
+| Barry | 90 | 2 | Appearance only. 0.38 xG. ARS 2-0 EVE |
+| *Bench: Dubravka* | 0 | 0 | Eighth week without a minute |
+| *Bench: Hall* | 90 | **5** | **Autosub in for João Pedro** (4-3-3 → 5-3-2). Clean sheet from 1.59 xGC, DC 8 missed, yellow (-1). CRY 0-2 NEW |
+| *Bench: Gibbs-White* | 90 | 2 | Flag cleared, played 90. **0.76 xG, 0.17 xA**, no return. DC 6. IPS 1-1 NFO |
+| *Bench: Janelt* | 0 | 0 | Suspended (second yellow in GW7). Back for GW9 |
+| *Sold: Guéhi* | 45 | 0 | 45 minutes, yellow (-1), conceded 1. DC 4. AVL 2-1 MCI |
+
+**One autosub fired:** Hall (first outfield bench) for João Pedro, into a legal 5-3-2. The
+bench order did its job: João Pedro's injury was in Friday training and his flag only went
+up on Saturday afternoon, after the deadline, so nothing could have been done at the lock.
+Bench left: Gibbs-White 2 (and Dubravka, Janelt 0).
+
+XI **63**, no hit. **Eighteen above the average, +893,855 places**, the second week running
+of a gain near a million. Gabriel and Haaland were **33 of the 63**; the other nine played
+slots returned 30. Five starters scored 2 or less (Murillo 1, Thomas 1, Mbeumo 2, Gomez 2,
+Barry 2). The best legal XI from the fifteen (Gibbs-White for Murillo or Thomas, 4-4-2)
+scores **64**, +1: the first week since the wildcard that the XI was close to its own best.
 
 ### Flag outcomes
 
-- [ ] Guéhi → Murillo:
-- [ ] Calafiori, the template defender we did not buy:
-- [ ] The armband on a just-cleared Haaland:
-- [x] The Thursday branch: not taken, Haaland not ruled out (settled at the lock; add whether he started).
-- [ ] Barry v Raya and Gabriel:
-- [ ] João Pedro v Van Hecke:
-- [ ] Van Hecke over Hall:
-- [ ] Gomez over Gibbs-White:
-- [ ] Janelt's banned week:
-- [ ] The template, priced at 9.1:
-- [x] João Pedro's price: £7.9m at the deadline, unchanged (settled at the lock).
-- [ ] Running totals to GW11:
+- [x] (+1) **Guéhi → Murillo: RIGHT ANSWER, WRONG MECHANISM, +1.** Murillo 1 (DC 4,
+      missed; yellow; conceded 1 at Ipswich), Guéhi 0 (45 minutes, yellow, conceded 1,
+      Villa 2-1 City). The calc had +0.9; the result was +1, but not on the DC floor the
+      move was bought for: Murillo's lowest DC of the season (4, after 14, 6, 10, 12, 11,
+      10, 9) and Guéhi's own 0 made the margin. Played 63 against the written-down roll
+      (Hall in Murillo's slot, Guéhi on the bench, same autosub) **62**. Running to GW13:
+      **+1**.
+- [x] (=) **Calafiori, the template defender we did not buy: LEVEL, 1 AGAINST 1.** Calafiori
+      22 minutes and off with a hip injury (`d` 75% since 24 Oct), 1 point. In Murillo's
+      slot he would have scored the same 63. **Price:** Calafiori £6.0m, flat this round
+      but **-172k net** and flagged, so the "rising" read of the lock has flipped to
+      falling; Murillo £5.5m, flat. Running total, new: **Murillo against Calafiori: 0**.
+      The price at the GW9 deadline (31 Oct 11:00 UTC) goes in the GW9 log.
+- [x] (+6) **The armband on a just-cleared Haaland: YES, +6. STARTED, 90 MINUTES, A GOAL.**
+      8 (goal from 0.40 xG, 2 bonus), x2 = 16. Mbeumo, the alternative 0.18 behind on the
+      calc, scored 2 in MUN 0-3 BOU. Captain Mbeumo would have returned 4 + 8 = 12 from the
+      pair against our 16 + 2 = **18**. The knock did not show.
+- [x] (=) **The Thursday branch: NOT TAKEN, AND HAALAND STARTED AND PLAYED 90.** Settled at
+      the lock; the outcome adds that the condition never came close.
+- [x] (=) **Barry v Raya and Gabriel: NO, BARRY BLANKED AND ARSENAL KEPT THE CLEAN SHEET, 26
+      FROM THE THREE.** ARS 2-0 EVE. Raya 7, Gabriel 17, Barry 2 (0.38 xG). The side we
+      are long on won, as the hedging check argued. Benching Barry for Hall would have
+      changed nothing: with Hall starting, Barry is the first bench outfielder and comes on
+      for João Pedro into the same slot.
+- [x] (=) **João Pedro v Van Hecke: IT DID NOT BITE, JOÃO PEDRO DID NOT PLAY.** Knee in
+      training, ruled out. CHE 0-2 TOT: Van Hecke a clean sheet and 7. Dubravka on the
+      bench again.
+- [x] (=) **Van Hecke over Hall (adjustment #4): RIGHT ANSWER, NO EFFECT, BOTH PLAYED.** Van
+      Hecke 7 (clean sheet, 1 bonus, DC 8), Hall 5 (clean sheet from 1.59 xGC, DC 8, yellow):
+      the starter beat the bench man by 2, but João Pedro's absence brought Hall on, so both
+      counted. Swap them and the total is the same. Third week of a last-defender rule and
+      the first where the bench did **not** outscore the starting defender. Gabriel, started
+      on the same rule, scored 17.
+- [x] (=) **Gomez over Gibbs-White: LEVEL, 2 AND 2.** Gibbs-White's flag cleared, he played
+      90 and carried the best underlying number in our fifteen (0.76 xG, 0.17 xA) for 2.
+      Gomez 2 at Anfield (DC 7, 0.35 xGI). The quarter-point swap was worth nothing.
+- [x] (-7) **Janelt's banned week: THE BAN COST 0, THE MIDFIELD MOVE WOULD HAVE WON 7.**
+      Janelt sat last on the bench and was never reached; the one autosub was Hall for João
+      Pedro. Against the best midfield move: Gibbs-White → Tavernier (no Murillo, Guéhi
+      kept, Hall in Murillo's slot, Tavernier for Gomez in the XI) scores **70**: Tavernier
+      **10** (goal from 0.72 xG, clean sheet, 2 bonus, 86 minutes at Old Trafford), Guéhi 0
+      off the bench for João Pedro. **-7 against what we played.** The calc had Tavernier
+      +0.65 in GW8 against Murillo's +0.89, and +4.5 against +4.4 over six. Tavernier is now
+      £6.3m (+£0.1, **+400k net**, the round's biggest riser).
+- [x] (+5) **The template, priced at 9.1: IT RETURNED 3.7.** Ownership × points on the
+      proposal's table: Konsa 17.8% × 14 = 2.5, Calafiori 53.8% × 1 = 0.5, Rogers 48.0% ×
+      1 = 0.5, De Cuyper 41.0% × 1 = 0.4, Groß 45.3% × 0 = 0, Palmer 26.4% × -1 = -0.3.
+      **3.7 against 9.1**, 5.4 less than priced. Four of the six blanked; the one haul was
+      the least-owned line (Konsa, goal and clean sheet).
+- [x] (=) **João Pedro's price: £7.9m AT THE DEADLINE, UNCHANGED.** Settled at the lock. Now
+      `d` 75% (knee, "tests") with **-231k net** this round: a drop is likely before GW9.
+      Sell price £7.8m.
+- [x] (?) **Running totals to GW11: B AGAINST A +21, WILDCARD AGAINST THE ROLL +53,
+      B.FERNANDES AGAINST GIBBS-WHITE +2, GABRIEL AGAINST MURILLO +22, -4 AGAINST A +6,
+      JOÃO PEDRO AGAINST THIAGO -7, MODEL'S FT AGAINST THE PLAYED FT -4.**
+      *B against A:* A frozen at GW6 already owns Murillo and has Ajer in Guéhi's slot, so
+      it makes no GW8 move; the only XI difference is **Gabriel 17 against Ajer 2** (Hall
+      autosubs in both). B.Fernandes (0 minutes) against Gibbs-White (bench) does not reach
+      either XI. **+15 this week, +21.** *Wildcard against the roll:* the written-down
+      roll's fifteen, frozen (Raya; Gabriel, Calafiori, Guéhi, Hall; B.Fernandes (C),
+      Mbeumo (V), Gibbs-White, Gomez, Semenyo; Barry; bench Dubravka, Mitchell, João Pedro,
+      Obi). B.Fernandes and Semenyo did not play: Mitchell on for 1 (5-4-1), João Pedro and
+      Obi 0 minutes, so ten men; the armband passes to Mbeumo. 7 + 17 + 1 + 0 + 5 + 1 + 2×2
+      + 2 + 2 + 0 + 2 = **41**, against our 63: **+22 this week, +53**. *B.Fernandes
+      against Gibbs-White:* 0 (did not play) against 2, **+2, running +2**. *Gabriel against
+      Murillo:* 17 against 1, **+16, running +22**; we now own both, so the line is
+      Gabriel's case, not a choice. *-4 against A:* Van Hecke 7 against Branthwaite 0 (did
+      not play), **+7, running +6**: the hit is now paid back. *João Pedro against Thiago:*
+      0 against 5 (assist), **-5, running -7**. *Model's FT against the played FT:* the
+      model's FT was played, **0, running -4**.
 
 ---
 
@@ -698,10 +769,90 @@ first kickoff and are marked so; the post-mortem only fills in the rest.
 
 ### What we got right
 
+- **The armband.** Haaland on a flag that cleared 72 hours before the deadline, read at the
+  API's 100% (GW6 #1, GW7 #2): 90 minutes, a goal, 16. The vice and the Thursday branch were
+  cover that was never needed. Same player as the field, so the ledger holds at **+4**.
+- **The clean-sheet tiebreak (GW7 #4).** It started Gabriel (17: goal, clean sheet, DC 14,
+  3 bonus) and Van Hecke over Hall (7 against 5). After two weeks of benched clean sheets,
+  this week the rule put the right two in, and the bench returned 2.
+- **The bench order.** Hall first on minutes certainty meant João Pedro's training injury,
+  invisible at the deadline, cost 0 instead of 5: the autosub fell into a legal 5-3-2.
+- **The hedges priced and kept.** Barry against Arsenal and João Pedro against Spurs both
+  went our way (Arsenal 2-0, Spurs clean sheet). Taking the side we are long on was right
+  twice, and neither clash cost a point.
+- **No hit, no injury sale.** GW7 #3 and #5 held: Gibbs-White kept on a `d` 75% that
+  cleared, and no -4 chased a +1.6 combination.
+
 ### What we got wrong
+
+- **The FT went to the defender, and the midfielder was the week.** Murillo 1 against
+  Tavernier 10; the alternative scores 70 against 63. The calc had them level over six
+  (+4.4 against +4.5) and Murillo +0.24 in GW8; the tiebreak that decided it was GW7 #3
+  (do not sell on an injury flag), applied to a flag that FPL lifted before the deadline.
+  Tavernier rose £0.1 and is still rising.
+- **Murillo's DC floor did not show up in the first week.** DC 4, his lowest in eight
+  games, and a yellow: 1 point on a move sold on "four points before anything happens".
+  One week does not break a 5-of-7 rate, but the floor is a rate, not a floor.
+- **Five starters on 2 or less.** Mbeumo 2 at home to Bournemouth (the second-best defence,
+  which the model flagged and still ranked him our vice), Gomez 2 at Anfield, Barry 2 at
+  Arsenal, Thomas 1 off at 59', Murillo 1. The XI was near its own optimum (64); the
+  fifteen is the limit, not the order.
 
 ### Gut calibration
 
+**A week won by two players and the field's misses.** Gabriel and Haaland were 33 of 63;
+the rest of the XI scored about what an average week's nine slots score. The margin over
+the average (+18) came as much from the unowned template blanking (3.7 against 9.1 priced)
+as from our returns. That is variance in our favour, the mirror of GW6.
+
+**Model against human: no disagreement to score this week.** The proposal was played 5 of
+5. Murillo beat Guéhi and the roll by 1, as the calc said (+0.9); the miss was the option
+the calc rated level, Tavernier, which the model ranked a quarter-point lower in GW8 and
+the injury rule ruled out. Running "model's FT against the played FT" stays **-4**.
+
+**Rank.** 1.57m, the best of the season, ~800k above GW5's 2.38m. Two weeks, +1.85m. The
+wildcard squad has now beaten its written-down roll by +53 over three weeks.
+
 ### Adjustments for next time
 
+1. **João Pedro is `d` 75% (knee, "liquid", tests pending; news 24 Oct 16:30).** Fresh news:
+   read at **75%** (GW6 #1). He is 71.3% owned and template: **never sold on this flag**
+   unless the club rules him out for weeks. Read Chelsea's presser before the GW9 research
+   run picks the XI. He plays MUN at home in GW9. If he starts the GW9 XI, Hall (or a fit
+   defender) is first on the bench again; if he is ruled out, he is benched, not sold, and
+   the FT stays on #3.
+2. **Thomas is `d` 75% (unspecified, off at 59' v Fulham, news 24 Oct 17:00).** Same read:
+   75%. He is a £4.0m DC defender with SUN at home: benched only if the club rules him out.
+3. **The GW9 FT goes to midfield: Gibbs-White → Tavernier, re-priced first.** The case GW8
+   rejected on GW7 #3 is gone (Gibbs-White is `a` 100 and played 90), so the sale is now a
+   value move on a faller (-£0.1, -31k net) into a riser (Tavernier £6.3m, +400k). Bank
+   £1.3m + sell £7.8m covers him with £2.8m to spare. Run it against the field on the calc;
+   it is the default unless something in the squad is ruled out.
+4. **GW7 #3 was written for a flag that is live at the lock, not one that cleared.** When a
+   player's injury flag clears to `a` before the deadline, the sale is priced like any other
+   move; the rule does not keep blocking it. The GW8 run held Gibbs-White → Tavernier back
+   on a `d` 75% that cleared the same evening.
+5. **Janelt is back for GW9 (BRE v NFO, against Murillo).** That is a same-game pair on
+   opposite sides: price it with the hedging rule, and do not start both on reflex.
+6. **Keep the clean-sheet tiebreak (GW7 #4).** First week it was tested with a clear result
+   (Gabriel 17, Van Hecke 7 against Hall 5). Under 1.0 xP, the defender with the higher team
+   clean-sheet chance starts.
+7. **Carry the running totals to GW11:** B against A **+21**, wildcard against the roll
+   **+53**, B.Fernandes against Gibbs-White **+2**, Gabriel against Murillo **+22**, -4
+   against A **+6**, João Pedro against Thiago **-7**, model's FT against the played FT
+   **-4**, and to GW13: Guéhi → Murillo **+1**, Murillo against Calafiori **0**.
+8. **GW9 opens with 1 FT and £1.3m ITB**, deadline **Saturday 31 Oct 11:00 UTC**. Record
+   Calafiori's and Murillo's prices at it (the GW8 price flag).
+
 ### Chip planning notes
+
+- **Bench Boost: still two moves from live.** The bench returned 2 + the autosub's 5. Dubravka
+  is in his eighth week without a minute; Kinsky (TOT, £4.4m, now -£0.1) kept a clean sheet
+  and scored 9 at Chelsea. A playing £4.0-4.5m keeper is the first fix when an FT is spare.
+  Expires **GW19**; a DGW before then would be the week.
+- **Free Hit: held.** No DGW or BGW known before GW19. Emergency cover if João Pedro's knee
+  and Thomas's flag turn into absences alongside another.
+- **Triple Captain: spent (GW7, +13).** Tie-week scores: GW11 (FUL H), GW15 (CHE H), GW16
+  (HUL H) in their own logs.
+- **Wildcard:** first half spent in GW6 (+53 against the roll over three weeks). The
+  second-half wildcard opens from GW20.
