@@ -453,6 +453,81 @@ Silva is rising now, and Hall's run turns bad after Everton.
 
 ---
 
+## Decision
+
+**One free transfer, no hit. Captain Haaland. The proposal, exactly as written.**
+
+| OUT | £ (sell) | IN | £ | |
+|---|---|---|---|---|
+| Hall (NEW, DEF) | 5.2 | **Silva** (BOU, DEF) | 5.0 | free transfer |
+
+Stamped 2026-10-30 21:25:44 UTC in `entry/5047923/transfers/` (`element_out_cost` 52,
+`element_in_cost` 50), about 13.5 hours before the deadline. Silva had not risen (£5.0m), so
+the bank lands where the proposal said. Confirmed after the deadline on the public
+`entry/5047923/event/9/picks/` and on `get_my_squad` (authenticated, not stale):
+`active_chip: null`, Haaland `multiplier: 2`, Mbeumo `is_vice_captain`, `event_transfers: 1`,
+`event_transfers_cost: 0`, `bank: 15` (£1.5m). Every id matches the lock snapshot.
+
+**Captain: Haaland** (MCI v BHA, FDR 3). **Vice: Mbeumo** (MUN at CHE, FDR 4). **Chip: none.**
+
+### Starting XI (4-4-2)
+| Pos | Player | Team | £m | GW9 | FDR |
+|---|---|---|---|---|---|
+| GK | Raya | ARS | 6.2 | LIV (a) | 4 |
+| DEF | **Silva** | BOU | 5.0 | LEE (H) | 3 |
+| DEF | Van Hecke | TOT | 4.9 | CRY (H) | 2 |
+| DEF | Gabriel | ARS | 8.0 | LIV (a) | 4 |
+| DEF | Thomas | COV | 4.0 | SUN (H) | 3 |
+| MID | Mbeumo **(V)** | MUN | 7.9 | CHE (a) | 4 |
+| MID | Janelt | BRE | 5.0 | NFO (H) | 3 |
+| MID | Le Fée | SUN | 5.7 | COV (a) | 2 |
+| MID | Gibbs-White | NFO | 7.9 | BRE (a) | 3 |
+| FWD | **Haaland (C)** | MCI | 15.8 | BHA (H) | 3 |
+| FWD | Barry | EVE | 5.6 | NEW (a) | 3 |
+
+**Bench:** Dubravka (GK, TOT v CRY, FDR 2) → Murillo (DEF, NFO at BRE, FDR 3) → Gomez
+(MID, BHA at MCI, FDR 5) → João Pedro (FWD, CHE v MUN, `i` 0%).
+
+**Final state:** £98.3m squad (sell value £98.2m on `get_my_squad`) + **£1.5m ITB** (£99.8m
+team value; Gabriel rose to £8.0m since research). ARS×2, TOT×2, NFO×2, one each of BOU,
+COV, BRE, MUN, SUN, MCI, EVE, BHA, CHE. Chips left: **BB, FH** (first half, expire GW19).
+`free_transfers` reads 1; GW10 opens with **1 FT**.
+
+**Flags at the lock read (12:11 UTC):** **Thomas moved from `d` 75% to `d` 50%, "Calf
+injury - 50% chance of playing"** between research and the transfer; Lampard called it a
+"small calf issue", to be decided close to kickoff
+([Coventry Telegraph](https://www.coventrytelegraph.net/sport/football/football-news/coventry-city-injuries-bobby-thomas-34835698)).
+João Pedro `i` 0% (thigh), unchanged. Everyone else `a`.
+
+**Prices at the deadline:** Silva £5.0m (no rise), Hall £5.3m, Tavernier **£6.5m** (+0.1
+since research), Calafiori **£5.9m** (-0.1, `d`), Murillo £5.5m, João Pedro £7.8m (sell
+£7.8m, no drop yet), Gibbs-White £7.9m.
+
+### Proposal vs decision
+
+**Matched, 5 of 5** (transfers, captain, vice, XI, chip), bench order identical too. Nothing
+was overridden. It was executed from the research session
+([c3885](https://acp.go.vongohren.me/?c=c3885)) on Snorre's instruction, quoted verbatim from
+the session transcript:
+
+> *"Please doo the proposal,s hte timeout goes out soon and I need the transfers in, I trust
+> your gut"* (2026-10-30 21:25:02 UTC)
+
+The transfer went through 42 seconds later and the team was saved 11 seconds after that.
+The night before (29 Oct 21:59 UTC) the loop's status read had found the team still
+unchanged.
+
+**Thomas started on 50%, not the 75% the proposal priced.** The agent re-read the flag before
+executing and kept him: with Murillo first on the bench, the slot is worth about 0.5 × 5.07 +
+0.5 × 4.03 = **4.55** against Murillo's 4.03 started, so the proposal's ordering holds on
+its own numbers. The cost of the drop is the risk the bench does not cover: Thomas starts and
+comes off early (as at 59' v Fulham), and Murillo cannot come on. **The Friday branch was not
+taken**, because its condition never arose: Coventry did not rule him out, he is a doubt.
+**The zero-transfer alternative** (roll, Hall kept) was not played; it is written down above
+and the first watch flag prices it.
+
+---
+
 ## Accepted risks
 
 - **João Pedro sits on the bench injured, and falling.** A dead bench slot for two to four weeks
@@ -485,32 +560,46 @@ Silva is rising now, and Hall's run turns bad after Everton.
 | 6 | Haaland *(LIV away, FDR 4)* | 6 (12) | Haaland | 6 (12) | **0** *(same player)* | **+4** |
 | 7 | **Haaland (TC, x3)** *(IPS home, FDR 2)* | 13 (26) *(x3 = 39)* | Haaland | 13 (26) | **0** *(same player; the TC's third 13 is the chip, not the ledger)* | **+4** |
 | 8 | Haaland *(AVL away, FDR 3; `d` 75% cleared 20 Oct, "100%" at Thursday's presser)* | 8 (16) | Haaland *(`most_captained`)* | 8 (16) | **0** *(same player)* | **+4** |
-| 9 | Haaland *(BHA home, FDR 3)*, proposed | | Haaland *(expected: 37 of the top 50 in GW8)* | | | |
+| 9 | Haaland *(BHA home, FDR 3; `a` 100, rested from the cup tie)* | | Haaland *(`most_captained` at the deadline)* | | | |
 
-If Haaland does not play, the armband passes to Mbeumo and the field's to whoever their vices
-are; the lock should record the captain who actually carried the multiplier.
+Locked with Haaland carrying the x2 (public picks, `multiplier: 2`). `events[8].most_captained`
+is Haaland (411) already, so this is a zero-swing week by construction unless he does not
+play: then the armband passes to Mbeumo by autosub, and the post-mortem records whoever
+actually carried it.
 
 ---
 
 ## Watch flags for GW9
 
-- [ ] **Hall → Silva (the model's FT).** Silva's points minus Hall's, GW9 and running to GW14. The
+Re-read at the lock. The decision matched the proposal 5 of 5, so there is no deviation to add
+a flag for, and every flag below already tests what was played. Thomas's flag moved after the
+proposal, so his flag now tests the 50% start. The price flags were settled at the deadline
+and are marked so; the post-mortem only fills in the rest.
+
+- [ ] **Hall → Silva (the model's FT, played).** Silva's points minus Hall's, GW9 and running to GW14. The
       calc had +1.1 in GW9 and +5.7 over six. Did Silva bank DC, and did Hall return against
       Everton (and against Barry)?
 - [ ] **Gibbs-White → Tavernier, GW8's default that the model overruled.** Tavernier's points
       against Silva's, and Gibbs-White's in our XI. Start a running total "Silva against
-      Tavernier". Also Tavernier's price at the deadline (£6.4m at research, rising).
-- [ ] **João Pedro benched, not sold.** Zero by construction. Price at the deadline (£7.8m,
-      sell £7.8m at research) and the news at the GW10 research run.
-- [ ] **Thomas over Murillo (GW8 #2 and #6).** Did Thomas start, how long did he play, and the
-      points of each. Did the autosub fire?
+      Tavernier". *Tavernier's price at the deadline: **£6.5m** (£6.4m at research), so the
+      move would now cost £0.1m more of the bank.*
+- [ ] **João Pedro benched, not sold.** Zero by construction. The news at the GW10 research
+      run. *Price settled at the lock: **£7.8m**, sell £7.8m, no drop yet despite the
+      round's biggest outflow.*
+- [ ] **Thomas over Murillo on a 50% flag (GW8 #2 and #6).** The proposal priced Thomas at
+      75%; he started at **`d` 50% (calf)**, re-priced at execution to 4.55 against Murillo's
+      4.03. Did Thomas start, how long did he play, and the points of each. Did the autosub
+      fire, and if he started and came off early, what did Murillo score on the bench (the
+      one case the ordering does not cover)?
 - [ ] **The armband on Haaland v Brighton.** His points against Barry's and Mbeumo's (0.84 and
       0.85 behind on the calc).
 - [ ] **Janelt v Gibbs-White (BRE v NFO).** What did the two return together?
 - [ ] **Thomas v Le Fée (COV v SUN).** Same question, and did a Le Fée return cost Thomas a clean
       sheet?
 - [ ] **The template, priced at 8.1.** Sum the unowned template's actual points × ownership.
-- [ ] **Calafiori's and Murillo's prices at the deadline** (GW8 #8): £6.0m and £5.5m at research.
+- [x] **Calafiori's and Murillo's prices at the deadline** (GW8 #8): £6.0m and £5.5m at research.
+      *Settled at the lock: Calafiori **£5.9m** (-0.1, `d`), Murillo **£5.5m** (flat). The
+      template defender we did not buy is now the cheaper one.*
 - [ ] **Running totals to GW11:** B against A (+21), wildcard against the roll (+53),
       B.Fernandes against Gibbs-White (+2), Gabriel against Murillo (+22), -4 against A (+6),
       João Pedro against Thiago (-7), model's FT against the played FT (-4); to GW13: Guéhi →
