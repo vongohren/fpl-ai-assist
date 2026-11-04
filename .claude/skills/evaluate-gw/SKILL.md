@@ -128,9 +128,10 @@ headline counts. Three layers (the analysis behind this is
   weekly FPL rankings (free); add a source only if it publishes a per-player number for the
   gameweek. Never paywalled services, never FPL's `ep_next` (form × chance of playing, not
   a projection). Written as `projections.json` = `[{element, source, url, value}]`.
-- **Stances**: what a **fixed list of six sources** recommends per player (`buy`, `sell`,
+- **Stances**: what a **fixed list of sources** recommends per player (`buy`, `sell`,
   `hold`, `captain`, `avoid`), each with its URL, date and the sentence that says so.
-  Written as `stances.json` = `[{element, source, url, date, stance, quote}]`. The six,
+  Written as `stances.json` = `[{element, source, url, date, stance, quote}]`. The list
+  (set by decision dc-100 H2),
   and the rest of the procedure, are in `scripts/gw-loop/briefs/research.md` ("Community
   data"); use the same list in an interactive run so the weeks compare.
 
@@ -171,7 +172,7 @@ post-mortem). The proposal page prints calc, consensus, blended and `w` for ever
 - The **1.5 six-week tie band** (Step 6) is on blended six.
 - **Starter margins** (GW9's 0.3) are on blended.
 - The **armband** (Step 7) is on blended, with GW6's 0.5 rule against the field's captain.
-- **"The crowd says"**: when 4 of every 6 stance sources that published say sell or avoid a
+- **"The crowd says"**: when at least `max(2, ⌈2N/3⌉)` of the N stance sources that published say sell or avoid a
   player we keep or buy, or captain someone other than our captain, the recommendation
   answers it in a line headed "The crowd says" (who, how many of how many, why we follow or
   go against it). The page lists these; every one needs its line. A unanimous expert view
@@ -204,7 +205,7 @@ Cross-reference top-form players against next-GW fixtures:
 - Captain must have favourable FDR (≤ 3) AND DGW where possible
 - Rank the options on **blended**. If our best is less than 0.5 blended ahead of the
   field's captain (most captained by the top 50), captain the field's player (GW6 rule)
-- Count the `captain` stances per option; 4 of every 6 sources on someone else is a
+- Count the `captain` stances per option; two thirds of the sources (at least 2) on someone else is a
   "The crowd says" line (Step 5b), not a silent override
 - **Always re-check fixtures from the GW fixtures list, not from `next_fixture` field on player records — that field can show prior GW.** Got burned on this with Palmer once.
 

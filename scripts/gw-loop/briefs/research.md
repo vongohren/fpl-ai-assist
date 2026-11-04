@@ -114,16 +114,15 @@ captain option (ours and the field's).
    `captain`, `avoid`. One record per player a source takes a position on in its GW{{GW}}
    article: what the article **recommends** for that player, with the sentence that says so
    as `quote` (verbatim, at most ~25 words). A headline that names a player is not a stance.
-   The sources are a **fixed six**, so the counts compare week to week:
-   1. `Premier League` (premierleague.com, The Scout's picks and captain article)
-   2. `Fantasy Football Scout` (free articles)
-   3. `Fantasy Football Pundit`
-   4. `RotoWire` (its FPL articles, not the rankings)
-   5. `Fantasy Football Hub` (free articles)
-   6. `Sports Mole` (its FPL tips)
+   The sources are a **fixed list**, so the counts compare week to week:
+   1. `Fantasy Football Scout` (free articles)
+   2. `RotoWire` (its FPL articles, not the rankings)
+   3. `The False 9`
+   4. `Fantasy Football Fix` (free articles)
 
-   A source that published nothing for the gameweek is simply absent; say which in the
-   doc. Changing the list is a change to this brief, never a substitution in a session.
+   The list is set by Snorre's decision dc-100 H2 in the huddle project and changes only
+   through this brief, never by a substitution in a session. A source that published
+   nothing for the gameweek is simply absent; say which in the doc.
 3. **Run it**, from your worktree, exactly:
 
    ```bash
@@ -168,8 +167,8 @@ compute them by hand and never pick on calc alone.
   blended** ahead of the field's captain (most captained by the top 50), captain the
   field's player (the GW6 rule). State the effective ownership either way. If you propose a
   captain other than the one "Armband on the blend" names, say why in the doc.
-- **"The crowd says".** When 4 of every 6 stance sources that published (the page's bar:
-  `max(2, ⌈4N/6⌉)` of the N sources with a stance this week)
+- **"The crowd says".** When at least `max(2, ⌈2N/3⌉)` of the N stance sources that
+  published this week (two thirds; the page's bar, 3 of 4 when all four publish)
   say sell or avoid a player we keep or buy, or captain someone other than our captain, the
   proposal must answer it in a line headed **"The crowd says"**: who, how many of how many,
   and why we go against it or why we follow it. The page lists these under its "The crowd

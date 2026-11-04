@@ -90,7 +90,7 @@ only GW N's part blended. The page ranks and picks on the blended number everywh
 the squad, the six-week comparison, the transfers line, the armband with GW6's 0.5 rule against the
 field's captain, shown as "Armband on the blend"), shows calc / consensus / blend side by side in
 "Calc against the consensus", and lists under **"The crowd says"** every pick most stance sources
-are against (at least 4 of 6, i.e. max(2, ⌈4N/6⌉) of N sources: sell/avoid on a player we keep or
+are against (two thirds, i.e. max(2, ⌈2N/3⌉) of the N sources that published: sell/avoid on a player we keep or
 buy, captain on someone other than ours). It writes each player's `decision` block back into the
 doc; `--publish` (or `--put`) also puts the doc on huddle. It does not link the visual.
 
@@ -111,7 +111,9 @@ node scripts/gw-loop/calibrate.mjs --gw 11 --put                # after finalisa
 
 Every decision rule in `briefs/research.md` runs on blended (the 1.5 six-week tie band, the
 0.3 starter margin, GW6's 0.5 armband rule), and each entry under "The crowd says" needs its
-own line in the doc. `get_community_trends` is a source finder only: the briefs never cite its
+own line in the doc. The stance sources are a fixed list in `briefs/research.md` (Fantasy
+Football Scout, RotoWire, The False 9, Fantasy Football Fix), set by decision dc-100 H2 and
+changed only through the brief. `get_community_trends` is a source finder only: the briefs never cite its
 counts or its sentiment.
 
 ## What it never does
