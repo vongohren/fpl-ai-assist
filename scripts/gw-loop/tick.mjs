@@ -374,9 +374,11 @@ async function main() {
       pm.done = nowIso();
       log(gw, "postmortem-landed", "Outcome filled on origin/main");
       // The gameweek is over. The post-mortem's report (outcome: done) has
-      // normally moved the item to ready_for_review; one still in working
-      // (no report filed) goes through ready_for_review, the only way the
-      // flow allows, with the reason saying why.
+      // normally moved the item to ready_for_review. The flow allows resolved
+      // from every non-terminal state except working (proposed, idle,
+      // needs_human, failed and ready_for_review all list it), so only an item
+      // still in working (no report filed) goes through ready_for_review first,
+      // with the reason saying why.
       const st = itemState(gw);
       if (st === "working") moveItem(gw, "ready_for_review", "Outcome er på main, uten rapport fra post-mortem");
       if (st && st !== "resolved" && st !== "cancelled") moveItem(gw, "resolved", "post-mortem er på main");

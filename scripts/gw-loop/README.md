@@ -255,7 +255,9 @@ the copy (the reads go to huddle, nothing is written there):
 ```bash
 cp -r /workspace/.spawn/fpl-gw-loop /tmp/gwloop-$(acp self)
 FPL_LOOP_STATE=/tmp/gwloop-$(acp self) node scripts/gw-loop/tick.mjs --dry-run
-``` To make the loop re-propose after the human
+```
+
+To make the loop re-propose after the human
 rejects a proposal, remove `proposals/gw<N>.json` and set `forward.<N>.phase` to `idle`.
 
 Env overrides, all optional: `FPL_LOOP_REPO`, `FPL_LOOP_STATE`, `FPL_LOOP_BRIEFS`,
