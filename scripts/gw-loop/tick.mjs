@@ -525,6 +525,15 @@ async function main() {
     const prevPending = prevEvent && prevEvent.finished && !(prevPm?.done);
     if (prevPending && T > 24) {
       log(gw, "waiting-postmortem", `gw${gw - 1} outcome not on main yet, T-${T.toFixed(1)}h`);
+      // The post-mortem buzz is no longer sent, so an outcome PR left unmerged
+      // would hold the proposal to T-24h unseen. Only a merge unblocks it: say so
+      // ONCE per gameweek, and only when the PR is there to merge (no PR is the
+      // post-mortem's own alarm).
+      const prevPr = !fw.held_buzzed && openPrForBranch(`gw${gw - 1}-outcome`);
+      if (prevPr) {
+        fw.held_buzzed = nowIso();
+        ntfy({ kind: "alarm", title: `FPL GW${gw}: forslaget venter på GW${gw - 1}`, prio: "high", click: prevPr, msg: `Outcome-PR-en for GW${gw - 1} er ikke merget. Research for GW${gw} starter når den er det, ellers ved T-24h. Trykk for PR-en.` });
+      }
       saveState(state);
       return;
     }
@@ -594,7 +603,7 @@ async function main() {
       log(gw, "proposed", proposal.summary || "");
       // The click opens the gameweek's huddle item (the ask, the proposal page,
       // the log); the page, then the shelf URL, only when there is no item.
-      const click = itemUrl(gw, visualUrl(gw, "proposal", proposal.page_url || proposal.pr_url));
+      const click = huddleLink("item", `gw${gw}`) || visualUrl(gw, "proposal", proposal.page_url || proposal.pr_url);
       ntfy({
         kind: "proposal", title: `FPL GW${gw}: forslag klart`,
         prio: "high",

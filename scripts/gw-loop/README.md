@@ -17,13 +17,13 @@ where the record lands, not where he is asked. See "The huddle project" below.
   idle ──► researching ──► proposed ──► locked ────────────► post-mortem ──► (feeds next research)
            (agent)         (tick:       (agent: record        (agent: Outcome + Learnings)
            proposal +      watch team,  what was done
-           PR + JSON)      T-10h buzz)  vs proposed)
+           PR + JSON)      buzz once)   vs proposed)
 ```
 
 | Phase | Trigger (tick decides) | Who acts | Output | Item `gw<N>` |
 |---|---|---|---|---|
 | **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | the community data (`community.mjs --put`), `gw<N>.md` with a `## Proposal`, PR `gw<N>`, **the proposal page** (`proposal-page.mjs --publish`, linked as visual `life/fpl-gw<N>-proposal`), memory `gw/gw<N>.md` pinned, a report, the ask, `proposals/gw<N>.json` last | tick adds it (`proposed`); agent → `working`, then → `needs_human` with the ask |
-| **proposed** | `proposals/gw<N>.json` exists | tick (and the attached research agent, for answers and comments) | ntfy, click opens the page on huddle; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` | agent → `working` once the answer is taken in |
+| **proposed** | `proposals/gw<N>.json` exists | tick (and the attached research agent, for answers and comments) | ntfy, click opens item `gw<N>` on huddle (the page, the log and the ask); then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` | agent → `working` once the answer is taken in |
 | **lock** | deadline passed, picks public | agent, `briefs/lock.md` | `## Decision` under the Proposal, ledger row, flags re-aimed at the real decision, README line, memory updated, a report | tick → `working` if the ask is still open |
 | **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, `calibrate.mjs --put` (actuals, new `w`), flag outcomes, ledger, Learnings; PR `gw<N>-outcome`; **the outcome page** (`outcome-page.mjs --publish`, linked as visual `life/fpl-gw<N>-outcome`), memory updated, a report (`done` → `ready_for_review`) | tick → `resolved` when the Outcome is on main |
 
@@ -139,13 +139,14 @@ not buzzed. Each call in `tick.mjs` carries a `kind`; only the kinds in
 |---|---|---|---|
 | proposal landed | `proposal` | **yes** | "FPL GW5: forslag klart" (high), summary, click opens item `gw5` on huddle (the page, the log and the ask); the proposal visual, the shelf page or the PR when there is no item |
 | an agent produced nothing in 6h, three times | `alarm` | yes | "research / post-mortem sitter fast" (high) |
+| research for GW N held because GW N-1's outcome PR is open and unmerged | `alarm` | yes | "FPL GW6: forslaget venter på GW5" (high), click opens the outcome PR; ONCE per gameweek (`forward.<N>.held_buzzed`). Without the merge the proposal comes at T-24h instead of T-72h |
 | `my-team` answers 401 | `alarm` | yes | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; ONCE per dead login (`auth.login_dead_buzzed`, cleared when `my-team` answers 200 again) |
 | research spawned | `status` | no | "FPL GW5: research i gang" |
 | team changed | `status` | no | "ser at du har gjort noe (partial)" |
 | deadline ≤ 10h | `status` | no | "FPL GW5: 10t til frist". Still latched once per gameweek (`deadline_buzzed`), only not sent |
 | deadline passed | `status` | no | "FPL GW5 låst: matched" |
 | gameweek finalised | `status` | no | "FPL GW5 ferdig: 75 poeng (snitt 69)" |
-| post-mortem PR open | `status` | no | "FPL GW5: post-mortem klar" |
+| post-mortem PR open | `status` | no | "FPL GW5: post-mortem klar". The PR still needs a merge; if it is still open when the next research is due, the alarm above fires |
 
 To turn a status buzz back on, add `status` to `FPL_LOOP_NTFY_KINDS` in the job's
 environment; to silence the alarms too, set it to `proposal`.
@@ -271,6 +272,7 @@ rejects a proposal, remove `proposals/gw<N>.json` and set `forward.<N>.phase` to
 
 Env overrides, all optional: `FPL_LOOP_REPO`, `FPL_LOOP_STATE`, `FPL_LOOP_BRIEFS`,
 `FPL_LOOP_LEAD_H` (default 72), `FPL_LOOP_DEADLINE_BUZZ_H` (default 10), `FPL_LOOP_NTFY`,
+`FPL_LOOP_NTFY_KINDS` (default `proposal,alarm`, see Notifications),
 `FPL_LOOP_ACP`, `FPL_LOOP_ARCFORGE`, `FPL_LOOP_PROJECT` (default `season-<yy>-<yy>`, empty
 = no huddle), `ACP_CONSOLE_URL`, `FPL_LOOP_ARTIFACTS`, plus `FPL_MANAGER_ID`
 and `FPL_X_API_AUTH` (default: read from `~/.fpl/secrets.env`, the file the keepalive
