@@ -15,6 +15,8 @@
 //   bought against sold (this GW's transfers, and every transfer of the
 //     season with the points each side has scored since)
 //   who scored it (all 15 picks, captain doubled, bench not counted)
+//   calc against consensus against actual (from community/gw<N>.json once
+//     calibrate.mjs has filled the actuals; hidden when there is no such doc)
 //   points against the average + overall rank
 //   the armband ledger (our captain x2 vs the field's captain x2, cumulative)
 //   the flags (parsed from `### Flag outcomes` in gw<N>.md, grouped by the
@@ -23,7 +25,7 @@
 //
 // Add a section here when we add one to the process; do not improvise per week.
 //
-//   outcome-page.mjs --gw 5 [--season 2026-27] [--out /tmp/x.html] [--publish]
+//   outcome-page.mjs --gw 5 [--season 2026-27] [--community f] [--out /tmp/x.html] [--publish]
 //
 // --publish hands the file to `artifact publish` under the slug
 // fpl-gw<N>-outcome and prints the URL, which is stable across re-publishes.
@@ -33,6 +35,7 @@ import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
 import { brandHead, brandSprite, BRAND_VERSION } from "./brand.mjs";
+import { readJson, readWeight, gwPath } from "./community-lib.mjs";
 
 const REPO = process.env.FPL_LOOP_REPO || path.resolve(import.meta.dirname, "..", "..");
 const SECRETS = path.join(process.env.HOME || "/home/node", ".fpl", "secrets.env");
@@ -318,6 +321,23 @@ try {
   /* no doc: the page still renders, the flags section says so */
 }
 
+// Calc against consensus against actual: every player the proposal scored (the
+// decision block) that has a consensus and, after calibrate.mjs, an actual.
+let cva = null;
+{
+  const cdoc = readJson(opt("community", gwPath(GW)));
+  const ours = new Set(picks.picks.map((p) => p.element));
+  const rows = Object.entries(cdoc?.gw === GW ? cdoc.players : {})
+    .filter(([, p]) => p.decision && p.decision.consensus != null && typeof p.actual === "number")
+    .map(([id, p]) => ({ n: p.name, team: p.team, ours: ours.has(Number(id)), calc: p.decision.calc, cons: p.decision.consensus, blend: p.decision.blended, w: p.decision.w, actual: p.actual }))
+    .sort((a, b) => b.actual - a.actual);
+  if (rows.length) {
+    const mae = (k) => Math.round((rows.reduce((s, r) => s + Math.abs(r[k] - r.actual), 0) / rows.length) * 100) / 100;
+    const wt = readWeight();
+    cva = { rows, errCalc: mae("calc"), errCons: mae("cons"), errBlend: mae("blend"), w: rows[0].w, weight: { w: wt.w, method: wt.method, gws: wt.gws || [], errCalc: wt.err_calc ?? null, errCons: wt.err_consensus ?? null, n: wt.n_player_weeks ?? 0 } };
+  }
+}
+
 const cap = players.find((p) => p.tag.startsWith("C") || p.tag.startsWith("V as C"));
 const data = {
   gw: GW,
@@ -350,6 +370,7 @@ const data = {
   field,
   market,
   flags,
+  cva,
 };
 
 // ----------------------------------------------------------------------------- html
@@ -419,6 +440,13 @@ ${brandSprite(["g-ok", "g-fault", "g-info", "g-idle"])}
   <p class="cap" id="players-lede"></p>
   <div class="legend"><span><i style="background:var(--series-1)"></i>Counted</span><span><i style="background:var(--series-muted)"></i>Bench, not counted</span></div>
   <div class="chartbox"><svg class="chart" id="players" role="img" aria-label="Points per player"></svg></div>
+</section>
+
+<section id="cva">
+  <h2>Calc against the consensus against what happened</h2>
+  <p class="cap" id="cva-lede"></p>
+  <dl class="readout" id="cva-readout"></dl>
+  <div class="tablewrap"><table class="tbl" id="cva-tbl"></table></div>
 </section>
 
 <section>
@@ -665,6 +693,26 @@ document.getElementById('us-name').textContent=D.entryName;
     if(f.note) m.appendChild(h('span','row-m',f.note)); li.appendChild(m); ul.appendChild(li);}));
 })();
 
+// calc against consensus against actual
+(function(){
+  const C=D.cva;const sec=document.getElementById('cva');
+  if(!C){sec.style.display='none';return;}
+  const f2=n=>n.toFixed(2);const f1=n=>(Math.round(n*10)/10).toFixed(1);
+  document.getElementById('cva-lede').textContent='Every player the proposal scored that a site also projected for GW'+D.gw+' ('+C.rows.length+'), against the points he got. The number is how far each missed on average, in points a player: lower is better. Blend was the decision number at w '+C.w+'.';
+  const R=document.getElementById('cva-readout');
+  const best=Math.min(C.errCalc,C.errCons);
+  const row=(dt,v,rn)=>{const d=h('div');d.appendChild(h('dt',null,dt));d.appendChild(h('dd','num',v));d.appendChild(h('dd','rn',rn));R.appendChild(d);};
+  row('Calc missed by',f2(C.errCalc),C.errCalc===best?'the closer of the two this week':'');
+  row('Consensus missed by',f2(C.errCons),C.errCons===best?'the closer of the two this week':'');
+  row('Blend missed by',f2(C.errBlend),'');
+  const W=C.weight;
+  row('Next week\'s w',String(W.w),W.method==='inverse-variance'?'measured over GW'+W.gws.join(', ')+' ('+W.n+' player-weeks): calc '+f2(W.errCalc)+', consensus '+f2(W.errCons):W.method==='fixed'?'fixed until six gameweeks have data ('+W.gws.length+' so far)':'no weight doc yet');
+  const t=document.getElementById('cva-tbl');
+  const tr=h('tr');['Player','Calc','Cons','Blend','Actual'].forEach((c,i)=>tr.appendChild(h('th',i?'n':null,c)));t.appendChild(tr);
+  C.rows.forEach(r=>{const x=h('tr');const nm=h('td');nm.appendChild(h('b',null,r.n));nm.appendChild(h('div','meta',r.team+(r.ours?' · ours':'')));x.appendChild(nm);
+    [r.calc,r.cons,r.blend].forEach(v=>x.appendChild(h('td','n',f1(v))));const a=h('td','n');a.appendChild(h('b',null,String(r.actual)));x.appendChild(a);t.appendChild(x);});
+})();
+
 // table view + footer
 (function(){
   const t=document.getElementById('tbl');
@@ -673,6 +721,7 @@ document.getElementById('us-name').textContent=D.entryName;
   row(['Against the top '+D.field.n,'Pts','Us ×','Their EO','Gap'],true); [...D.field.losses,...D.field.gains].forEach(g=>row([g.n+' ('+g.team+')',g.pts,g.us,Math.round(g.eo*100)+'%',sign(g.gap)]));
   row(['GW','Points','Average','Overall rank'],true); D.season.forEach(s=>row(['GW'+s.gw,s.pts,s.avg,fmt(s.rank)]));
   row(['GW','Our captain ×n','Field ×2','Swing','Cumulative'],true); D.ledger.forEach(a=>row(['GW'+a.gw,a.ours+' '+(a.o*a.mult),a.field+' '+(a.f*2),a.swing,a.cum]));
+  if(D.cva){row(['Calc vs consensus','Calc','Cons','Blend','Actual'],true);D.cva.rows.forEach(r=>row([r.n+' ('+r.team+')',r.calc,r.cons,r.blend,r.actual]));}
   D.leagues.forEach(lg=>{row([lg.name,'Total','GW'+D.gw],true);lg.rows.forEach(r=>row([r.rank+'. '+r.name,r.total,r.gw]));});
   document.getElementById('foot').textContent='Decision log: docs/gw-decisions/'+D.seasonName+'/gw'+D.gw+'.md · built by scripts/gw-loop/outcome-page.mjs · brand '+D.brand.replace('vongohren/brand@','').slice(0,7);
 })();
