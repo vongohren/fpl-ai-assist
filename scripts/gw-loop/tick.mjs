@@ -31,6 +31,16 @@
 // LATCHES. Every spawn is recorded in state BEFORE the spawn fires, so a crash
 // mid-dispatch costs one wake-up, never a loop. Re-spawns are bounded.
 //
+// HUDDLE. Each gameweek is item gw<N> in the season's huddle project
+// (season-26-27 for 2026-27; FPL_LOOP_PROJECT overrides, empty turns it off).
+// The tick creates the item when it spawns the research run (state proposed),
+// moves it back to working when the deadline passes with Snorre's ask still
+// open, and to resolved when the Outcome lands on main. The sessions do the
+// rest (attach --item gw<N>, working, needs_human with the ask, reports). Every
+// arcforge call is best-effort: a huddle that cannot be reached is logged and
+// never stops a spawn or a buzz. Buzzes click through to the item or the
+// visual on huddle, not to a bare artifact.
+//
 // State: /workspace/.spawn/fpl-gw-loop/ (durable across respawn, not in git).
 //   state.json          phases per gameweek
 //   events.jsonl        one line per decision the tick took
@@ -38,6 +48,8 @@
 //   snapshots/gw<N>-team.json  my-team at proposal time (the "pending" baseline)
 //   proposals/gw<N>.json       written by the research AGENT, read by this tick
 //   locks/gw<N>.json           picks vs proposal, written here after the deadline
+//   community/gw<N>*.json      the research run's community data (community.mjs)
+//   reports/gw<N>-<phase>.md   each phase's report, as filed to the huddle item
 //
 //   tick.mjs [--dry-run] [--status]
 // =============================================================================
@@ -50,6 +62,7 @@ const STATE_DIR = process.env.FPL_LOOP_STATE || "/workspace/.spawn/fpl-gw-loop";
 const SECRETS = path.join(process.env.HOME || "/home/node", ".fpl", "secrets.env");
 const NTFY = process.env.FPL_LOOP_NTFY || "/workspace/it-management/deployments/ntfy/ntfy-send";
 const ACP = process.env.FPL_LOOP_ACP || "/usr/local/bin/acp";
+const ARCFORGE = process.env.FPL_LOOP_ARCFORGE || "/usr/local/bin/arcforge";
 // Briefs live next to this file, so a tick run from any checkout renders its own.
 const BRIEFS = process.env.FPL_LOOP_BRIEFS || path.join(import.meta.dirname, "briefs");
 const API = "https://fantasy.premierleague.com/api";
@@ -64,13 +77,17 @@ const DEADLINE_BUZZ_H = Number(process.env.FPL_LOOP_DEADLINE_BUZZ_H || 10);
 const CONSOLE = (process.env.ACP_CONSOLE_URL || "https://acp.go.vongohren.me").replace(/\/$/, "");
 // Where outcome-page.mjs publishes (artifact shelf, this box's owner slug).
 const ARTIFACTS = (process.env.FPL_LOOP_ARTIFACTS || "https://artifacts.go.vongohren.me/life").replace(/\/$/, "");
+// The shelf owner in a visual ref (life/fpl-gw10-proposal) is the last part of that URL.
+const SHELF_OWNER = ARTIFACTS.split("/").pop();
+// The huddle project, set in main() once the season is known: season-26-27.
+let PROJECT = process.env.FPL_LOOP_PROJECT;
 const RESPAWN_AFTER_H = 6; // an agent that has not produced in this long is presumed dead
 const MAX_ATTEMPTS = 3;
 
 const DRY = process.argv.includes("--dry-run");
 const STATUS_ONLY = process.argv.includes("--status");
 
-for (const d of ["", "briefs", "snapshots", "proposals", "locks"]) {
+for (const d of ["", "briefs", "snapshots", "proposals", "locks", "community", "reports"]) {
   fs.mkdirSync(path.join(STATE_DIR, d), { recursive: true });
 }
 
@@ -169,6 +186,59 @@ function convLink(conv) {
   if (/^https?:\/\//.test(conv)) return conv;
   const r = spawnSync(ACP, ["link", conv], { encoding: "utf8" });
   return r.status === 0 && r.stdout.trim() ? r.stdout.trim() : CONSOLE + "/";
+}
+
+// ----------------------------------------------------------------------------- huddle
+// `arcforge project <args> --project <PROJECT>`, run from the repo. Reads run
+// in a dry run too (they change nothing); writes are printed instead.
+function huddle(args, { write = false } = {}) {
+  if (!PROJECT) return { status: null, out: "" };
+  const full = ["project", ...args, "--project", PROJECT];
+  if (write && DRY) {
+    console.log(`DRY arcforge ${full.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(" ")}`);
+    return { status: 0, out: "" };
+  }
+  const r = spawnSync(ARCFORGE, full, { cwd: REPO, encoding: "utf8", timeout: 30000 });
+  return { status: r.status, out: (r.stdout || "").trim(), err: (r.stderr || r.error?.message || "").trim() };
+}
+// A human URL on huddle (`arcforge project link ...`), or null when the thing
+// is not there (exit 3) or huddle cannot be reached.
+function huddleLink(...what) {
+  const r = huddle(["link", ...what]);
+  return r.status === 0 && r.out ? r.out.split("\n").pop() : null;
+}
+// The item's state; null = no such item, undefined = huddle did not answer.
+function itemState(gw) {
+  const r = huddle(["item", "ls", "--json"]);
+  if (r.status !== 0) return undefined;
+  try {
+    return JSON.parse(r.out).find((i) => i.slug === `gw${gw}`)?.state ?? null;
+  } catch {
+    return undefined;
+  }
+}
+// Idempotent: adds gw<N> only when huddle says it is not there.
+function ensureItem(gw, deadline) {
+  if (!PROJECT) return;
+  const st = itemState(gw);
+  if (st === undefined) return log(gw, "huddle-failed", "item ls");
+  if (st !== null) return;
+  const r = huddle(["item", "add", `gw${gw}`, "--title", `GW${gw}`, "--body", `Gameweek ${gw}, frist ${fmtOslo(deadline)}. Research-kjøringen fyller inn forslaget her.`], { write: true });
+  log(gw, r.status === 0 ? "item-added" : "huddle-failed", r.status === 0 ? `gw${gw}` : `item add: ${r.err}`);
+}
+function moveItem(gw, to, reason) {
+  const r = huddle(["item", "move", `gw${gw}`, to, "--reason", reason], { write: true });
+  log(gw, r.status === 0 ? "item-moved" : "huddle-failed", r.status === 0 ? to : `item move ${to}: ${r.err}`);
+  return r.status === 0;
+}
+// Where a buzz about this gameweek lands: the item, else the project, else
+// `fallback` (a conversation or the console root).
+function itemUrl(gw, fallback = CONSOLE + "/") {
+  return huddleLink("item", `gw${gw}`) || huddleLink() || fallback;
+}
+// A page linked to the project (visual add by the session), else the item.
+function visualUrl(gw, kind, fallback) {
+  return huddleLink("visual", `${SHELF_OWNER}/fpl-gw${gw}-${kind}`) || huddleLink("item", `gw${gw}`) || fallback;
 }
 
 function renderBrief(name, vars) {
@@ -276,6 +346,7 @@ async function main() {
   const events = boot.events;
   const firstYear = new Date(events[0].deadline_time).getUTCFullYear();
   const season = `${firstYear}-${String((firstYear + 1) % 100).padStart(2, "0")}`;
+  PROJECT ??= `season-${String(firstYear % 100).padStart(2, "0")}-${String((firstYear + 1) % 100).padStart(2, "0")}`;
   const next = events.find((e) => e.is_next) || null;
   const current = events.find((e) => e.is_current) || null;
   const now = Date.now();
@@ -284,7 +355,7 @@ async function main() {
   const players = Object.fromEntries(boot.elements.map((p) => [p.id, p.web_name]));
 
   if (STATUS_ONLY) {
-    console.log(JSON.stringify({ season, current: current?.id, next: next?.id, hours_to_next: next ? +hoursTo(next).toFixed(1) : null, state }, null, 2));
+    console.log(JSON.stringify({ season, project: PROJECT || null, current: current?.id, next: next?.id, hours_to_next: next ? +hoursTo(next).toFixed(1) : null, state }, null, 2));
     return;
   }
 
@@ -302,6 +373,15 @@ async function main() {
     if (doc.filled) {
       pm.done = nowIso();
       log(gw, "postmortem-landed", "Outcome filled on origin/main");
+      // The gameweek is over. The post-mortem's report (outcome: done) has
+      // normally moved the item to ready_for_review. The flow allows resolved
+      // from every non-terminal state except working (proposed, idle,
+      // needs_human, failed and ready_for_review all list it), so only an item
+      // still in working (no report filed) goes through ready_for_review first,
+      // with the reason saying why.
+      const st = itemState(gw);
+      if (st === "working") moveItem(gw, "ready_for_review", "Outcome er på main, uten rapport fra post-mortem");
+      if (st && st !== "resolved" && st !== "cancelled") moveItem(gw, "resolved", "post-mortem er på main");
       continue;
     }
     const prUrl = openPrForBranch(`gw${gw}-outcome`);
@@ -312,7 +392,7 @@ async function main() {
       // by outcome-page.mjs, so the URL is known without asking the agent.
       if (!pm.page_buzzed) {
         pm.page_buzzed = nowIso();
-        ntfy({ title: `FPL GW${gw}: post-mortem klar`, click: `${ARTIFACTS}/fpl-gw${gw}-outcome`, msg: `${pm.points != null ? `${pm.points} poeng (snitt ${pm.avg}). ` : ""}Trykk for siden. PR: ${prUrl}` });
+        ntfy({ title: `FPL GW${gw}: post-mortem klar`, click: visualUrl(gw, "outcome", `${ARTIFACTS}/fpl-gw${gw}-outcome`), msg: `${pm.points != null ? `${pm.points} poeng (snitt ${pm.avg}). ` : ""}Trykk for siden. PR: ${prUrl}` });
       }
       continue;
     }
@@ -320,7 +400,7 @@ async function main() {
     if (pm.attempts >= MAX_ATTEMPTS) {
       if (!pm.alerted) {
         pm.alerted = nowIso();
-        ntfy({ title: `FPL GW${gw}: post-mortem sitter fast`, prio: "high", msg: `${MAX_ATTEMPTS} forsøk uten PR. Sjekk acp list / events.jsonl i ${STATE_DIR}.` });
+        ntfy({ title: `FPL GW${gw}: post-mortem sitter fast`, prio: "high", click: itemUrl(gw), msg: `${MAX_ATTEMPTS} forsøk uten PR. Sjekk acp list / events.jsonl i ${STATE_DIR}.` });
       }
       continue;
     }
@@ -343,6 +423,7 @@ async function main() {
     const brief = renderBrief("postmortem", {
       GW: gw,
       SEASON: season,
+      PROJECT,
       REPO,
       ENTRY,
       AVG: ev.average_entry_score,
@@ -357,10 +438,11 @@ async function main() {
     pm.points = picks.entry_history?.points;
     pm.avg = ev.average_entry_score;
     saveState(state); // latch BEFORE dispatch
+    ensureItem(gw, ev.deadline_time); // the session attaches with --item gw<N>
     const conv = acpSpawn(`FPL GW${gw} post-mortem`, `FPL GW${gw} is finalised. Read ${brief} and follow it exactly.`);
     pm.conversation = conv;
     log(gw, "postmortem-spawned", conv);
-    ntfy({ title: `FPL GW${gw} ferdig: ${picks.entry_history?.points} poeng (snitt ${ev.average_entry_score})`, msg: `Post-mortem er i gang. ${conv}` });
+    ntfy({ title: `FPL GW${gw} ferdig: ${picks.entry_history?.points} poeng (snitt ${ev.average_entry_score})`, click: itemUrl(gw, convLink(conv)), msg: `Post-mortem er i gang. ${conv}` });
   }
 
   // ========================================================================= LOCK
@@ -387,15 +469,19 @@ async function main() {
           comparison: cmp,
         };
         if (!DRY) fs.writeFileSync(path.join(STATE_DIR, "locks", `gw${current.id}.json`), JSON.stringify(lock, null, 2));
-        const brief = renderBrief("lock", { GW: current.id, SEASON: season, REPO, ENTRY, LOCK_JSON: path.join(STATE_DIR, "locks", `gw${current.id}.json`), STATUS: cmp.status, PROPOSAL_PR: proposal?.pr_url || "(none)" });
+        const brief = renderBrief("lock", { GW: current.id, SEASON: season, PROJECT, REPO, ENTRY, LOCK_JSON: path.join(STATE_DIR, "locks", `gw${current.id}.json`), STATUS: cmp.status, PROPOSAL_PR: proposal?.pr_url || "(none)" });
         fw.phase = "locked";
         fw.locked_at = nowIso();
         fw.lock_status = cmp.status;
         saveState(state);
+        // Snorre's ask can no longer be answered in the app: the item goes back
+        // to working for the lock run, whatever he did is the answer.
+        ensureItem(current.id, current.deadline_time);
+        if (itemState(current.id) === "needs_human") moveItem(current.id, "working", `fristen har gått (${cmp.status}); det som ble gjort i appen er svaret`);
         const conv = acpSpawn(`FPL GW${current.id} lock`, `The GW${current.id} deadline has passed. Read ${brief} and follow it exactly.`);
         fw.lock_conversation = conv;
         log(current.id, "lock-spawned", `${cmp.status} ${conv}`);
-        ntfy({ title: `FPL GW${current.id} låst: ${cmp.status}`, msg: `C: ${players[actual.captain]}, ${actual.transfers_made} bytte(r)${lock.transfers_cost ? ` (-${lock.transfers_cost})` : ""}${picks.active_chip ? `, chip ${picks.active_chip}` : ""}. Beslutningen logges nå.` });
+        ntfy({ title: `FPL GW${current.id} låst: ${cmp.status}`, click: itemUrl(current.id, convLink(conv)), msg: `C: ${players[actual.captain]}, ${actual.transfers_made} bytte(r)${lock.transfers_cost ? ` (-${lock.transfers_cost})` : ""}${picks.active_chip ? `, chip ${picks.active_chip}` : ""}. Beslutningen logges nå.` });
       } else {
         log(current.id, "lock-waiting", "picks not public yet");
       }
@@ -447,6 +533,7 @@ async function main() {
     const brief = renderBrief("research", {
       GW: gw,
       SEASON: season,
+      PROJECT,
       REPO,
       ENTRY,
       DEADLINE: next.deadline_time,
@@ -459,10 +546,11 @@ async function main() {
     fw.spawned_at = nowIso();
     fw.baseline = baseline;
     saveState(state); // latch BEFORE dispatch
+    ensureItem(gw, next.deadline_time); // the session attaches with --item gw<N>
     const conv = acpSpawn(`FPL GW${gw} research`, `GW${gw} deadline is ${next.deadline_time} (${T.toFixed(0)}h away). Read ${brief} and follow it exactly.`);
     fw.conversation = conv;
     log(gw, "research-spawned", conv);
-    ntfy({ title: `FPL GW${gw}: research i gang`, msg: `Frist ${fmtOslo(next.deadline_time)}. Forslag kommer når agenten er ferdig. ${conv}` });
+    ntfy({ title: `FPL GW${gw}: research i gang`, click: itemUrl(gw, convLink(conv)), msg: `Frist ${fmtOslo(next.deadline_time)}. Forslag kommer når agenten er ferdig. ${conv}` });
     saveState(state);
     return;
   }
@@ -492,11 +580,14 @@ async function main() {
       fw.pr_url = proposal.pr_url || null;
       fw.page_url = proposal.page_url || null;
       log(gw, "proposed", proposal.summary || "");
+      // The click opens the proposal page inside huddle (comments, the ask on
+      // the item), the shelf URL only if the session never linked it.
+      const click = visualUrl(gw, "proposal", proposal.page_url || proposal.pr_url);
       ntfy({
         title: `FPL GW${gw}: forslag klart`,
         prio: "high",
-        click: proposal.page_url || proposal.pr_url,
-        msg: `${proposal.summary || "Se PR."} Frist ${fmtOslo(next.deadline_time)}. ${proposal.page_url ? "Trykk for siden. " : ""}Gjør byttene i appen, så ser jeg det.`,
+        click,
+        msg: `${proposal.summary || "Se PR."} Frist ${fmtOslo(next.deadline_time)}. ${click ? "Trykk for siden, valgene ligger på saken. " : ""}Gjør byttene i appen, så ser jeg det.`,
       });
       saveState(state);
       return;
@@ -506,7 +597,7 @@ async function main() {
       if (fw.attempts >= MAX_ATTEMPTS) {
         if (!fw.alerted) {
           fw.alerted = nowIso();
-          ntfy({ title: `FPL GW${gw}: research sitter fast`, prio: "high", msg: `${MAX_ATTEMPTS} forsøk, ingen proposal. Frist ${fmtOslo(next.deadline_time)}. Sjekk ${fw.conversation}` });
+          ntfy({ title: `FPL GW${gw}: research sitter fast`, prio: "high", click: itemUrl(gw, convLink(fw.conversation)), msg: `${MAX_ATTEMPTS} forsøk, ingen proposal. Frist ${fmtOslo(next.deadline_time)}. Sjekk ${fw.conversation}` });
         }
       } else {
         fw.phase = "idle"; // next tick re-spawns with a fresh baseline
@@ -544,6 +635,7 @@ async function main() {
         const open = Object.entries(cmp.checks).filter(([, v]) => !v).map(([k]) => k);
         ntfy({
           title: `FPL GW${gw}: ser at du har gjort noe (${cmp.status})`,
+          click: itemUrl(gw),
           msg: open.length ? `Gjenstår fra forslaget: ${open.join(", ")}. Frist ${fmtOslo(next.deadline_time)}.` : `Laget matcher forslaget. Frist ${fmtOslo(next.deadline_time)}.`,
         });
       }
@@ -557,7 +649,8 @@ async function main() {
 
 // The one deadline buzz per gameweek, in whatever phase the tick finds the GW.
 // Latched in state (fw.deadline_buzzed) so it never repeats; the click lands
-// in this GW's analysis conversation. The team status is the last one the
+// on the GW's huddle item (the ask, the page, the log), the analysis
+// conversation only when huddle has no item. The team status is the last one the
 // proposed-phase watch saw, so the line can say whether he has acted.
 function deadlineBuzz(fw, gw, T, next) {
   if (T > DEADLINE_BUZZ_H || fw.deadline_buzzed) return;
@@ -574,7 +667,7 @@ function deadlineBuzz(fw, gw, T, next) {
   ntfy({
     title: `FPL GW${gw}: ${T < 3 ? Math.round(T * 60) + " min" : Math.round(T) + "t"} til frist`,
     prio: "high",
-    click: convLink(fw.conversation),
+    click: itemUrl(gw, convLink(fw.conversation)),
     msg: `Frist ${fmtOslo(next.deadline_time)}. ${line}${where ? ` ${where}` : ""}`,
   });
   log(gw, "deadline-buzzed", `T-${T.toFixed(1)}h ${fw.phase} ${fw.last_status || "-"}`);
