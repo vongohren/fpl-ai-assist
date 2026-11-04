@@ -527,7 +527,8 @@ const data = {
   blend: {
     w: W,
     method: weight.method,
-    from: weight.from,
+    // the reader is on a phone: name the weight doc, never a path inside the box
+    from: weight.from && weight.from.startsWith("/") ? "the weight doc" : weight.from,
     nGws: weight.gws?.length ?? null,
     errCalc: weight.err_calc ?? null,
     errCons: weight.err_consensus ?? null,

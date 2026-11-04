@@ -78,6 +78,10 @@ section:
    node scripts/gw-loop/outcome-page.mjs --gw {{GW}} --publish
    ```
 
+   Render it once without `--publish` first and lint it against the house brand:
+   `"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/brand/scripts/brand-lint" /tmp/fpl-gw{{GW}}-outcome.html`.
+   A finding is fixed in `outcome-page.mjs`, never by hand in the HTML.
+
    It is deterministic and renders the same view every gameweek (hero, mini-leagues,
    who scored it, points vs average, rank, armband ledger, flags, table view). Do
    **not** hand-build a page, add sections or restyle it; if the view needs a new

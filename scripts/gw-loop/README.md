@@ -129,17 +129,26 @@ Every click lands on huddle: the gameweek's item, or the page as a visual inside
 project (comments and the ask next to it). The fallback, when huddle has no item or cannot
 be reached, is what it was before: the conversation, the shelf URL, the console root.
 
-| When | Message |
-|---|---|
-| research spawned | "FPL GW5: research i gang", click opens item `gw5` (the agent conversation is in the text) |
-| proposal landed | "FPL GW5: forslag klart" (high), summary, click opens the proposal page on huddle (`visual life/fpl-gw5-proposal`; the item if it is not linked; the shelf page or the PR without huddle) |
-| team changed | "ser at du har gjort noe (partial)", lists what is still open |
-| deadline ≤ 10h | "FPL GW5: 10t til frist" (high), ONCE per gameweek in whatever phase the GW is in; says whether the team matches, click opens item `gw5` (the analysis conversation without huddle). Replaced the T-48/24/6/2h "ingen endringer sett" ladder on 2026-09-17 |
-| deadline passed | "FPL GW5 låst: matched", captain, transfers, chip; click opens item `gw5` |
-| gameweek finalised | "FPL GW5 ferdig: 75 poeng (snitt 69)"; click opens item `gw5` |
-| post-mortem PR open | "FPL GW5: post-mortem klar", ONCE, click opens the outcome page on huddle (the shelf URL if it is not linked; the PR link is in the text) |
-| `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; ONCE per dead login (`auth.login_dead_buzzed` in state, cleared when `my-team` answers 200 again). Was one per 6h until 2026-09-17, which fired four times for one dead login |
-| an agent produced nothing in 6h, three times | "sitter fast" (high) |
+Since 2026-11-04 (Snorre: "only when there is a proposal") the phone hears **one** thing per
+gameweek: the proposal. Everything else in the cycle is followed on the huddle item and is
+not buzzed. Each call in `tick.mjs` carries a `kind`; only the kinds in
+`FPL_LOOP_NTFY_KINDS` (default `proposal,alarm`) are sent, the rest are logged as
+`ntfy-skipped` in `events.jsonl`, so the history still shows them.
+
+| When | Kind | Sent? | Message |
+|---|---|---|---|
+| proposal landed | `proposal` | **yes** | "FPL GW5: forslag klart" (high), summary, click opens item `gw5` on huddle (the page, the log and the ask); the proposal visual, the shelf page or the PR when there is no item |
+| an agent produced nothing in 6h, three times | `alarm` | yes | "research / post-mortem sitter fast" (high) |
+| `my-team` answers 401 | `alarm` | yes | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; ONCE per dead login (`auth.login_dead_buzzed`, cleared when `my-team` answers 200 again) |
+| research spawned | `status` | no | "FPL GW5: research i gang" |
+| team changed | `status` | no | "ser at du har gjort noe (partial)" |
+| deadline ≤ 10h | `status` | no | "FPL GW5: 10t til frist". Still latched once per gameweek (`deadline_buzzed`), only not sent |
+| deadline passed | `status` | no | "FPL GW5 låst: matched" |
+| gameweek finalised | `status` | no | "FPL GW5 ferdig: 75 poeng (snitt 69)" |
+| post-mortem PR open | `status` | no | "FPL GW5: post-mortem klar" |
+
+To turn a status buzz back on, add `status` to `FPL_LOOP_NTFY_KINDS` in the job's
+environment; to silence the alarms too, set it to `proposal`.
 
 Agents themselves are told **not** to message the human; every buzz comes from the
 tick, so there is exactly one voice. The one thing an agent sends him is the ask on the
