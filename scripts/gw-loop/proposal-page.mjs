@@ -9,7 +9,11 @@
 //
 // Sections, in this order, always, in the house brand (brand.mjs):
 //   header + the "calculated, not predicted" warning
-//   the call (chip, transfers, captain, calculated XI vs keeping the squad)
+//   the call (chip, transfers, captain, XI vs keeping the squad on the BLENDED
+//     number, the armband on the blended number against the field's captain,
+//     and "the crowd says" when most stance sources are against a pick)
+//   calc against the consensus (calc, consensus, blended per player, the top 50
+//     and the stance counts, from the community doc)
 //   the pitch (proposed XI by position, bench below; tap a shirt for its card)
 //   transfers (out -> in, side by side) and who is kept
 //   prices: bought / now / sell for the fifteen we own, this round's price move
@@ -24,12 +28,23 @@
 // Add a section here when we add one to the process; do not improvise per week.
 //
 //   proposal-page.mjs --gw 6 [--proposal file] [--notes file] [--session url]
+//                     [--community file] [--w 0.3] [--put] [--doc-id gw6]
 //                     [--out /tmp/x.html] [--publish]
 //
 // --proposal defaults to $FPL_LOOP_STATE/proposals/gw<N>.json. Notes come from
 // the proposal's "notes" key, or --notes <file> (same shape, see below).
 // --publish hands the file to `artifact publish` under the slug
 // fpl-gw<N>-proposal and prints the URL, which is stable across re-publishes.
+//
+// The blend (community.mjs makes the doc): every player gets
+//   blended = (1 - w) x calc + w x consensus   (calc alone with no consensus)
+// for this gameweek, and blended_six = calc_six + (blended - calc), so only this
+// gameweek's part of the six moves. BLENDED is the number the page ranks and picks
+// on. The community doc defaults to $FPL_LOOP_STATE/community/gw<N>.json
+// (--community overrides); w comes from community/weight.json, else the huddle
+// weight doc, else 0 (the page says which; --w overrides for a what-if). The page
+// writes each player's decision block back into that file, and --put (or
+// --publish) puts it on huddle as doc gw<N> (--doc-id overrides, for a test).
 //
 // Notes shape (all optional; written by the research agent, every claim sourced):
 //   { "h2h":     { "MUN-TOT": { "text": "...", "url": "..." } },          // home-away short names
@@ -42,6 +57,7 @@ import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
 import { brandHead, brandSprite, BRAND_VERSION } from "./brand.mjs";
+import { readJson, writeJson, putDoc, gwPath, readWeight, blend, r2, stanceCounts, PROJECT, COLLECTION } from "./community-lib.mjs";
 
 const STATE_DIR = process.env.FPL_LOOP_STATE || "/workspace/.spawn/fpl-gw-loop";
 const SECRETS = path.join(process.env.HOME || "/home/node", ".fpl", "secrets.env");
@@ -70,6 +86,9 @@ if (proposal.error) {
 const notesPath = opt("notes");
 const notes = notesPath ? JSON.parse(fs.readFileSync(notesPath, "utf8")) : proposal.notes || {};
 const SESSION = opt("session", proposal.session_url || "");
+const communityPath = opt("community", gwPath(GW));
+const PUT = args.includes("--put") || PUBLISH;
+const DOC_ID = opt("doc-id", `gw${GW}`);
 
 // ----------------------------------------------------------------------------- io
 function readSecrets() {
@@ -259,6 +278,31 @@ function teamForm(team, n = 5) {
 const calcs = {};
 for (const id of everyone) calcs[id] = calc(el[id]);
 
+// ---- the blend: calc + the consensus from the community doc --------------------
+let community = readJson(communityPath);
+let communityNote = "";
+if (community && community.gw !== GW) {
+  communityNote = `${communityPath} is GW${community.gw}, not GW${GW}: ignored`;
+  community = null;
+} else if (!community) communityNote = `no community doc at ${communityPath}`;
+const wOverride = opt("w");
+const weight = wOverride != null ? { w: Number(wOverride), method: "override", from: "--w" } : readWeight();
+if (!(weight.w >= 0 && weight.w <= 1)) throw new Error(`w ${weight.w} is not between 0 and 1`);
+const W = weight.w;
+const cp = community?.players || {};
+const consOf = (id) => cp[id]?.consensus?.mean ?? null;
+// Everyone the page shows plus everyone the doc has, so the calibration gets a
+// calc for every player a source projected, not only the ones we own.
+for (const id of Object.keys(cp).map(Number)) if (el[id] && !calcs[id]) calcs[id] = calc(el[id]);
+const dec = {};
+for (const id of Object.keys(calcs).map(Number)) {
+  const c = calcs[id];
+  const b = blend(c.gw, consOf(id), W);
+  dec[id] = { calc: r2(c.gw), consensus: consOf(id), w: W, blended: r2(b), calc_six: r2(c.six), blended_six: r2(c.six + b - c.gw) };
+}
+const B = (id) => dec[id].blended;
+const B6 = (id) => dec[id].blended_six;
+
 const players = {};
 for (const id of everyone) {
   const e = el[id];
@@ -322,16 +366,62 @@ for (const id of everyone) {
     next,
     matchup,
     calc: { gw: calcs[id].gw, six: calcs[id].six, per: calcs[id].per },
+    dec: dec[id],
+    crowd: cp[id]?.crowd || null,
+    cons: cp[id]?.consensus || null,
+    stances: cp[id]?.stances || [],
     why: n.why || [],
     noteNews: n.news || null,
     availOverride: n.avail || null,
   };
 }
 
-const propXi = xi.reduce((s, id) => s + calcs[id].gw, 0) + (proposal.captain ? calcs[proposal.captain].gw : 0);
-const propXi6 = bestXi(squad, (id) => calcs[id].six);
-const keepXi = bestXi(current, (id) => calcs[id].gw);
-const keepXi6 = bestXi(current, (id) => calcs[id].six);
+// Every comparison on the blended number (calc alone where there is no consensus).
+const propXi = xi.reduce((s, id) => s + B(id), 0) + (proposal.captain ? B(proposal.captain) : 0);
+const propXi6 = bestXi(squad, B6);
+const keepXi = bestXi(current, B);
+const keepXi6 = bestXi(current, B6);
+
+// The armband on the blended number, then GW6's rule: under 0.5 behind the
+// field's captain (most captained by the top 50), captain the field's man.
+const capPool = xi.filter((id) => el[id].element_type >= 3);
+const blendCap = capPool.slice().sort((a, b) => B(b) - B(a))[0] ?? null;
+const fieldCapId = Object.entries(cp).filter(([, p]) => p.crowd?.top50_captained).sort((a, b) => b[1].crowd.top50_captained - a[1].crowd.top50_captained)[0]?.[0];
+const fieldCap = fieldCapId ? Number(fieldCapId) : null;
+let armband = null;
+if (blendCap) {
+  const inXi = fieldCap != null && xi.includes(fieldCap);
+  const gap = inXi ? B(blendCap) - B(fieldCap) : null;
+  const pick = inXi && fieldCap !== blendCap && gap < 0.5 ? fieldCap : blendCap;
+  armband = {
+    blendCap,
+    fieldCap,
+    fieldN: fieldCap != null ? cp[fieldCap].crowd.top50_captained : null,
+    topN: community?.top50?.n ?? null,
+    fieldInXi: inXi,
+    gap,
+    pick,
+    proposed: proposal.captain,
+  };
+}
+
+// "The crowd says": a pick most of this week's stance sources are against. Owned
+// or incoming players they say sell/avoid, and a captain other than ours.
+const nStanceSrc = new Set(Object.values(cp).flatMap((p) => (p.stances || []).map((s) => s.source))).size;
+const crowdBar = Math.max(2, Math.ceil((nStanceSrc * 4) / 6));
+const crowdSays = [];
+if (nStanceSrc) {
+  for (const id of squad) {
+    const sc = stanceCounts(cp[id]?.stances);
+    const against = sc.sell + sc.avoid;
+    if (against >= crowdBar) crowdSays.push({ id, kind: ins.has(id) ? "buying" : "keeping", n: against, of: nStanceSrc, stance: sc.sell >= sc.avoid ? "sell" : "avoid" });
+  }
+  for (const [k, p] of Object.entries(cp)) {
+    const id = Number(k);
+    const sc = stanceCounts(p.stances);
+    if (id !== proposal.captain && sc.captain >= crowdBar) crowdSays.push({ id, kind: "captain", n: sc.captain, of: nStanceSrc, stance: "captain", name: el[id].web_name, owned: squad.includes(id) });
+  }
+}
 const transfersOut = (proposal.transfers || []).map((t) => ({ out: t.out, in: t.in }));
 const priceOut = outs.reduce((s, id) => s + el[id].now_cost, 0) / 10;
 const priceIn = [...ins].reduce((s, id) => s + el[id].now_cost, 0) / 10;
@@ -433,6 +523,28 @@ const data = {
   transfers: transfersOut,
   priceOut,
   priceIn,
+  blend: {
+    w: W,
+    method: weight.method,
+    from: weight.from,
+    nGws: weight.gws?.length ?? null,
+    errCalc: weight.err_calc ?? null,
+    errCons: weight.err_consensus ?? null,
+    community: community ? communityPath : null,
+    communityNote,
+    top50: community?.top50 || null,
+    nCons: Object.values(cp).filter((p) => p.consensus).length,
+    consSources: [...new Set(Object.values(cp).flatMap((p) => (p.consensus?.projections || []).map((x) => x.source)))],
+    nStanceSrc,
+    crowdBar,
+    // the players with a consensus the page does not otherwise show: candidates
+    others: Object.keys(cp)
+      .map(Number)
+      .filter((id) => !everyone.includes(id) && cp[id].consensus)
+      .map((id) => ({ id, name: el[id].web_name, team: teamShort[el[id].team], pos: POS[el[id].element_type], price: el[id].now_cost / 10, dec: dec[id], crowd: cp[id].crowd, cons: cp[id].consensus, stances: cp[id].stances || [] })),
+  },
+  armband: armband && { ...armband, blendCapName: el[armband.blendCap].web_name, fieldCapName: armband.fieldCap ? el[armband.fieldCap].web_name : null, pickName: el[armband.pick].web_name, proposedName: el[armband.proposed]?.web_name || null, blendCapB: B(armband.blendCap), fieldCapB: armband.fieldInXi ? B(armband.fieldCap) : null },
+  crowdSays: crowdSays.map((c) => ({ ...c, name: el[c.id].web_name })),
   calcSummary: {
     propGw: propXi,
     keepGw: keepXi?.total ?? null,
@@ -464,7 +576,8 @@ section>h2:first-child{margin-top:0}
 h3{font-size:var(--step-0);font-family:var(--font-body);font-weight:700;margin:var(--space-4) 0 var(--space-1)}
 .callout{margin-top:var(--space-5)}
 .calc{display:inline-block;font:600 var(--step--2)/1.4 var(--font-code);color:var(--warn);background:var(--warn-soft);border-radius:var(--radius);padding:0 4px;vertical-align:1px}
-.readout dt .calc{margin-left:6px}
+.blend{display:inline-block;font:600 var(--step--2)/1.4 var(--font-code);color:var(--info);background:var(--info-soft);border-radius:var(--radius);padding:0 4px;vertical-align:1px}
+.readout dt .calc,.readout dt .blend{margin-left:6px}
 .readout dd.v{margin:0;font:700 var(--step-1)/1.2 var(--font-body);text-align:right;grid-row:span 2;align-self:center}
 .readout dd.rn .st{margin-right:4px;vertical-align:1px}
 .chartbox{padding:12px 8px 6px}
@@ -562,7 +675,8 @@ ${brandSprite(["g-ok", "g-fault", "g-heal", "g-idle", "a-copy", "a-arrow-up-righ
   stats (xG, xA, defensive contributions, team xG for and against, minutes). It does not know about
   injuries beyond the API flag, rotation, penalties, the referee or luck, and single-match
   scores swing far more than it can see: a <span class="num">5.1</span> is routinely a 1 or a 15. Use it to compare
-  options against each other, never as a forecast of what a player will score.</p></aside>
+  options against each other, never as a forecast of what a player will score.</p>
+  <p id="blend-warn"></p></aside>
 
 <section id="call">
   <h2>The call</h2>
@@ -570,9 +684,16 @@ ${brandSprite(["g-ok", "g-fault", "g-heal", "g-idle", "a-copy", "a-arrow-up-righ
   <dl class="readout" id="call-readout"></dl>
 </section>
 
+<section id="consensus">
+  <h2>Calc against the consensus</h2>
+  <p class="cap" id="cons-lede"></p>
+  <div class="tablewrap"><table class="tbl" id="cons-tbl"></table></div>
+  <p class="small" id="cons-note"></p>
+</section>
+
 <section>
   <h2>On the pitch</h2>
-  <p class="cap">Tap a shirt for the player's card. Under each name: this week's opponent (capitals = home) coloured by FPL difficulty, then calculated points.</p>
+  <p class="cap">Tap a shirt for the player's card. Under each name: this week's opponent (capitals = home) coloured by FPL difficulty, then blended points (calc where no site projects the player).</p>
   <div class="pitch" id="pitch"><svg class="marks" viewBox="0 0 120 60" aria-hidden="true"><path d="M1,0 A59,59 0 0 0 119,0" fill="none" stroke="currentColor" stroke-width="1"/></svg></div>
   <div class="benchrow" id="benchrow"></div>
   <div class="legend">
@@ -647,6 +768,8 @@ function bindTip(node,lines){
   node.addEventListener('focus',()=>{const r=node.getBoundingClientRect();show({clientX:r.left+r.width/2,clientY:r.top});});node.addEventListener('blur',hide);
 }
 const calcTag=()=>h('span','calc','calc');
+const blendTag=()=>h('span','blend','blend');
+const DB=D.blend;
 function openCard(id){const d=document.getElementById('card-'+id);if(!d)return;d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}
 
 // header
@@ -663,13 +786,28 @@ const chipName={wildcard:'Wildcard',freehit:'Free Hit',bboost:'Bench Boost','3xc
   const C=D.calcSummary;
   document.getElementById('call-lede').textContent=D.summary;
   const R=document.getElementById('call-readout');
-  const row=(dt,val,rn,isCalc)=>{const d=h('div');const t=h('dt',null,dt);if(isCalc)t.appendChild(calcTag());d.appendChild(t);d.appendChild(h('dd',/^[\d.£m ·+-]+$/.test(val)?'num':'v',val));const r=h('dd','rn');if(typeof rn==='string')r.textContent=rn;else r.append.apply(r,rn);d.appendChild(r);R.appendChild(d);};
+  const row=(dt,val,rn,isCalc)=>{const d=h('div');const t=h('dt',null,dt);if(isCalc)t.appendChild(blendTag());d.appendChild(t);d.appendChild(h('dd',/^[\d.£m ·+-]+$/.test(val)?'num':'v',val));const r=h('dd','rn');if(typeof rn==='string')r.textContent=rn;else r.append.apply(r,rn);d.appendChild(r);R.appendChild(d);};
   const delta=d=>chip(d>0?'ok':d<0?'fault':'idle',sign(f1(d)));
   row('Chip',D.chip?chipName[D.chip]||D.chip:'None',D.chip==='wildcard'?'Unlimited free transfers this week':'');
   row('Transfers',String(D.transfers.length),(D.hit?'-'+D.hit+' hit':'no hit')+' · £'+f1(D.priceOut)+'m out, £'+f1(D.priceIn)+'m in at today\'s prices'+(D.bankAfter!=null?' · £'+D.bankAfter+'m left':''));
   row('Captain',P[D.captain]?P[D.captain].name:'?','Vice '+(P[D.vice]?P[D.vice].name:'?'));
   if(C.keepGw!=null){const d=C.propGw-C.keepGw;row('GW'+D.gw+' XI points',f1(C.propGw),[delta(d),'vs keeping the squad ('+f1(C.keepGw)+', '+C.keepShape+', C '+C.keepCap+')'],true);}
   if(C.prop6!=null&&C.keep6!=null){const d=C.prop6-C.keep6;row('Next '+D.horizon+' GWs',f1(C.prop6),[delta(d),'vs keeping the squad ('+f1(C.keep6)+')'],true);}
+  const A=D.armband;
+  if(A){
+    let rn='';
+    if(A.fieldCap==null)rn='No field captain in the community doc, so GW6\'s rule has nothing to measure against.';
+    else if(!A.fieldInXi)rn='The field captains '+A.fieldCapName+' ('+A.fieldN+' of '+A.topN+' of the top 50), who is not in this XI.';
+    else if(A.fieldCap===A.blendCap)rn='Also the field\'s captain ('+A.fieldN+' of '+A.topN+' of the top 50).';
+    else rn=A.blendCapName+' '+A.blendCapB.toFixed(2)+' vs the field\'s '+A.fieldCapName+' '+A.fieldCapB.toFixed(2)+' ('+A.fieldN+' of '+A.topN+'): '+(A.gap<0.5?'under 0.5 ahead, GW6\'s rule captains '+A.fieldCapName+'.':'0.5 or more ahead, the blend keeps '+A.blendCapName+'.');
+    const parts=[];if(A.pick!==A.proposed)parts.push(chip('warn','not the proposal\'s '+(A.proposedName||'?')));parts.push(rn);
+    row('Armband on the blend',A.pickName,parts,true);
+  }
+  if(D.crowdSays.length){
+    const cs=h('div');cs.style.marginTop='var(--space-4)';cs.appendChild(h('h3',null,'The crowd says'));const ul=h('ul','why');
+    D.crowdSays.forEach(c=>{ul.appendChild(h('li',null,c.n+' of '+c.of+' sources say '+(c.kind==='captain'?'captain '+c.name+(c.owned?' (we own him, the proposal captains '+(P[D.captain]?P[D.captain].name:'?')+')':' (we do not own him)'):c.stance+' '+c.name+' (we are '+c.kind+' him)')+'. The decision log must answer this.'));});
+    cs.appendChild(ul);document.getElementById('call').appendChild(cs);
+  }
   const z=h('p');z.style.marginTop='var(--space-4)';z.appendChild(h('strong',null,'If you say no: '));z.append(D.zeroAlt||'keep the squad and roll the free transfer.');document.getElementById('call').appendChild(z);
 })();
 
@@ -682,7 +820,7 @@ function shirt(id,onBench){
   b.appendChild(kit);
   b.appendChild(h('span','nm',p.name));
   b.appendChild(h('span','fx f'+(m?m.fdr:3),m?oppTxt(m.opp,m.home):'blank'));
-  b.appendChild(h('span','xp',(onBench?(p.benchOrder+'. '):'')+f1(p.calc.gw)+' calc'));
+  b.appendChild(h('span','xp',(onBench?(p.benchOrder+'. '):'')+f1(p.dec.blended)+(p.dec.consensus!=null?' blend':' calc')));
   b.addEventListener('click',()=>openCard(id));
   bindTip(b,[p.name+' · '+p.team+' '+p.pos+' · £'+p.price+'m',(p.role==='in'?'New':'Kept')+' · '+p.total+' pts this season · '+p.own+'% owned',m?('GW'+D.gw+': '+(m.home?'home to ':'away at ')+m.oppName+' (difficulty '+m.fdr+')'):'']);
   return b;
@@ -702,19 +840,56 @@ function mini(id){
   const pr=D.prices[id];
   b.appendChild(h('span','m',p.team+' '+p.pos+' · £'+p.price+'m'+(pr&&pr.trend!=='flat'?' '+(pr.trend==='rising'?'↑ rising':'↓ falling'):'')+' · '+p.own+'% owned'));
   b.appendChild(h('span','num',p.total+' pts · form '+p.form+' · '+p.minutes+' min'));
-  const c=h('span','m');c.appendChild(h('span','num',f1(p.calc.gw)));c.append(' this GW · ');c.appendChild(h('span','num',f1(p.calc.six)));c.append(' in '+D.horizon+' GWs ');c.appendChild(calcTag());b.appendChild(c);
+  const c=h('span','m');c.appendChild(h('span','num',f1(p.dec.blended)));c.append(' this GW · ');c.appendChild(h('span','num',f1(p.dec.blended_six)));c.append(' in '+D.horizon+' GWs ');c.appendChild(blendTag());b.appendChild(c);
+  const c2=h('span','m');c2.append('calc '+f1(p.calc.gw)+(p.dec.consensus!=null?' · consensus '+f1(p.dec.consensus):' · no consensus'));b.appendChild(c2);
   b.addEventListener('click',()=>openCard(id));
   return b;
 }
 (function(){
   const T=D.transfers;const w=document.getElementById('transfers');
   document.getElementById('tr-h').textContent=T.length?('Transfers: '+T.length+' out, '+T.length+' in'):'Transfers: none';
-  const d6=T.reduce((s,t)=>s+P[t.in].calc.six-P[t.out].calc.six,0);
-  document.getElementById('tr-lede').textContent=T.length?('Out on the left, in on the right. Together the incoming players add '+sign(f1(d6))+' calculated points over the next '+D.horizon+' gameweeks.'):'Roll the free transfer.';
+  const d6=T.reduce((s,t)=>s+P[t.in].dec.blended_six-P[t.out].dec.blended_six,0);
+  document.getElementById('tr-lede').textContent=T.length?('Out on the left, in on the right. Together the incoming players add '+sign(f1(d6))+' blended points over the next '+D.horizon+' gameweeks.'):'Roll the free transfer.';
   T.forEach(t=>{const r=h('div','tr');r.appendChild(mini(t.out));r.appendChild(h('div','arrow','→'));r.appendChild(mini(t.in));w.appendChild(r);});
   const kept=[...D.xi,...D.bench].filter(id=>P[id].role==='kept');
   document.getElementById('kept-h').textContent='Kept ('+kept.length+')';
   const k=document.getElementById('kept');kept.forEach(id=>{const c=h('button','chip',P[id].name+' · '+P[id].team);c.type='button';c.addEventListener('click',()=>openCard(id));k.appendChild(c);});
+})();
+
+// the blend: the warning's second half, and calc against the consensus
+const wWord=()=>DB.method==='fixed'?'fixed until '+(DB.nGws!=null?'six gameweeks of actuals ('+DB.nGws+' so far)':'six gameweeks of actuals'):DB.method==='inverse-variance'?'measured: calc missed by '+f1(DB.errCalc)+', the consensus by '+f1(DB.errCons)+' points a player over the last '+DB.nGws+' gameweeks':DB.method==='override'?'set by hand for this page (--w)':'no weight doc yet';
+const stTxt=sts=>{const c={};const seen={};sts.forEach(s=>{const k=s.source+'|'+s.stance;if(seen[k])return;seen[k]=1;c[s.stance]=(c[s.stance]||0)+1;});return Object.keys(c).map(k=>k+' '+c[k]).join(', ');};
+function consLine(p){
+  const d=p.dec;const pp=h('p','small');
+  if(p.cons&&p.cons.projections.length){pp.append('Consensus '+f1(p.cons.mean)+' from '+p.cons.projections.length+' source'+(p.cons.projections.length>1?'s':'')+' (');
+    p.cons.projections.forEach((x,i)=>{if(i)pp.append(', ');const a=h('a',null,x.source+' '+x.value);if(x.url){a.href=x.url;a.target='_blank';a.rel='noopener';}pp.appendChild(a);});
+    pp.append('). Blended at w '+DB.w+': '+f1(d.blended)+' this gameweek, '+f1(d.blended_six)+' over '+D.horizon+'. ');}
+  else pp.append('No site projects '+p.name+' this week, so the blend is the calc ('+f1(d.calc)+'). ');
+  const c=p.crowd;
+  if(c){pp.append(c.own_pct+'% owned, net '+sign(c.net_transfers_event)+' this round'+(c.net_share!=null?' ('+(c.net_share*100).toFixed(1)+'% of owners)':'')+(c.top50_fielded!=null&&DB.top50?'; the top '+DB.top50.n+' fielded him '+c.top50_fielded+' times and captained him '+c.top50_captained+' in GW'+DB.top50.event:'')+'. ');}
+  if(p.stances&&p.stances.length){pp.append('Stances: '+stTxt(p.stances)+' of '+DB.nStanceSrc+' sources. ');
+    p.stances.forEach(s=>{const q=h('span','src');q.append(' '+s.source+': '+s.stance+(s.quote?' "'+s.quote+'"':'')+' ');if(s.url){const a=h('a',null,'source');a.href=s.url;a.target='_blank';a.rel='noopener';q.appendChild(a);}pp.appendChild(q);});}
+  return pp;
+}
+(function(){
+  const bw=document.getElementById('blend-warn');
+  bw.append('The ');bw.appendChild(blendTag());bw.append(' number mixes the calc with what other sites project for this gameweek (the consensus) at w '+DB.w+' ('+wWord()+'). It is not a forecast either; it is the number this page ranks and picks on.');
+  const L=document.getElementById('cons-lede');
+  if(!DB.community){L.textContent='No community doc for this gameweek ('+DB.communityNote+'), so every blended number is the calc.';document.getElementById('cons-tbl').style.display='none';}
+  else L.textContent=DB.nCons+' players have a consensus this week, from '+(DB.consSources.join(', ')||'no source')+'. w = '+DB.w+', '+wWord()+(DB.from&&DB.method!=='override'?' (from '+DB.from+')':'')+'. '+(DB.nStanceSrc?DB.nStanceSrc+' stance sources; '+DB.crowdBar+' or more against a pick puts it under "the crowd says".':'No stance records this week.');
+  if(!DB.community)return;
+  const t=document.getElementById('cons-tbl');
+  const tr=h('tr');['Player','Calc','Cons','Blend','Top 50','Stances'].forEach((c,i)=>tr.appendChild(h('th',i>0&&i<5?'n':null,c)));t.appendChild(tr);
+  const rows=[...D.xi,...D.bench,...D.outs].map(id=>({id,p:P[id],role:P[id].role})).concat(DB.others.map(o=>({id:o.id,p:o,role:'cand'})));
+  rows.sort((a,b)=>b.p.dec.blended-a.p.dec.blended);
+  rows.forEach(r=>{const p=r.p;const x=h('tr');const nm=h('td');nm.appendChild(h('b',null,p.name));
+    if(r.role==='cand')nm.append(' ',h('span','tag kept','NOT OWNED'));else{if(r.role!=='kept')nm.append(' ',roleTag(p));if(p.captain)nm.append(' ',h('span','tag c','C'));}
+    nm.appendChild(h('div','meta',p.team+' '+p.pos+' · £'+p.price+'m'));x.appendChild(nm);
+    x.appendChild(h('td','n',f1(p.dec.calc)));x.appendChild(h('td','n',p.dec.consensus!=null?f1(p.dec.consensus):'-'));
+    const bd=h('td','n');bd.appendChild(h('b',null,f1(p.dec.blended)));x.appendChild(bd);
+    x.appendChild(h('td','n',p.crowd&&p.crowd.top50_fielded!=null?p.crowd.top50_fielded+'F '+p.crowd.top50_captained+'C':'-'));
+    x.appendChild(h('td',null,p.stances&&p.stances.length?stTxt(p.stances):''));t.appendChild(x);});
+  document.getElementById('cons-note').textContent='Calc, consensus and blend are points for GW'+D.gw+'. Cons is the mean of the sites\' projections (the cards link each one). Top 50: how many of the overall top '+(DB.top50?DB.top50.n:50)+' fielded (F) and captained (C) the player'+(DB.top50?' in GW'+DB.top50.event+', the last gameweek whose picks are public':'')+'. NOT OWNED rows are players a site projects that are not in this proposal.';
 })();
 
 // prices
@@ -776,7 +951,7 @@ function card(id){
   nm.appendChild(t);
   nm.appendChild(h('span','m',p.team+' '+p.pos+' · £'+p.price+'m · '+p.own+'% owned · '+p.total+' pts'+(m?' · GW'+D.gw+' '+oppTxt(m.opp,m.home):'')+(p.slot==='bench'?' · bench '+p.benchOrder:'')));
   s.appendChild(nm);
-  const x=h('div','sumxp');x.appendChild(h('span','num',f1(p.calc.gw)));x.appendChild(calcTag());s.appendChild(x);
+  const x=h('div','sumxp');x.appendChild(h('span','num',f1(p.dec.blended)));x.appendChild(blendTag());s.appendChild(x);
   s.appendChild(use('a-caret-down','glyph'));
   d.appendChild(s);
   const body=h('div','pcb');
@@ -839,6 +1014,9 @@ function card(id){
   const ch=h('h3',null,'Calculated points ');ch.appendChild(calcTag());body.appendChild(ch);
   const c0=p.calc.per[0];
   body.appendChild(h('p','small',f1(p.calc.gw)+' this gameweek, '+f1(p.calc.six)+' over the next '+D.horizon+'. Built from '+(p.posN===1?'clean-sheet odds and saves':'xG '+f1(p.xg)+' and xA '+f1(p.xa)+' this season (shrunk halfway to the average for the position)')+', the opponent\'s underlying defence and attack, and a '+Math.round(c0.ps*100)+'% chance of starting'+(p.availOverride&&p.availOverride[D.gw]!=null?' (set by the research run from the news, not the API flag)':'')+(c0.pcs!=null&&p.posN<=2?'; clean-sheet chance '+Math.round(c0.pcs*100)+'%':'')+'. Not a forecast.'));
+  // the consensus and the crowd
+  const bh=h('h3',null,'Consensus and the crowd ');bh.appendChild(blendTag());body.appendChild(bh);
+  body.appendChild(consLine(p));
   // feedback
   const fb=h('div','fb');
   [['agree','Agree'],['disagree','Disagree'],['question','Question']].forEach(([k,l])=>{const bt=h('button','btn',l);bt.type='button';bt.setAttribute('aria-pressed','false');
@@ -860,11 +1038,11 @@ function card(id){
 // method + table + footer
 (function(){
   const m=document.getElementById('method');
-  m.textContent='Per fixture: 2 points for starting, plus goals and assists from the player\'s xG and xA per 90 (shrunk halfway to the average for the position) scaled by how leaky the opponent is and home/away, plus clean-sheet points from a Poisson model of goals against (team xG against × opponent xG for), minus a goals-conceded penalty, plus defensive-contribution points from DC per 90 against the threshold, plus saves and a small bonus. All multiplied by the chance of starting: minutes so far, times the FPL flag, unless the research run overrode it from the news. Team strengths are underlying xG, not results, shrunk halfway to the league average. "Keeping the squad" picks the best legal XI and captain of the current fifteen on the same numbers.';
+  m.textContent='Per fixture: 2 points for starting, plus goals and assists from the player\'s xG and xA per 90 (shrunk halfway to the average for the position) scaled by how leaky the opponent is and home/away, plus clean-sheet points from a Poisson model of goals against (team xG against × opponent xG for), minus a goals-conceded penalty, plus defensive-contribution points from DC per 90 against the threshold, plus saves and a small bonus. All multiplied by the chance of starting: minutes so far, times the FPL flag, unless the research run overrode it from the news. Team strengths are underlying xG, not results, shrunk halfway to the league average. "Keeping the squad" picks the best legal XI and captain of the current fifteen on the same numbers. The blend: blended = (1 - w) × calc + w × consensus for this gameweek, where the consensus is the mean of the expected points other sites publish for it (calc alone where none does); over six gameweeks only this week\'s part is blended. w starts fixed and, after six gameweeks with actual points, is set by which of the two predicted better: w = err_calc² / (err_calc² + err_consensus²), err the mean absolute error over the last six (scripts/gw-loop/calibrate.mjs).';
   const t=document.getElementById('tbl');
   const row=(cells,th)=>{const tr=h('tr');cells.forEach((c,i)=>tr.appendChild(h(th?'th':'td',i>2?'n':null,String(c))));t.appendChild(tr);};
-  row(['Player','Status','GW'+D.gw,'Pts','Form','Min','xGI/90','Calc GW','Calc '+D.horizon],true);
-  [...D.xi,...D.bench,...D.outs].forEach(id=>{const p=P[id];const m=p.matchup;row([p.name+' ('+p.team+' '+p.pos+')',p.role+(p.captain?' C':p.vice?' V':'')+(p.slot==='bench'?' bench':''),m?oppTxt(m.opp,m.home):'-',p.total,p.form,p.minutes,p.xgi90.toFixed(2),f1(p.calc.gw),f1(p.calc.six)]);});
+  row(['Player','Status','GW'+D.gw,'Pts','Form','Min','xGI/90','Calc GW','Cons GW','Blend GW','Calc '+D.horizon,'Blend '+D.horizon],true);
+  [...D.xi,...D.bench,...D.outs].forEach(id=>{const p=P[id];const m=p.matchup;row([p.name+' ('+p.team+' '+p.pos+')',p.role+(p.captain?' C':p.vice?' V':'')+(p.slot==='bench'?' bench':''),m?oppTxt(m.opp,m.home):'-',p.total,p.form,p.minutes,p.xgi90.toFixed(2),f1(p.calc.gw),p.dec.consensus!=null?f1(p.dec.consensus):'-',f1(p.dec.blended),f1(p.calc.six),f1(p.dec.blended_six)]);});
   const ft=document.getElementById('foot');ft.textContent='Decision log: docs/gw-decisions/'+D.season+'/gw'+D.gw+'.md';
   if(D.prUrl){ft.append(' · ');const a=h('a',null,'the PR');a.href=D.prUrl;a.target='_blank';a.rel='noopener';ft.appendChild(a);}
   ft.append(' · built by scripts/gw-loop/proposal-page.mjs · brand '+D.brand.replace('vongohren/brand@','').slice(0,7));
@@ -881,6 +1059,19 @@ function esc(s) {
 
 const out = opt("out", path.join(os.tmpdir(), `fpl-gw${GW}-proposal.html`));
 fs.writeFileSync(out, html);
+
+// The decision block goes back into the community doc: every player the page
+// computed (ours, the sold, everyone the doc has), so calibrate.mjs can score both.
+if (community) {
+  for (const [k, d] of Object.entries(dec)) {
+    const e = el[k];
+    cp[k] ||= { name: e.web_name, team: teamShort[e.team], pos: POS[e.element_type], crowd: null, consensus: null, stances: [], decision: null, actual: null };
+    cp[k].decision = d;
+  }
+  writeJson(communityPath, community);
+  console.error(`decision for ${Object.keys(dec).length} players written to ${communityPath} (w ${W}, ${weight.method})`);
+  if (PUT) console.error(`put ${putDoc(DOC_ID, communityPath)}  (${PROJECT}/${COLLECTION}/${DOC_ID})`);
+} else console.error(`${communityNote}: the page shows calc only, nothing written back`);
 if (!PUBLISH) {
   console.log(out);
   process.exit(0);
