@@ -1,6 +1,6 @@
 ---
 name: evaluate-gw
-description: Run the full Gameweek evaluation process — pull squad, check forward fixtures and community trends, read prior GW decisions for chip-plan context, and produce transfer/captain/chip recommendations. Always asks at the end whether to save the session as a new GW decision log.
+description: Run the full Gameweek evaluation process — pull squad, check forward fixtures, turn community research into data (crowd, consensus projections, expert stances) and blend it with our calc, read prior GW decisions for chip-plan context, and produce transfer/captain/chip recommendations. Always asks at the end whether to save the session as a new GW decision log.
 ---
 
 # Evaluate Next Gameweek
@@ -116,28 +116,66 @@ Detect:
 - BGW teams (null fixtures in any GW)
 - Top fixture-rank teams (rank 1-5) for transfer-in candidates
 
-### Step 5 — Pull community trends (parallel)
+### Step 5 — Community research, as data
 
-Run all three:
-- `mcp__fpl__get_community_trends` with `topic=transfers, gameweek=<next GW>`
-- `mcp__fpl__get_community_trends` with `topic=captaincy, gameweek=<next GW>`
-- `mcp__fpl__get_community_trends` with `topic=differentials, gameweek=<next GW>`
+The community enters the decision as **numbers per player**, not as prose and not as
+headline counts. Three layers (the analysis behind this is
+`analysis/community-research.md` in the huddle project `season-26-27`):
 
-Weight community signal heavily — surface differentials with high mention counts even if not in your stat-driven shortlist.
+- **Crowd** (from the FPL API, computed by the script): ownership, net transfers this
+  round, price change, how many of the overall top 50 fielded and captained him.
+- **Consensus**: other models' expected points for this gameweek. Start with RotoWire's
+  weekly FPL rankings (free); add a source only if it publishes a per-player number for the
+  gameweek. Never paywalled services, never FPL's `ep_next` (form × chance of playing, not
+  a projection). Written as `projections.json` = `[{element, source, url, value}]`.
+- **Stances**: what a **fixed list of six sources** recommends per player (`buy`, `sell`,
+  `hold`, `captain`, `avoid`), each with its URL, date and the sentence that says so.
+  Written as `stances.json` = `[{element, source, url, date, stance, quote}]`. The six,
+  and the rest of the procedure, are in `scripts/gw-loop/briefs/research.md` ("Community
+  data"); use the same list in an interactive run so the weeks compare.
 
-**This tool needs `BRAVE_SEARCH_API_KEY`.** If it is unset the tool returns nothing
-— do NOT silently skip the step and present a stat-only recommendation. Fall back
-to `WebSearch` over the same three angles (template/transfers, captaincy,
-differentials) and say in the output which source was used.
+Cover the fifteen, every transfer candidate and every captain option, then run:
 
-Cross-check community picks against the API rather than trusting an article's
+```bash
+node scripts/gw-loop/community.mjs --gw <NN> --projections <projections.json> --stances <stances.json> --put
+```
+
+It writes `/workspace/.spawn/fpl-gw-loop/community/gw<NN>.json` and the huddle doc, and
+prints a per-player summary that goes in the decision log as `### Community data`.
+
+**`mcp__fpl__get_community_trends` is a source finder, not data.** It counts headlines
+(three articles from one site are three "mentions"), guesses sentiment from keywords (it
+tagged Haaland "sell" on captaincy headlines in GW10) and is rate-limited most weeks. Use
+its links to find the articles; never cite its counts or its sentiment. If it returns
+nothing, find the same sources with `WebSearch` and say which you used.
+
+Cross-check community claims against the API rather than trusting an article's
 numbers: ownership percentages and fixtures move, and articles are often written
 days earlier. **The API is authoritative for fixtures, prices and ownership.**
 
-The single most useful thing from this step is **effective ownership on the
+The single most useful crowd number is still **effective ownership on the
 captain**. Not owning a 70%-owned captain is a double hit when he hauls: his
 points plus the doubled points everyone else banks. Always state that risk
 explicitly rather than burying it.
+
+### Step 5b — The blended number (every decision rule uses it)
+
+Each player gets **blended** = `(1 - w) × calc + w × consensus` for the gameweek (calc
+alone where no source projects him), and over six gameweeks **blended six** =
+`calc six + (blended - calc)`. `w` lives in the `weight` doc: fixed (0.3 to start) until six
+gameweeks of actual points exist, then set by which predicted better
+(`w = err_calc² / (err_calc² + err_consensus²)`, recomputed by `calibrate.mjs` in every
+post-mortem). The proposal page prints calc, consensus, blended and `w` for every player;
+**read the numbers off it, never compute them by hand, and never decide on calc alone.**
+
+- The **1.5 six-week tie band** (Step 6) is on blended six.
+- **Starter margins** (GW9's 0.3) are on blended.
+- The **armband** (Step 7) is on blended, with GW6's 0.5 rule against the field's captain.
+- **"The crowd says"**: when 4 of every 6 stance sources that published say sell or avoid a
+  player we keep or buy, or captain someone other than our captain, the recommendation
+  answers it in a line headed "The crowd says" (who, how many of how many, why we follow or
+  go against it). The page lists these; every one needs its line. A unanimous expert view
+  is never a footnote, and it never overrides the blended number by itself either.
 
 ### Step 6 — Search transfer-in candidates
 
@@ -147,11 +185,12 @@ For each dead-weight position, run `mcp__fpl__search_players`:
 - Constrain by `max_price` (selling price + bank)
 
 If the user asks for "differentials", filter `selected_by < 10%` mentally when ranking.
+A differential earns its place on the blended number, not on how often it is mentioned.
 
 **Price rule, when Step 3b found no necessary change.** Drop every candidate whose price
-is falling. Between candidates within 1.5 calc of each other over six weeks (each
-player's "in 6 GWs" calculated points on the proposal page, not this week alone, not the
-squad's "Next 6 GWs" total and not `ep_next`), the rising one wins. If no rising or flat
+is falling. Between candidates within 1.5 **blended six** of each other (each player's
+six-week number on the proposal page, not this week alone, not the squad's "Next 6 GWs"
+total and not `ep_next`), the rising one wins. If no rising or flat
 candidate beats the player he would replace on the same six-week number, roll the
 transfer. An owned
 player who is falling and already a sale candidate goes before the drop. Never buy a
@@ -163,7 +202,10 @@ falling player on a move nobody needed.
 
 Cross-reference top-form players against next-GW fixtures:
 - Captain must have favourable FDR (≤ 3) AND DGW where possible
-- Verify community sentiment (multiple mentions = consensus, single mention = differential)
+- Rank the options on **blended**. If our best is less than 0.5 blended ahead of the
+  field's captain (most captained by the top 50), captain the field's player (GW6 rule)
+- Count the `captain` stances per option; 4 of every 6 sources on someone else is a
+  "The crowd says" line (Step 5b), not a silent override
 - **Always re-check fixtures from the GW fixtures list, not from `next_fixture` field on player records — that field can show prior GW.** Got burned on this with Palmer once.
 
 ### Step 8 — Build recommendation
@@ -184,7 +226,7 @@ Present in this format:
 | Plan | OUT | IN | Net cost | Pros / cons |
 
 ### Captain shortlist
-1. <Player> — fixtures, form, community
+1. <Player> — fixtures, form, calc / consensus / blended, top-50 captained, captain stances
 2. ...
 
 ### Chip call
@@ -220,6 +262,9 @@ new campaign), add one and mark it `(current)`, moving the marker off the old se
 
 ### Step 11 — Build the proposal page (REQUIRED when there is a proposal)
 
+This step and Step 12 apply to the season's huddle project; the loop's research run does
+both through `scripts/gw-loop/briefs/research.md`, which is the authoritative version.
+
 The human decides on a page, not on prose: "I don't know where they're playing, and I
 don't know their form, stats or points" is the failure this step exists for. Write the
 proposal in the loop's JSON shape (`scripts/gw-loop/briefs/research.md`, "Proposal JSON
@@ -230,10 +275,35 @@ scratch file, then:
 node scripts/gw-loop/proposal-page.mjs --gw <NN> --proposal <scratch.json> --session "$(acp link)" --publish
 ```
 
-It prints `https://artifacts.go.vongohren.me/life/fpl-gw<NN>-proposal`. Lead the reply
-with that link. The page is one fixed view (pitch, transfers, kept, a card per player
-with last five matches, next six fixtures, matchup, sources, calculated points under a
+It prints `https://artifacts.go.vongohren.me/life/fpl-gw<NN>-proposal`. The page is one
+fixed view (pitch, transfers, kept, calc against the consensus, a card per player with
+last five matches, next six fixtures, matchup, sources, calculated points under a
 "calculated, not predicted" warning, feedback buttons); do not restyle it in a session.
+Link it to the project and lead the reply with its huddle link:
+
+```bash
+arcforge project visual add life/fpl-gw<NN>-proposal --title "GW<NN> forslag: <one line>" --project season-26-27
+arcforge project link visual life/fpl-gw<NN>-proposal --project season-26-27
+```
+
+### Step 12 — Deliver into huddle (the season's project)
+
+A gameweek is item `gw<NN>` in the huddle project `season-26-27` (the loop's tick creates it;
+`arcforge project item add gw<NN> --title "GW<NN>" --project season-26-27` if it does not
+exist). Snorre reads, comments and decides there:
+
+- Attach to it first: `arcforge project attach --title "GW<NN> evaluering" --item gw<NN> --project season-26-27`.
+- The decision log as memory, pinned: `arcforge project memory put gw/gw<NN>.md docs/gw-decisions/<season>/gw<NN>.md`
+  and `arcforge project memory pin gw/gw<NN>.md` (both with `--project season-26-27`). Git
+  stays the source of truth.
+- **Questions to Snorre are never prose.** One choice:
+  `arcforge project item move gw<NN> needs_human --ask "<spørsmålet>" --valg "<a> | <b>" --anbefalt "<a>" --project season-26-27`.
+  Several: `arcforge project decide <file.md> --item gw<NN> --project season-26-27`, one
+  `## <id>: <question>` per choice with `anbefalt:` and `valg:`. In an interactive session
+  the same question can be asked in the chat as well; the item still carries it.
+- Comments on the page or the log arrive as data: change git first, then `memory put`,
+  answer in the thread with `arcforge project visual reply <cm-id> "<what changed>" --applied`,
+  and move the item back to `working`.
 
 ## Chip windows — there are TWO of each chip
 
@@ -258,7 +328,9 @@ Consequences to reason about, not just report:
 ## Memory awareness
 
 Session memory may contain a locked multi-GW chip plan and collaboration
-preferences (community-weighted, differential-aware, confirm before executing).
+preferences (differential-aware, confirm before executing). Older notes may say
+"community-weighted": that is superseded by the blend in Step 5b, where the community's
+weight is a measured `w`, not a feeling.
 Read `MEMORY.md` early in the session if it exists. Do not hardcode an absolute
 memory path here — it differs per machine.
 

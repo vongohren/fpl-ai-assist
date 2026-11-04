@@ -60,6 +60,14 @@ never makes transfers. If you are woken by it, the prompt names a rendered brief
 `/workspace/.spawn/fpl-gw-loop/briefs/`; read that and nothing else first. Details and
 operating commands: `scripts/gw-loop/README.md`.
 
+The season is run through the huddle project **`season-26-27`**
+(https://huddle.go.vongohren.me/p/season-26-27): each gameweek is item `gw<N>`, the decision
+log is pinned memory `gw/gw<N>.md` (git stays the source of truth), the proposal and outcome
+pages are its visuals, and questions to Snorre are asks or decisions on the item, never prose.
+Every `arcforge project` verb takes `--project season-26-27`. Community research is data
+(`scripts/gw-loop/community.mjs`), and decisions run on the **blended** number
+(`(1 - w) × calc + w × consensus`), not on the calc alone.
+
 ## Project Structure
 
 - `fpl-mcp-server/` - MCP server providing FPL tools (squad, fixtures, search, trends)

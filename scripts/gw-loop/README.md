@@ -5,6 +5,12 @@ reads the public FPL API, works out which phase every gameweek is in, and wakes 
 agent only at the three points where judgement is needed. The rest of the hour it
 watches the team; the phone hears from it once per event, never on a timer.
 
+Everything a gameweek produces is delivered into the season's **huddle project**
+(`season-26-27`, https://huddle.go.vongohren.me/p/season-26-27): one item per gameweek, the
+decision log as a pinned memory doc, the proposal and outcome pages as visuals, Snorre's
+choices as asks and decisions on the item. He reads, comments and decides there; a PR is
+where the record lands, not where he is asked. See "The huddle project" below.
+
 ```
             T-72h                    deadline              FPL finalises
               │                         │                       │
@@ -14,16 +20,99 @@ watches the team; the phone hears from it once per event, never on a timer.
            PR + JSON)      T-10h buzz)  vs proposed)
 ```
 
-| Phase | Trigger (tick decides) | Who acts | Output |
-|---|---|---|---|
-| **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | `gw<N>.md` with a `## Proposal`, PR `gw<N>`, **the proposal page** (`proposal-page.mjs --publish`, `artifacts.go.vongohren.me/life/fpl-gw<N>-proposal`), `proposals/gw<N>.json` |
-| **proposed** | `proposals/gw<N>.json` exists | tick | ntfy with the summary + PR link; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` |
-| **lock** | deadline passed, picks public | agent, `briefs/lock.md` | `## Decision` under the Proposal, ledger row, flags re-aimed at the real decision, README line |
-| **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, flag outcomes, ledger, Learnings; PR `gw<N>-outcome`; **the outcome page** (`outcome-page.mjs --publish`, one fixed view at `artifacts.go.vongohren.me/life/fpl-gw<N>-outcome`) |
+| Phase | Trigger (tick decides) | Who acts | Output | Item `gw<N>` |
+|---|---|---|---|---|
+| **research** | next deadline ≤ 72h **and** previous GW's Outcome is on main (or deadline ≤ 24h) | agent, `briefs/research.md` | the community data (`community.mjs --put`), `gw<N>.md` with a `## Proposal`, PR `gw<N>`, **the proposal page** (`proposal-page.mjs --publish`, linked as visual `life/fpl-gw<N>-proposal`), memory `gw/gw<N>.md` pinned, a report, the ask, `proposals/gw<N>.json` last | tick adds it (`proposed`); agent → `working`, then → `needs_human` with the ask |
+| **proposed** | `proposals/gw<N>.json` exists | tick (and the attached research agent, for answers and comments) | ntfy, click opens the page on huddle; then hourly: compare `my-team` with the snapshot taken at research time and the proposal → `pending / partial / matched / diverged` | agent → `working` once the answer is taken in |
+| **lock** | deadline passed, picks public | agent, `briefs/lock.md` | `## Decision` under the Proposal, ledger row, flags re-aimed at the real decision, README line, memory updated, a report | tick → `working` if the ask is still open |
+| **post-mortem** | `events[N].finished && data_checked` (cache-busted), no 0-minute starter with empty `automatic_subs` | agent, `briefs/postmortem.md` | Outcome, `calibrate.mjs --put` (actuals, new `w`), flag outcomes, ledger, Learnings; PR `gw<N>-outcome`; **the outcome page** (`outcome-page.mjs --publish`, linked as visual `life/fpl-gw<N>-outcome`), memory updated, a report (`done` → `ready_for_review`) | tick → `resolved` when the Outcome is on main |
 
 The forward run reads the backward run: research for GW N waits for GW N-1's Outcome to
 land on `origin/main` (up to the 24h mark), and the brief tells the agent to treat the
 Adjustments as constraints.
+
+## The huddle project
+
+The season's project is `season-26-27` on huddle; its `shape.md` (memory) says what lives
+where, and is the source for this section. The tick derives the name from the season
+(`season-<yy>-<yy>`; `FPL_LOOP_PROJECT` overrides, empty turns huddle off).
+
+| Thing | In huddle | Source of truth |
+|---|---|---|
+| A gameweek | item `gw<N>`, research to post-mortem | the item |
+| The decision log | memory `gw/gw<N>.md`, pinned, commentable line by line | `docs/gw-decisions/<season>/gw<N>.md` in git (the next run reads git) |
+| The proposal page | visual `life/fpl-gw<N>-proposal` | `proposal-page.mjs` |
+| The outcome page | visual `life/fpl-gw<N>-outcome` | `outcome-page.mjs` |
+| What Snorre must decide | `item move gw<N> needs_human --ask ... --valg` (one choice) or `arcforge project decide` (several) | his answer, quoted as data |
+| Community research | collection `community`, doc `gw<N>` and doc `weight` | the collection |
+
+**The item's life:** `proposed` (the tick adds it when it spawns research) → `working`
+(the research agent attaches with `--item gw<N>`) → `needs_human` (proposal ready; the ask
+carries the choice) → `working` (answer taken in, doc and page updated) → stays `working`
+through the lock → `ready_for_review` (the post-mortem's report) → `resolved` (the tick,
+when the Outcome is on main). Each phase submits its report to the item
+(`arcforge project report submit <file> --item gw<N>`; files in `reports/`), so the item's
+history is the gameweek's history.
+
+**Comments and answers** reach the session attached to the gameweek: the research agent
+stays attached after it hands over, so an answer or a comment on the page or the log
+wakes it. It changes git first, then `memory put`, then answers in the thread
+(`arcforge project visual reply`) and moves the item back to `working`.
+
+**What the tick does on huddle**, all best-effort (a huddle that cannot be reached is an
+`huddle-failed` line in `events.jsonl`, never a missed spawn or buzz): `item add gw<N>`
+before it spawns research (or a lock or post-mortem for a gameweek that has no item),
+idempotent; at the lock, `needs_human` → `working` (the deadline answered the ask); when
+the Outcome lands on main, → `resolved` (through `ready_for_review` if no report moved it
+there). Every call is `arcforge project ... --project <name>` from the repo, so the agent
+spawns keep `--cwd /workspace/fpl-ai-assist` (the `fpl` MCP server comes from that cwd's
+`.mcp.json`). In a dry run the reads (`item ls`, `link`) run and the writes are printed.
+
+## Community research, as data
+
+The community is three numbers per player per gameweek, stored in the huddle
+collection `community` (project `season-26-27`, schema `scripts/gw-loop/community.schema.json`),
+doc `gw<N>`, mirrored at `/workspace/.spawn/fpl-gw-loop/community/gw<N>.json`:
+
+- **crowd** (FPL API, computed): ownership, net transfers this round and their share of owners,
+  this round's price change, and how many of the overall top 50 fielded / captained the player
+  (their picks for GW N-1: GW N's are private until the deadline).
+- **consensus**: other sites' expected points for GW N (RotoWire's rankings to start), from the
+  `gw<N>-projections.json` the research session writes (`[{element, source, url, value}]`); the
+  mean over sources.
+- **stances**: one record per source per player, from `gw<N>-stances.json`
+  (`[{element, source, url, date, stance: buy|sell|hold|captain|avoid, quote}]`).
+
+`community.mjs --gw <N> --projections <f> --stances <f> --put` builds the doc and prints a
+per-player summary. `proposal-page.mjs` then blends: **blended = (1 - w) × calc + w × consensus**
+for GW N (calc alone where no site projects the player), and `blended_six` = the six-week calc with
+only GW N's part blended. The page ranks and picks on the blended number everywhere (XI vs keeping
+the squad, the six-week comparison, the transfers line, the armband with GW6's 0.5 rule against the
+field's captain, shown as "Armband on the blend"), shows calc / consensus / blend side by side in
+"Calc against the consensus", and lists under **"The crowd says"** every pick most stance sources
+are against (at least 4 of 6, i.e. max(2, ⌈4N/6⌉) of N sources: sell/avoid on a player we keep or
+buy, captain on someone other than ours). It writes each player's `decision` block back into the
+doc; `--publish` (or `--put`) also puts the doc on huddle. It does not link the visual.
+
+w comes from the `weight` doc (`community/weight.json`, else huddle, else 0 and the page says so).
+`calibrate.mjs --gw <N> --put` runs in the post-mortem once FPL has finalised (it refuses before):
+it fills `actual` for every player in `gw<N>`, scores calc and consensus by mean absolute error on
+the same player-weeks over the last six gameweeks with data, and writes `weight`: **fixed** at the
+starting value until six gameweeks have data, then **inverse-variance**,
+w = err_calc² / (err_calc² + err_consensus²). `calibrate.mjs --init --w <w> --put` writes the
+starting doc. The outcome page shows the week's calc vs consensus vs actual in its own section
+(hidden when there is no community doc).
+
+```bash
+node scripts/gw-loop/community.mjs --gw 11 --projections /workspace/.spawn/fpl-gw-loop/community/gw11-projections.json --stances /workspace/.spawn/fpl-gw-loop/community/gw11-stances.json --put
+node scripts/gw-loop/proposal-page.mjs --gw 11 --publish        # blended, writes decision, puts gw11
+node scripts/gw-loop/calibrate.mjs --gw 11 --put                # after finalisation: actuals + weight
+```
+
+Every decision rule in `briefs/research.md` runs on blended (the 1.5 six-week tie band, the
+0.3 starter margin, GW6's 0.5 armband rule), and each entry under "The crowd says" needs its
+own line in the doc. `get_community_trends` is a source finder only: the briefs never cite its
+counts or its sentiment.
 
 ## What it never does
 
@@ -34,20 +123,26 @@ outright. If that policy changes later, it changes in the brief, not in `tick.mj
 
 ## Notifications (ntfy, phone)
 
+Every click lands on huddle: the gameweek's item, or the page as a visual inside the
+project (comments and the ask next to it). The fallback, when huddle has no item or cannot
+be reached, is what it was before: the conversation, the shelf URL, the console root.
+
 | When | Message |
 |---|---|
-| research spawned | "FPL GW5: research i gang", link to the agent conversation |
-| proposal landed | "FPL GW5: forslag klart" (high), summary, click opens the proposal page (the PR if the JSON has no `page_url`) |
+| research spawned | "FPL GW5: research i gang", click opens item `gw5` (the agent conversation is in the text) |
+| proposal landed | "FPL GW5: forslag klart" (high), summary, click opens the proposal page on huddle (`visual life/fpl-gw5-proposal`; the item if it is not linked; the shelf page or the PR without huddle) |
 | team changed | "ser at du har gjort noe (partial)", lists what is still open |
-| deadline ≤ 10h | "FPL GW5: 10t til frist" (high), ONCE per gameweek in whatever phase the GW is in; says whether the team matches, click opens the GW's analysis conversation (the console root if there is none yet). Replaced the T-48/24/6/2h "ingen endringer sett" ladder on 2026-09-17 |
-| deadline passed | "FPL GW5 låst: matched", captain, transfers, chip |
-| gameweek finalised | "FPL GW5 ferdig: 75 poeng (snitt 69)" |
-| post-mortem PR open | "FPL GW5: post-mortem klar", ONCE, click opens the outcome page (the visual is the deliverable; the PR link is in the text) |
+| deadline ≤ 10h | "FPL GW5: 10t til frist" (high), ONCE per gameweek in whatever phase the GW is in; says whether the team matches, click opens item `gw5` (the analysis conversation without huddle). Replaced the T-48/24/6/2h "ingen endringer sett" ladder on 2026-09-17 |
+| deadline passed | "FPL GW5 låst: matched", captain, transfers, chip; click opens item `gw5` |
+| gameweek finalised | "FPL GW5 ferdig: 75 poeng (snitt 69)"; click opens item `gw5` |
+| post-mortem PR open | "FPL GW5: post-mortem klar", ONCE, click opens the outcome page on huddle (the shelf URL if it is not linked; the PR link is in the text) |
 | `my-team` answers 401 | "innloggingen er død" (high; urgent inside 24h) and the tick starts `auth-keepalive.sh --login` detached, so the oauth-broker's approve link arrives as the next notification; ONCE per dead login (`auth.login_dead_buzzed` in state, cleared when `my-team` answers 200 again). Was one per 6h until 2026-09-17, which fired four times for one dead login |
 | an agent produced nothing in 6h, three times | "sitter fast" (high) |
 
 Agents themselves are told **not** to message the human; every buzz comes from the
-tick, so there is exactly one voice.
+tick, so there is exactly one voice. The one thing an agent sends him is the ask on the
+item, which huddle shows on the project page; it is a question with options, never a
+paragraph.
 
 ## State
 
@@ -60,6 +155,9 @@ briefs/gw5-research.md  the rendered brief the agent was told to read
 snapshots/gw5-team.json my-team at research time = the "pending" baseline
 proposals/gw5.json      written by the research AGENT (schema in briefs/research.md)
 locks/gw5.json          proposal vs actual picks, written by the tick after the deadline
+community/gw5.json      the community data (community.mjs), plus the research run's
+                        gw5-projections.json / gw5-stances.json and weight.json
+reports/gw5-research.md each phase's report, as submitted to item gw5
 ```
 
 Every agent spawn is latched into `state.json` **before** `acp spawn` runs, so a crash
@@ -146,12 +244,22 @@ jobctl rm fpl-gw-loop
 ```
 
 Re-running a phase by hand: delete the GW's entry from `state.json` (and the matching
-`proposals/`, `locks/` file) and run a tick. To make the loop re-propose after the human
+`proposals/`, `locks/` file) and run a tick. The huddle item is not reset by that; move it
+by hand if it should start over (`arcforge project item move gw<N> working --project season-26-27`).
+
+To try a change to the tick without touching the live state, copy it and dry-run against
+the copy (the reads go to huddle, nothing is written there):
+
+```bash
+cp -r /workspace/.spawn/fpl-gw-loop /tmp/gwloop-$(acp self)
+FPL_LOOP_STATE=/tmp/gwloop-$(acp self) node scripts/gw-loop/tick.mjs --dry-run
+``` To make the loop re-propose after the human
 rejects a proposal, remove `proposals/gw<N>.json` and set `forward.<N>.phase` to `idle`.
 
 Env overrides, all optional: `FPL_LOOP_REPO`, `FPL_LOOP_STATE`, `FPL_LOOP_BRIEFS`,
 `FPL_LOOP_LEAD_H` (default 72), `FPL_LOOP_DEADLINE_BUZZ_H` (default 10), `FPL_LOOP_NTFY`,
-`FPL_LOOP_ACP`, `ACP_CONSOLE_URL`, `FPL_LOOP_ARTIFACTS`, plus `FPL_MANAGER_ID`
+`FPL_LOOP_ACP`, `FPL_LOOP_ARCFORGE`, `FPL_LOOP_PROJECT` (default `season-<yy>-<yy>`, empty
+= no huddle), `ACP_CONSOLE_URL`, `FPL_LOOP_ARTIFACTS`, plus `FPL_MANAGER_ID`
 and `FPL_X_API_AUTH` (default: read from `~/.fpl/secrets.env`, the file the keepalive
 job rotates).
 
@@ -170,3 +278,7 @@ job rotates).
   something *else* reads as `diverged`, which the lock phase then records honestly.
 - **One voice.** Agents write documents; the tick talks to the phone. Otherwise every
   spawn produces its own notification and the human gets three buzzes per event.
+- **Huddle, not a bare link** (2026-11-04). A buzz that opened an artifact gave Snorre a
+  page he could read but not answer; the questions sat in PR prose and the conversation.
+  On huddle the page, the log, the question and the history of the gameweek are one item,
+  and a comment reaches the session that can act on it.
