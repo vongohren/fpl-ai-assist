@@ -20,6 +20,9 @@
 // fixed weight; without it the existing weight doc's fixed w is kept, else 0.3.
 // --init writes the starting weight doc (fixed, no data) and nothing else.
 // --put puts gw<N> and weight on huddle (collection community, season-26-27).
+// A test doc (`test: true`) never touches the real ones: its weight goes to
+// <dir>/test-weight.json and huddle ids test-gw<N> / test-weight unless named,
+// and naming the real weight.json, `weight` or `gw<N>` for it is refused.
 // =============================================================================
 import fs from "node:fs";
 import path from "node:path";
@@ -41,14 +44,18 @@ const PUT = args.includes("--put");
 const FORCE = args.includes("--force");
 const DIR = opt("dir", COMMUNITY_DIR);
 const DOC_PATH = opt("community", GW ? path.join(DIR, `gw${GW}.json`) : null);
-const WEIGHT_OUT = opt("weight-out", DIR === COMMUNITY_DIR ? WEIGHT_PATH : path.join(DIR, "weight.json"));
-const DOC_ID = opt("doc-id", `gw${GW}`);
-const WEIGHT_ID = opt("weight-id", "weight");
+let WEIGHT_OUT = opt("weight-out", DIR === COMMUNITY_DIR ? WEIGHT_PATH : path.join(DIR, "weight.json"));
+let DOC_ID = opt("doc-id", `gw${GW}`);
+let WEIGHT_ID = opt("weight-id", "weight");
 
-const prior = readJson(WEIGHT_OUT) || (WEIGHT_OUT === WEIGHT_PATH ? getDoc("weight") : null);
+// The fixed w: --w, else the target weight doc's own fixed w, else 0.3.
 const wArg = opt("w");
-const W_FIXED = wArg != null ? Number(wArg) : prior?.method === "fixed" && typeof prior.w === "number" ? prior.w : DEFAULT_W;
-if (!(W_FIXED >= 0 && W_FIXED <= 1)) throw new Error(`--w ${wArg} is not between 0 and 1`);
+function fixedW() {
+  const prior = readJson(WEIGHT_OUT) || (WEIGHT_OUT === WEIGHT_PATH ? getDoc(WEIGHT_ID) : null);
+  const w = wArg != null ? Number(wArg) : prior?.method === "fixed" && typeof prior.w === "number" ? prior.w : DEFAULT_W;
+  if (!(w >= 0 && w <= 1)) throw new Error(`--w ${wArg} is not between 0 and 1`);
+  return w;
+}
 
 function putWeight(doc) {
   writeJson(WEIGHT_OUT, doc);
@@ -57,6 +64,7 @@ function putWeight(doc) {
 }
 
 if (INIT) {
+  const W_FIXED = fixedW();
   putWeight({ w: W_FIXED, method: "fixed", n_player_weeks: 0, err_calc: null, err_consensus: null, gws: [], updated_at: new Date().toISOString(), min_gws: MIN_GWS });
   console.log(`weight: w ${W_FIXED}, fixed until ${MIN_GWS} gameweeks of actuals`);
   process.exit(0);
@@ -84,6 +92,16 @@ if (!doc || doc.gw !== GW) {
   console.error(`no community doc for GW${GW} at ${DOC_PATH}${DOC_PATH === gwPath(GW) ? ` or on huddle (${DOC_ID})` : ""}; nothing to calibrate`);
   process.exit(1);
 }
+if (doc.test) {
+  WEIGHT_OUT = opt("weight-out", path.join(DIR, "test-weight.json"));
+  WEIGHT_ID = opt("weight-id", "test-weight");
+  DOC_ID = opt("doc-id", `test-gw${GW}`);
+  if (WEIGHT_OUT === WEIGHT_PATH || WEIGHT_ID === "weight" || DOC_ID === `gw${GW}`) {
+    console.error(`${DOC_PATH} is a test doc: it may not write ${WEIGHT_PATH}, huddle weight or gw${GW}`);
+    process.exit(2);
+  }
+}
+const W_FIXED = fixedW();
 const boot = await fetchJson("bootstrap-static/");
 const ev = boot.events.find((e) => e.id === GW);
 if (!ev) throw new Error(`no event ${GW} in bootstrap`);

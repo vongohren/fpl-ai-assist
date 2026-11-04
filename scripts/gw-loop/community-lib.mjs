@@ -41,7 +41,7 @@ export function writeJson(file, doc) {
 // Put a doc on huddle. Returns the URL arcforge prints, throws on failure.
 export function putDoc(id, file) {
   const r = spawnSync("arcforge", ["project", "collection", "put", COLLECTION, id, file, "--project", PROJECT], { encoding: "utf8" });
-  if (r.status !== 0) throw new Error(`arcforge collection put ${COLLECTION} ${id}: ${(r.stderr || r.stdout || "").trim()}`);
+  if (r.status !== 0) throw new Error(`arcforge collection put ${COLLECTION} ${id}: ${(r.stderr || r.stdout || r.error?.message || "").trim()}`);
   const lines = (r.stdout || "").trim().split("\n");
   return lines[lines.length - 1];
 }
@@ -65,11 +65,12 @@ export function getDoc(id) {
 }
 
 // The weight the pages use: weight.json, else the huddle weight doc, else 0.
+// A doc marked test is never the weight.
 export function readWeight() {
   const local = readJson(WEIGHT_PATH);
-  if (local && typeof local.w === "number") return { ...local, from: WEIGHT_PATH };
+  if (local && typeof local.w === "number" && !local.test) return { ...local, from: WEIGHT_PATH };
   const remote = getDoc("weight");
-  if (remote && typeof remote.w === "number") return { ...remote, from: `huddle ${PROJECT}/${COLLECTION}/weight` };
+  if (remote && typeof remote.w === "number" && !remote.test) return { ...remote, from: `huddle ${PROJECT}/${COLLECTION}/weight` };
   return { w: 0, method: "none", from: null };
 }
 

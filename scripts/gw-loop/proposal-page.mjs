@@ -44,7 +44,8 @@
 // (--community overrides); w comes from community/weight.json, else the huddle
 // weight doc, else 0 (the page says which; --w overrides for a what-if). The page
 // writes each player's decision block back into that file, and --put (or
-// --publish) puts it on huddle as doc gw<N> (--doc-id overrides, for a test).
+// --publish) puts it on huddle as doc gw<N> (--doc-id overrides; a test doc
+// goes to test-gw<N>). A failed put is a warning: the page still publishes.
 //
 // Notes shape (all optional; written by the research agent, every claim sourced):
 //   { "h2h":     { "MUN-TOT": { "text": "...", "url": "..." } },          // home-away short names
@@ -88,7 +89,7 @@ const notes = notesPath ? JSON.parse(fs.readFileSync(notesPath, "utf8")) : propo
 const SESSION = opt("session", proposal.session_url || "");
 const communityPath = opt("community", gwPath(GW));
 const PUT = args.includes("--put") || PUBLISH;
-const DOC_ID = opt("doc-id", `gw${GW}`);
+let DOC_ID = opt("doc-id", `gw${GW}`);
 
 // ----------------------------------------------------------------------------- io
 function readSecrets() {
@@ -1070,7 +1071,16 @@ if (community) {
   }
   writeJson(communityPath, community);
   console.error(`decision for ${Object.keys(dec).length} players written to ${communityPath} (w ${W}, ${weight.method})`);
-  if (PUT) console.error(`put ${putDoc(DOC_ID, communityPath)}  (${PROJECT}/${COLLECTION}/${DOC_ID})`);
+  // A failed put must not cost the research run its page: warn and keep going.
+  if (community.test && !opt("doc-id")) DOC_ID = `test-gw${GW}`;
+  if (PUT && community.test && DOC_ID === `gw${GW}`) console.error(`warn: ${communityPath} is a test doc, not putting it as ${DOC_ID}`);
+  else if (PUT) {
+    try {
+      console.error(`put ${putDoc(DOC_ID, communityPath)}  (${PROJECT}/${COLLECTION}/${DOC_ID})`);
+    } catch (e) {
+      console.error(`warn: community doc not put on huddle, the page goes on: ${e.message}`);
+    }
+  }
 } else console.error(`${communityNote}: the page shows calc only, nothing written back`);
 if (!PUBLISH) {
   console.log(out);

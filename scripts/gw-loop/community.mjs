@@ -19,7 +19,8 @@
 //                     stance: buy | sell | hold | captain | avoid
 //
 // Writes $FPL_LOOP_STATE/community/gw<N>.json (--out overrides) and, with --put,
-// the huddle doc (collection community, id gw<N>; --id overrides, for a test).
+// the huddle doc (collection community, id gw<N>; --id overrides; with --test
+// the id is test-gw<N> and gw<N> is refused).
 // A re-run keeps the decision and actual blocks already in the file. Prints a
 // short per-player summary for the decision log. Schema: community.schema.json.
 // =============================================================================
@@ -44,7 +45,6 @@ if (!GW) {
 }
 const PUT = args.includes("--put");
 const TEST = args.includes("--test");
-const DOC_ID = opt("id", `gw${GW}`);
 const OUT = opt("out", gwPath(GW));
 
 function readSecrets() {
@@ -205,7 +205,13 @@ const tally = (list, kind) => {
 };
 sources.push(...tally(projections, "projection"), ...tally(stances, "stance"));
 
-const doc = { gw: GW, season: SEASON, generated_at: new Date().toISOString(), ...(TEST || prior?.test ? { test: true } : {}), top50, players, sources };
+const IS_TEST = TEST || !!prior?.test;
+const DOC_ID = opt("id", IS_TEST ? `test-gw${GW}` : `gw${GW}`);
+if (IS_TEST && DOC_ID === `gw${GW}`) {
+  console.error(`a test doc may not be put as gw${GW}`);
+  process.exit(2);
+}
+const doc = { gw: GW, season: SEASON, generated_at: new Date().toISOString(), ...(IS_TEST ? { test: true } : {}), top50, players, sources };
 writeJson(OUT, doc);
 
 // ----------------------------------------------------------------------------- summary
