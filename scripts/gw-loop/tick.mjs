@@ -152,7 +152,19 @@ async function fetchJson(endpoint, { auth = false } = {}) {
   return { status: res.status, body: await res.json() };
 }
 
-function ntfy({ title, prio = "default", click, msg }) {
+// What reaches the phone. Snorre, 2026-11-04: only "the proposal is ready", opened
+// in huddle; the rest of the cycle (research started, team changed, the T-10h
+// reminder, locked, finished, post-mortem ready) is followed on the huddle item,
+// not buzzed. `alarm` = the loop is broken and only a human can fix it (dead
+// login, an agent stuck three times); it never fires in a week that works.
+// Skipped buzzes are logged as `ntfy-skipped`, so events.jsonl still shows them.
+const NTFY_KINDS = new Set((process.env.FPL_LOOP_NTFY_KINDS ?? "proposal,alarm").split(",").map((k) => k.trim()).filter(Boolean));
+
+function ntfy({ kind, title, prio = "default", click, msg }) {
+  if (!NTFY_KINDS.has(kind)) {
+    const m = title.match(/GW(\d+)/);
+    return log(m ? Number(m[1]) : null, "ntfy-skipped", `${kind}: ${title}`);
+  }
   if (DRY) return console.log(`DRY ntfy [${prio}] ${title}: ${msg} ${click || ""}`);
   const args = ["-t", title, "-p", prio, "-T", "soccer"];
   if (click) args.push("-c", click);
@@ -392,7 +404,7 @@ async function main() {
       // by outcome-page.mjs, so the URL is known without asking the agent.
       if (!pm.page_buzzed) {
         pm.page_buzzed = nowIso();
-        ntfy({ title: `FPL GW${gw}: post-mortem klar`, click: visualUrl(gw, "outcome", `${ARTIFACTS}/fpl-gw${gw}-outcome`), msg: `${pm.points != null ? `${pm.points} poeng (snitt ${pm.avg}). ` : ""}Trykk for siden. PR: ${prUrl}` });
+        ntfy({ kind: "status", title: `FPL GW${gw}: post-mortem klar`, click: visualUrl(gw, "outcome", `${ARTIFACTS}/fpl-gw${gw}-outcome`), msg: `${pm.points != null ? `${pm.points} poeng (snitt ${pm.avg}). ` : ""}Trykk for siden. PR: ${prUrl}` });
       }
       continue;
     }
@@ -400,7 +412,7 @@ async function main() {
     if (pm.attempts >= MAX_ATTEMPTS) {
       if (!pm.alerted) {
         pm.alerted = nowIso();
-        ntfy({ title: `FPL GW${gw}: post-mortem sitter fast`, prio: "high", click: itemUrl(gw), msg: `${MAX_ATTEMPTS} forsøk uten PR. Sjekk acp list / events.jsonl i ${STATE_DIR}.` });
+        ntfy({ kind: "alarm", title: `FPL GW${gw}: post-mortem sitter fast`, prio: "high", click: itemUrl(gw), msg: `${MAX_ATTEMPTS} forsøk uten PR. Sjekk acp list / events.jsonl i ${STATE_DIR}.` });
       }
       continue;
     }
@@ -442,7 +454,7 @@ async function main() {
     const conv = acpSpawn(`FPL GW${gw} post-mortem`, `FPL GW${gw} is finalised. Read ${brief} and follow it exactly.`);
     pm.conversation = conv;
     log(gw, "postmortem-spawned", conv);
-    ntfy({ title: `FPL GW${gw} ferdig: ${picks.entry_history?.points} poeng (snitt ${ev.average_entry_score})`, click: itemUrl(gw, convLink(conv)), msg: `Post-mortem er i gang. ${conv}` });
+    ntfy({ kind: "status", title: `FPL GW${gw} ferdig: ${picks.entry_history?.points} poeng (snitt ${ev.average_entry_score})`, click: itemUrl(gw, convLink(conv)), msg: `Post-mortem er i gang. ${conv}` });
   }
 
   // ========================================================================= LOCK
@@ -481,7 +493,7 @@ async function main() {
         const conv = acpSpawn(`FPL GW${current.id} lock`, `The GW${current.id} deadline has passed. Read ${brief} and follow it exactly.`);
         fw.lock_conversation = conv;
         log(current.id, "lock-spawned", `${cmp.status} ${conv}`);
-        ntfy({ title: `FPL GW${current.id} låst: ${cmp.status}`, click: itemUrl(current.id, convLink(conv)), msg: `C: ${players[actual.captain]}, ${actual.transfers_made} bytte(r)${lock.transfers_cost ? ` (-${lock.transfers_cost})` : ""}${picks.active_chip ? `, chip ${picks.active_chip}` : ""}. Beslutningen logges nå.` });
+        ntfy({ kind: "status", title: `FPL GW${current.id} låst: ${cmp.status}`, click: itemUrl(current.id, convLink(conv)), msg: `C: ${players[actual.captain]}, ${actual.transfers_made} bytte(r)${lock.transfers_cost ? ` (-${lock.transfers_cost})` : ""}${picks.active_chip ? `, chip ${picks.active_chip}` : ""}. Beslutningen logges nå.` });
       } else {
         log(current.id, "lock-waiting", "picks not public yet");
       }
@@ -513,6 +525,15 @@ async function main() {
     const prevPending = prevEvent && prevEvent.finished && !(prevPm?.done);
     if (prevPending && T > 24) {
       log(gw, "waiting-postmortem", `gw${gw - 1} outcome not on main yet, T-${T.toFixed(1)}h`);
+      // The post-mortem buzz is no longer sent, so an outcome PR left unmerged
+      // would hold the proposal to T-24h unseen. Only a merge unblocks it: say so
+      // ONCE per gameweek, and only when the PR is there to merge (no PR is the
+      // post-mortem's own alarm).
+      const prevPr = !fw.held_buzzed && openPrForBranch(`gw${gw - 1}-outcome`);
+      if (prevPr) {
+        fw.held_buzzed = nowIso();
+        ntfy({ kind: "alarm", title: `FPL GW${gw}: forslaget venter på GW${gw - 1}`, prio: "high", click: prevPr, msg: `Outcome-PR-en for GW${gw - 1} er ikke merget. Research for GW${gw} starter når den er det, ellers ved T-24h. Trykk for PR-en.` });
+      }
       saveState(state);
       return;
     }
@@ -550,7 +571,7 @@ async function main() {
     const conv = acpSpawn(`FPL GW${gw} research`, `GW${gw} deadline is ${next.deadline_time} (${T.toFixed(0)}h away). Read ${brief} and follow it exactly.`);
     fw.conversation = conv;
     log(gw, "research-spawned", conv);
-    ntfy({ title: `FPL GW${gw}: research i gang`, click: itemUrl(gw, convLink(conv)), msg: `Frist ${fmtOslo(next.deadline_time)}. Forslag kommer når agenten er ferdig. ${conv}` });
+    ntfy({ kind: "status", title: `FPL GW${gw}: research i gang`, click: itemUrl(gw, convLink(conv)), msg: `Frist ${fmtOslo(next.deadline_time)}. Forslag kommer når agenten er ferdig. ${conv}` });
     saveState(state);
     return;
   }
@@ -580,14 +601,14 @@ async function main() {
       fw.pr_url = proposal.pr_url || null;
       fw.page_url = proposal.page_url || null;
       log(gw, "proposed", proposal.summary || "");
-      // The click opens the proposal page inside huddle (comments, the ask on
-      // the item), the shelf URL only if the session never linked it.
-      const click = visualUrl(gw, "proposal", proposal.page_url || proposal.pr_url);
+      // The click opens the gameweek's huddle item (the ask, the proposal page,
+      // the log); the page, then the shelf URL, only when there is no item.
+      const click = huddleLink("item", `gw${gw}`) || visualUrl(gw, "proposal", proposal.page_url || proposal.pr_url);
       ntfy({
-        title: `FPL GW${gw}: forslag klart`,
+        kind: "proposal", title: `FPL GW${gw}: forslag klart`,
         prio: "high",
         click,
-        msg: `${proposal.summary || "Se PR."} Frist ${fmtOslo(next.deadline_time)}. ${click ? "Trykk for siden, valgene ligger på saken. " : ""}Gjør byttene i appen, så ser jeg det.`,
+        msg: `${proposal.summary || "Se PR."} Frist ${fmtOslo(next.deadline_time)}. ${click ? "Trykk for saken i huddle: siden, loggen og valgene. " : ""}Gjør byttene i appen, så ser jeg det.`,
       });
       saveState(state);
       return;
@@ -597,7 +618,7 @@ async function main() {
       if (fw.attempts >= MAX_ATTEMPTS) {
         if (!fw.alerted) {
           fw.alerted = nowIso();
-          ntfy({ title: `FPL GW${gw}: research sitter fast`, prio: "high", click: itemUrl(gw, convLink(fw.conversation)), msg: `${MAX_ATTEMPTS} forsøk, ingen proposal. Frist ${fmtOslo(next.deadline_time)}. Sjekk ${fw.conversation}` });
+          ntfy({ kind: "alarm", title: `FPL GW${gw}: research sitter fast`, prio: "high", click: itemUrl(gw, convLink(fw.conversation)), msg: `${MAX_ATTEMPTS} forsøk, ingen proposal. Frist ${fmtOslo(next.deadline_time)}. Sjekk ${fw.conversation}` });
         }
       } else {
         fw.phase = "idle"; // next tick re-spawns with a fresh baseline
@@ -634,7 +655,7 @@ async function main() {
         fw.acted_at = nowIso();
         const open = Object.entries(cmp.checks).filter(([, v]) => !v).map(([k]) => k);
         ntfy({
-          title: `FPL GW${gw}: ser at du har gjort noe (${cmp.status})`,
+          kind: "status", title: `FPL GW${gw}: ser at du har gjort noe (${cmp.status})`,
           click: itemUrl(gw),
           msg: open.length ? `Gjenstår fra forslaget: ${open.join(", ")}. Frist ${fmtOslo(next.deadline_time)}.` : `Laget matcher forslaget. Frist ${fmtOslo(next.deadline_time)}.`,
         });
@@ -665,7 +686,7 @@ function deadlineBuzz(fw, gw, T, next) {
   const line = fw.phase === "proposed" ? (team ? `Laget: ${team}.` : "Forslaget ligger i PR-en.") : "Forslaget er ikke klart ennå.";
   const where = fw.page_url || fw.pr_url;
   ntfy({
-    title: `FPL GW${gw}: ${T < 3 ? Math.round(T * 60) + " min" : Math.round(T) + "t"} til frist`,
+    kind: "status", title: `FPL GW${gw}: ${T < 3 ? Math.round(T * 60) + " min" : Math.round(T) + "t"} til frist`,
     prio: "high",
     click: itemUrl(gw, convLink(fw.conversation)),
     msg: `Frist ${fmtOslo(next.deadline_time)}. ${line}${where ? ` ${where}` : ""}`,
@@ -700,7 +721,7 @@ function authAlert(state, gw, T) {
     }
   }
   ntfy({
-    title: "FPL: innloggingen er død",
+    kind: "alarm", title: "FPL: innloggingen er død",
     prio: T < 24 ? "urgent" : "high",
     click: "https://oauth.go.vongohren.me/device",
     msg: `my-team svarer 401 og GW${gw}-fristen er om ${Math.round(T)}t. Godkjenn lenken i neste varsel (oauth-broker), logg inn hos Premier League og lim inn 404-adressen på samme side — så fortsetter loopen av seg selv.`,

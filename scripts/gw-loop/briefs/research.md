@@ -192,6 +192,10 @@ The human reads the page, not the doc. The doc is still the record the next run 
    local file. Then publish with `--publish` added; it prints the stable URL
    (`artifacts.go.vongohren.me/life/fpl-gw{{GW}}-proposal`) and also puts the community doc,
    decision blocks included, on huddle. It does not link the visual: step 3 does.
+   **Before `--publish`, lint the file against the house brand** and fix any finding in
+   `proposal-page.mjs` (never by hand in the HTML):
+   `"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/brand/scripts/brand-lint" <the printed path>`.
+   The page wears the brand through `brand.mjs`; no page is restyled in a session.
 3. Link it to the project (idempotent, safe to repeat):
    `arcforge project visual add life/fpl-gw{{GW}}-proposal --title "GW{{GW}} forslag: <one line>" --project {{PROJECT}}`
 4. Put the shelf URL in `page_url` and the session link in `session_url` of the final
@@ -297,7 +301,7 @@ Element ids are FPL `element` ids from the API, not names. Names are for the rea
   "season": "{{SEASON}}",
   "generated_at": "<ISO8601>",
   "pr_url": "https://github.com/.../pull/NN",
-  "summary": "one line for a phone notification, e.g. 'Hall -> Bogle (0 FT hit), C Joao Pedro, VC Bruno, hold chips'",
+  "summary": "one line for a phone notification, e.g. 'Hall → Bogle (1 FT, no hit), C João Pedro, VC Bruno, no chip' (real names and arrows: it is shown on the page)",
   "transfers": [{ "out": 449, "out_name": "Hall", "in": 330, "in_name": "Bogle" }],
   "hit": 0,
   "chip": null,
